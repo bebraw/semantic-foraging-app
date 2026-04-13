@@ -2,6 +2,8 @@ import { mkdirSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 
 export function ensureGeneratedStylesheet(): void {
+  const stylesheet = ":root{--color-app-canvas:#f5efe6;}";
+
   mkdirSync(".generated", { recursive: true });
-  writeFileSync(join(".generated", "styles.css"), ":root{--color-app-canvas:#f5efe6;}", "utf8");
+  writeFileSync(join(".generated", "styles.css"), stylesheet, "utf8");
 }

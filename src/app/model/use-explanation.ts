@@ -5,18 +5,14 @@ export type ExplainDecisionInput = {
   facts: string[];
 };
 
-export async function explainDecision(
-  provider: ModelProvider | null,
-  input: ExplainDecisionInput,
-): Promise<string> {
+export async function explainDecision(provider: ModelProvider | null, input: ExplainDecisionInput): Promise<string> {
   if (!provider || !(await provider.isAvailable())) {
     return deterministicExplanation(input);
   }
 
   try {
     return await provider.completeText({
-      system:
-        "You explain application decisions clearly and conservatively. Do not invent facts.",
+      system: "You explain application decisions clearly and conservatively. Do not invent facts.",
       prompt: [
         `Decision: ${input.title}`,
         "",

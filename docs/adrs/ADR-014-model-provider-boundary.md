@@ -9,16 +9,18 @@ Accepted
 The application runs on Cloudflare Workers and needs lightweight model support for bounded tasks such as intent classification and explanation generation.
 
 Direct use of provider-specific APIs in route handlers would:
+
 - spread infrastructure concerns across the codebase
 - make local and cloud execution diverge
 - complicate testing
 - increase lock-in
 
-Cloudflare provides Workers AI for serverless inference on its network, and AI Gateway for analytics, caching, retries, rate limiting, and model fallback. Workers AI can be accessed from Workers using bindings. AI Gateway can sit in front of Workers AI and other providers. 
+Cloudflare provides Workers AI for serverless inference on its network, and AI Gateway for analytics, caching, retries, rate limiting, and model fallback. Workers AI can be accessed from Workers using bindings. AI Gateway can sit in front of Workers AI and other providers.
 
 ## Decision
 
 We will:
+
 - define a shared `ModelProvider` contract
 - implement Cloudflare-native providers under `src/infra/llm/providers/`
 - use Workers AI as the default managed inference backend

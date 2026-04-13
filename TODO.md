@@ -1,11 +1,11 @@
-- [ ] Add `specs/model-integration/spec.md`
-- [ ] Add ADR for model-provider boundary
-- [ ] Add `src/infra/llm/provider.ts`
-- [ ] Add `src/infra/llm/runtime-capability.ts`
-- [ ] Add `src/infra/llm/providers/cloudflare-workers-ai.ts`
-- [ ] Add `src/infra/llm/providers/cloudflare-ai-gateway.ts`
-- [ ] Add `src/infra/llm/index.ts`
-- [ ] Add one model-backed use case: explanation or intent classification
-- [ ] Add deterministic fallback behavior
-- [ ] Add unit tests for provider resolver and fallback path
-- [ ] Add one end-to-end test with model disabled
+- [x] Add `specs/model-integration/spec.md`
+- [x] Add ADR for model-provider boundary
+- [x] Add `src/infra/llm/provider.ts`
+- [x] Add `src/infra/llm/runtime-capability.ts`
+- [x] Add `src/infra/llm/providers/cloudflare-workers-ai.ts`
+- [x] Add `src/infra/llm/providers/cloudflare-ai-gateway.ts`
+- [x] Add `src/infra/llm/index.ts`
+- [x] Add one model-backed use case: explanation or intent classification
+- [x] Add deterministic fallback behavior
+- [x] Add unit tests for provider resolver and fallback path
+- [x] Add one end-to-end test with model disabled

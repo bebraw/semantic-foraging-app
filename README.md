@@ -67,6 +67,7 @@ This app supports Cloudflare-native model execution.
 ### Optional path: AI Gateway
 
 Use AI Gateway in front of Workers AI when you want:
+
 - analytics
 - centralized logging
 - retries
@@ -74,6 +75,7 @@ Use AI Gateway in front of Workers AI when you want:
 - routing or future fallback controls
 
 Set:
+
 - `AI_GATEWAY_ACCOUNT_ID`
 - `AI_GATEWAY_ID`
 - `AI_GATEWAY_TOKEN`

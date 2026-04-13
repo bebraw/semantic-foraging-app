@@ -1,9 +1,4 @@
-import type {
-  JsonCompletionRequest,
-  ModelCapability,
-  ModelProvider,
-  TextCompletionRequest,
-} from "../provider";
+import type { JsonCompletionRequest, ModelCapability, ModelProvider, TextCompletionRequest } from "../provider";
 
 type FetchLike = typeof fetch;
 
@@ -24,13 +19,7 @@ export class CloudflareAiGatewayProvider implements ModelProvider {
   ) {}
 
   async isAvailable(): Promise<boolean> {
-    return Boolean(
-      this.config.accountId &&
-        this.config.gatewayId &&
-        this.config.apiToken &&
-        this.config.providerPath &&
-        this.config.model,
-    );
+    return Boolean(this.config.accountId && this.config.gatewayId && this.config.apiToken && this.config.providerPath && this.config.model);
   }
 
   async getCapabilities(): Promise<ModelCapability> {
@@ -48,10 +37,7 @@ export class CloudflareAiGatewayProvider implements ModelProvider {
       headers: this.headers(),
       body: JSON.stringify({
         model: this.config.model,
-        messages: [
-          ...(input.system ? [{ role: "system", content: input.system }] : []),
-          { role: "user", content: input.prompt },
-        ],
+        messages: [...(input.system ? [{ role: "system", content: input.system }] : []), { role: "user", content: input.prompt }],
         temperature: input.temperature ?? 0.2,
         max_tokens: input.maxOutputTokens ?? 400,
       }),
@@ -71,11 +57,7 @@ export class CloudflareAiGatewayProvider implements ModelProvider {
           ...(input.system ? [{ role: "system", content: input.system }] : []),
           {
             role: "user",
-            content: [
-              input.prompt,
-              "",
-              "Return only valid JSON that matches the provided schema.",
-            ].join("\n"),
+            content: [input.prompt, "", "Return only valid JSON that matches the provided schema."].join("\n"),
           },
         ],
         temperature: input.temperature ?? 0,
@@ -117,11 +99,5 @@ function extractGatewayText(json: unknown): string {
     choices?: Array<{ message?: { content?: string } }>;
   };
 
-  return (
-    obj?.result?.response ??
-    obj?.response ??
-    obj?.result?.choices?.[0]?.message?.content ??
-    obj?.choices?.[0]?.message?.content ??
-    ""
-  );
+  return obj?.result?.response ?? obj?.response ?? obj?.result?.choices?.[0]?.message?.content ?? obj?.choices?.[0]?.message?.content ?? "";
 }

@@ -8,6 +8,19 @@ test("renders the worker home page", async ({ page }) => {
   await expect(page.getByRole("link", { name: "/api/health" })).toBeVisible();
 });
 
+test("remains usable when no model provider is configured", async ({ page, request }) => {
+  await page.goto("/");
+  await expect(
+    page.getByText(
+      "A concrete Worker entry point, a simple HTML page, a health endpoint, and testable flows that keep the template green from the start.",
+    ),
+  ).toBeVisible();
+
+  const response = await request.get("/api/health");
+
+  expect(response.ok()).toBe(true);
+});
+
 test("serves the health endpoint", async ({ request }) => {
   const response = await request.get("/api/health");
 

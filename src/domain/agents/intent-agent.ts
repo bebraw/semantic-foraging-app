@@ -9,10 +9,7 @@ const IntentSchema = z.object({
 
 export type ClassifiedIntent = z.infer<typeof IntentSchema>;
 
-export async function classifyIntent(
-  provider: ModelProvider | null,
-  rawInput: string,
-): Promise<ClassifiedIntent> {
+export async function classifyIntent(provider: ModelProvider | null, rawInput: string): Promise<ClassifiedIntent> {
   if (!provider || !(await provider.isAvailable())) {
     return deterministicIntent(rawInput);
   }
@@ -39,8 +36,7 @@ export async function classifyIntent(
         },
         required: ["intent", "confidence", "needsClarification"],
       },
-      system:
-        "Classify the user's request into one supported intent. Be conservative.",
+      system: "Classify the user's request into one supported intent. Be conservative.",
       prompt: `User input: ${rawInput}`,
       temperature: 0,
       maxOutputTokens: 120,

@@ -9,6 +9,7 @@ Draft
 Add a typed model integration layer to the application.
 
 The model layer must:
+
 - support Cloudflare Workers AI as the default managed inference provider
 - support Cloudflare AI Gateway in front of Workers AI
 - hide provider details behind a shared `ModelProvider` contract
@@ -18,12 +19,14 @@ The model layer must:
 ## Motivation
 
 The application needs bounded model assistance for:
+
 - intent classification
 - explanation generation
 - clarification drafting
 - small text transformations
 
 The application must not depend on:
+
 - a monolithic agent framework
 - direct provider-specific code in route handlers
 - end-user managed API keys
@@ -54,12 +57,14 @@ The app must expose a single provider contract for model access.
 ### FR-2 Default Cloudflare path
 
 The default production provider must be:
+
 - Workers AI for inference
 - AI Gateway for control and observability
 
 ### FR-3 Safe fallback
 
 If the model is unavailable or returns invalid output:
+
 - the request must still complete
 - the app must render deterministic fallback UI
 - no invalid model output may enter domain logic
@@ -71,6 +76,7 @@ All structured model outputs must be schema-validated before use.
 ### FR-5 Capability detection
 
 The provider must expose capabilities so the app can decide whether to:
+
 - request structured output
 - request plain text
 - skip inference entirely

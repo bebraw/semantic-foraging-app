@@ -34,7 +34,7 @@ async function loadStylesheet(): Promise<string> {
     return await readFile(new URL("../.generated/styles.css", import.meta.url), "utf8");
   }
 
-  const styles = await import("../.generated/styles.css");
+  const styles = await import("./generated/styles");
   return styles.default;
 }
 

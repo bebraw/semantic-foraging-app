@@ -1,9 +1,4 @@
-import type {
-  JsonCompletionRequest,
-  ModelCapability,
-  ModelProvider,
-  TextCompletionRequest,
-} from "../provider";
+import type { JsonCompletionRequest, ModelCapability, ModelProvider, TextCompletionRequest } from "../provider";
 
 type WorkersAiBinding = {
   run(model: string, input: Record<string, unknown>): Promise<unknown>;
@@ -39,10 +34,7 @@ export class CloudflareWorkersAiProvider implements ModelProvider {
       throw new Error("Workers AI binding is not configured");
     }
 
-    const messages = [
-      ...(input.system ? [{ role: "system", content: input.system }] : []),
-      { role: "user", content: input.prompt },
-    ];
+    const messages = [...(input.system ? [{ role: "system", content: input.system }] : []), { role: "user", content: input.prompt }];
 
     const result = await this.env.AI.run(this.model, {
       messages,
@@ -62,11 +54,7 @@ export class CloudflareWorkersAiProvider implements ModelProvider {
       ...(input.system ? [{ role: "system", content: input.system }] : []),
       {
         role: "user",
-        content: [
-          input.prompt,
-          "",
-          "Return only valid JSON that matches the provided schema.",
-        ].join("\n"),
+        content: [input.prompt, "", "Return only valid JSON that matches the provided schema."].join("\n"),
       },
     ];
 
@@ -93,12 +81,7 @@ function extractText(result: unknown): string {
     return result;
   }
 
-  if (
-    result &&
-    typeof result === "object" &&
-    "response" in result &&
-    typeof (result as { response?: unknown }).response === "string"
-  ) {
+  if (result && typeof result === "object" && "response" in result && typeof (result as { response?: unknown }).response === "string") {
     return (result as { response: string }).response;
   }
 
