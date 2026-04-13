@@ -13,7 +13,7 @@ export type SubmitUserIntentMessage = {
 
 export type ClarifyUserIntentMessage = {
   type: "ClarifyUserIntent";
-  rawInput: string;
+  workflowId: string;
   clarification: string;
 };
 
