@@ -1,6 +1,7 @@
 import type { HealthPayload } from "../../api/health";
 import type { ClassifiedIntent } from "../agents/intent-agent";
 import type { ScreenModel } from "./screen";
+import type { IntentWorkflow } from "./workflow";
 
 export type ScreenResult = {
   kind: "screen";
@@ -17,6 +18,7 @@ export type IntentResult = {
   payload: {
     input: string;
     classification: ClassifiedIntent;
+    workflow: IntentWorkflow;
   };
 };
 

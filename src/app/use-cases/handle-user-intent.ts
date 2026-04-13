@@ -1,4 +1,5 @@
 import { classifyIntent } from "../../domain/agents/intent-agent";
+import { createIntentWorkflow } from "../../domain/agents/intent-workflow";
 import type { IntentResult } from "../../domain/contracts/result";
 import type { AppContext } from "../context";
 import type { SubmitUserIntentMessage } from "../message";
@@ -11,6 +12,7 @@ export async function handleUserIntent(context: AppContext, message: SubmitUserI
     payload: {
       input: message.rawInput,
       classification,
+      workflow: createIntentWorkflow(message.rawInput, classification),
     },
   };
 }

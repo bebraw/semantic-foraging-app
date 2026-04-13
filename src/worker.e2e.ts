@@ -28,7 +28,7 @@ test("serves the health endpoint", async ({ request }) => {
   await expect(response.json()).resolves.toEqual({
     ok: true,
     name: "vibe-template-worker",
-    routes: ["/", "/api/health", "/api/intent", "/api/explanation"],
+    routes: ["/", "/api/health", "/api/intent", "/api/intent/clarify", "/api/explanation"],
   });
 });
 
@@ -47,6 +47,34 @@ test("classifies intent through the command endpoint without a model provider", 
       intent: "create",
       confidence: 0.66,
       needsClarification: false,
+    },
+    workflow: {
+      name: "intent-classification",
+      state: "completed",
+    },
+  });
+});
+
+test("continues an intent workflow through the clarification endpoint without a model provider", async ({ request }) => {
+  const response = await request.post("/api/intent/clarify", {
+    data: {
+      input: "Help",
+      clarification: "Search for similar notes",
+    },
+  });
+
+  expect(response.ok()).toBe(true);
+  await expect(response.json()).resolves.toEqual({
+    ok: true,
+    input: "Help",
+    classification: {
+      intent: "search",
+      confidence: 0.61,
+      needsClarification: false,
+    },
+    workflow: {
+      name: "intent-classification",
+      state: "completed",
     },
   });
 });

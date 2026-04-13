@@ -11,10 +11,21 @@ export type SubmitUserIntentMessage = {
   rawInput: string;
 };
 
+export type ClarifyUserIntentMessage = {
+  type: "ClarifyUserIntent";
+  rawInput: string;
+  clarification: string;
+};
+
 export type RequestExplanationMessage = {
   type: "RequestExplanation";
   title: string;
   facts: string[];
 };
 
-export type AppMessage = RenderHomeScreenMessage | RunHealthCheckMessage | SubmitUserIntentMessage | RequestExplanationMessage;
+export type AppMessage =
+  | RenderHomeScreenMessage
+  | RunHealthCheckMessage
+  | SubmitUserIntentMessage
+  | ClarifyUserIntentMessage
+  | RequestExplanationMessage;

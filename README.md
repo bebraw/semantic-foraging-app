@@ -42,7 +42,8 @@ Local development in this repo targets macOS. Other platforms may need script an
 - `GET /` serves a minimal HTML Worker stub.
 - `GET /styles.css` serves the generated Tailwind stylesheet.
 - `GET /api/health` serves a JSON health response for smoke tests and tooling.
-- `POST /api/intent` classifies a request into a bounded set of supported intents.
+- `POST /api/intent` classifies a request into a bounded set of supported intents and can request clarification.
+- `POST /api/intent/clarify` continues the bounded clarification workflow for ambiguous intent input.
 - `POST /api/explanation` returns grounded explanation text from a bounded query payload.
 
 ## Source Layout

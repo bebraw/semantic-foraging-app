@@ -41,8 +41,16 @@ describe("classifyIntent", () => {
 
     await expect(classifyIntent(provider, "Find similar items")).resolves.toEqual({
       intent: "search",
-      confidence: 0.55,
+      confidence: 0.61,
       needsClarification: false,
+    });
+  });
+
+  it("uses deterministic clarification fallback for ambiguous inputs", async () => {
+    await expect(classifyIntent(null, "Help")).resolves.toEqual({
+      intent: "clarify",
+      confidence: 0.31,
+      needsClarification: true,
     });
   });
 

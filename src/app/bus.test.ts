@@ -30,7 +30,7 @@ describe("createAppBus", () => {
       payload: {
         ok: true,
         name: "vibe-template-worker",
-        routes: ["/", "/api/health", "/api/intent", "/api/explanation"],
+        routes: ["/", "/api/health", "/api/intent", "/api/intent/clarify", "/api/explanation"],
       },
     });
   });
@@ -51,6 +51,63 @@ describe("createAppBus", () => {
           intent: "create",
           confidence: 0.66,
           needsClarification: false,
+        },
+        workflow: {
+          name: "intent-classification",
+          state: "completed",
+        },
+      },
+    });
+  });
+
+  it("returns an awaiting-clarification workflow for ambiguous intent commands", async () => {
+    const bus = createAppBus(createAppContext(exampleRoutes));
+
+    const result = await bus.dispatch({
+      type: "SubmitUserIntent",
+      rawInput: "Help",
+    });
+
+    expect(result).toEqual({
+      kind: "intent",
+      payload: {
+        input: "Help",
+        classification: {
+          intent: "clarify",
+          confidence: 0.31,
+          needsClarification: true,
+        },
+        workflow: {
+          name: "intent-classification",
+          state: "awaiting_clarification",
+          question: 'What do you want to do with "Help": search, create, or explain?',
+          options: ["search", "create", "explain"],
+        },
+      },
+    });
+  });
+
+  it("resolves a clarification follow-up through the workflow continuation message", async () => {
+    const bus = createAppBus(createAppContext(exampleRoutes));
+
+    const result = await bus.dispatch({
+      type: "ClarifyUserIntent",
+      rawInput: "Help",
+      clarification: "Search for similar notes",
+    });
+
+    expect(result).toEqual({
+      kind: "intent",
+      payload: {
+        input: "Help",
+        classification: {
+          intent: "search",
+          confidence: 0.61,
+          needsClarification: false,
+        },
+        workflow: {
+          name: "intent-classification",
+          state: "completed",
         },
       },
     });

@@ -24,16 +24,17 @@ The repo now implements the first application-layer slice from this document:
 - `src/worker.ts` still owns top-level HTTP routing.
 - `GET /` and `GET /api/health` now translate into typed app messages and dispatch through `src/app/bus.ts`.
 - `POST /api/intent` now translates into a typed app command and dispatches through `src/app/bus.ts`.
+- `POST /api/intent/clarify` now continues a bounded clarification workflow through `src/app/bus.ts`.
 - `POST /api/explanation` now translates into a typed app query and dispatches through `src/app/bus.ts`.
-- `src/app/use-cases/` now handles route-level queries for the home screen, health payload, and explanation flow.
-- `src/app/use-cases/handle-user-intent.ts` now handles the first app command path.
+- `src/app/use-cases/` now handles route-level queries plus bounded command and workflow flows.
+- `src/domain/agents/intent-workflow.ts` now defines the first serializable workflow-state contract and deterministic transition helper.
 - `src/domain/contracts/` now defines typed screen and result models for those query flows.
 - `src/views/home.ts` now renders from a typed `HomeScreenModel` instead of route-local primitives.
 - `src/infra/llm/` already provides a typed model-provider boundary with deterministic fallback behavior.
 
 The repo does not yet implement the full architecture described below. In particular:
 
-- there are no workflow-state modules yet
+- workflow state is still limited to one client-roundtripped clarification flow
 - there is no storage or observability layer yet
 - the model layer is currently Cloudflare-native, not a local inference adapter stack
 
@@ -143,6 +144,7 @@ src/
     context.ts
     message.ts
     use-cases/
+      continue-intent-workflow.ts
       handle-user-intent.ts
       request-explanation.ts
       render-screen.ts
@@ -150,9 +152,11 @@ src/
   domain/
     agents/
       intent-agent.ts
+      intent-workflow.ts
     contracts/
       result.ts
       screen.ts
+      workflow.ts
   infra/
     llm/
       provider.ts
@@ -190,6 +194,7 @@ Current implemented messages:
 - `RenderHomeScreen`
 - `RunHealthCheck`
 - `SubmitUserIntent`
+- `ClarifyUserIntent`
 - `RequestExplanation`
 
 ### 3. App bus dispatches the message
@@ -211,6 +216,7 @@ Current implemented outputs:
 - a typed `HomeScreenModel`
 - a stable health payload
 - a typed intent-classification payload
+- a serializable intent-workflow payload
 - a typed explanation payload
 
 ### 5. View renderer turns screen model into HTML

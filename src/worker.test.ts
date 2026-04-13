@@ -24,7 +24,7 @@ describe("worker", () => {
     await expect(response.json()).resolves.toEqual({
       ok: true,
       name: "vibe-template-worker",
-      routes: ["/", "/api/health", "/api/intent", "/api/explanation"],
+      routes: ["/", "/api/health", "/api/intent", "/api/intent/clarify", "/api/explanation"],
     });
   });
 
@@ -47,6 +47,40 @@ describe("worker", () => {
         intent: "explain",
         confidence: 0.72,
         needsClarification: false,
+      },
+      workflow: {
+        name: "intent-classification",
+        state: "completed",
+      },
+    });
+  });
+
+  it("accepts clarification follow-up commands through the worker route", async () => {
+    const response = await handleRequest(
+      new Request("http://example.com/api/intent/clarify", {
+        method: "POST",
+        body: JSON.stringify({
+          input: "Help",
+          clarification: "Search for similar notes",
+        }),
+        headers: {
+          "content-type": "application/json",
+        },
+      }),
+    );
+
+    expect(response.status).toBe(200);
+    await expect(response.json()).resolves.toEqual({
+      ok: true,
+      input: "Help",
+      classification: {
+        intent: "search",
+        confidence: 0.61,
+        needsClarification: false,
+      },
+      workflow: {
+        name: "intent-classification",
+        state: "completed",
       },
     });
   });

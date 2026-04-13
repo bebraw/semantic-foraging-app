@@ -1,6 +1,6 @@
 import { createAppContext } from "./app/context";
 import { exampleRoutes } from "./app-routes";
-import { handleIntentCommandRequest } from "./api/app-command";
+import { handleIntentClarificationRequest, handleIntentCommandRequest } from "./api/app-command";
 import { handleExplanationQueryRequest, handleHealthRequest, handleHomePageRequest } from "./api/app-query";
 import { resolveModelProvider } from "./infra/llm";
 import { renderNotFoundPage } from "./views/not-found";
@@ -30,6 +30,10 @@ export async function handleRequest(request: Request, env: Env = {}): Promise<Re
 
   if (url.pathname === "/api/intent" && request.method === "POST") {
     return await handleIntentCommandRequest(request, context);
+  }
+
+  if (url.pathname === "/api/intent/clarify" && request.method === "POST") {
+    return await handleIntentClarificationRequest(request, context);
   }
 
   if (url.pathname === "/api/explanation" && request.method === "POST") {

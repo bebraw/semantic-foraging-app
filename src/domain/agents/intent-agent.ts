@@ -49,7 +49,7 @@ export async function classifyIntent(provider: ModelProvider | null, rawInput: s
 }
 
 function deterministicIntent(rawInput: string): ClassifiedIntent {
-  const text = rawInput.toLowerCase();
+  const text = rawInput.toLowerCase().trim();
 
   if (text.includes("why") || text.includes("explain")) {
     return { intent: "explain", confidence: 0.72, needsClarification: false };
@@ -57,6 +57,14 @@ function deterministicIntent(rawInput: string): ClassifiedIntent {
 
   if (text.includes("create") || text.includes("add")) {
     return { intent: "create", confidence: 0.66, needsClarification: false };
+  }
+
+  if (text.includes("search") || text.includes("find") || text.includes("look up") || text.includes("similar")) {
+    return { intent: "search", confidence: 0.61, needsClarification: false };
+  }
+
+  if (text.length < 12 || text.includes("help") || text === "this" || text === "that") {
+    return { intent: "clarify", confidence: 0.31, needsClarification: true };
   }
 
   return { intent: "search", confidence: 0.55, needsClarification: false };
