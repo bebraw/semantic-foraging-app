@@ -14,6 +14,7 @@ The app exposes a small JSON query endpoint for returning grounded explanation t
   - `title: string`
   - `facts: string[]`
   - `explanation: string`
+- successful responses also include stable request-trace headers
 - invalid request bodies return:
   - HTTP `400`
   - `ok: false`

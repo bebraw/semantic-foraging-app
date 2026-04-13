@@ -19,6 +19,7 @@ The app exposes small JSON command endpoints for classifying a user request into
   - `classification.needsClarification`
   - `workflow.name`
   - `workflow.state`
+- successful responses also include stable request-trace headers
 - clarification-required responses additionally return:
   - `workflow.question`
   - `workflow.options`

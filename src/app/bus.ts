@@ -1,4 +1,5 @@
 import type { AppResult } from "../domain/contracts/result";
+import { traceOperation } from "../infra/observability/trace";
 import type { AppContext } from "./context";
 import type { AppMessage } from "./message";
 import { continueIntentWorkflow } from "./use-cases/continue-intent-workflow";
@@ -14,18 +15,20 @@ export type AppBus = {
 export function createAppBus(context: AppContext): AppBus {
   return {
     async dispatch(message) {
-      switch (message.type) {
-        case "RenderHomeScreen":
-          return await renderScreen(context, message);
-        case "RunHealthCheck":
-          return await runHealthCheck(context, message);
-        case "SubmitUserIntent":
-          return await handleUserIntent(context, message);
-        case "ClarifyUserIntent":
-          return await continueIntentWorkflow(context, message);
-        case "RequestExplanation":
-          return await requestExplanation(context, message);
-      }
+      return await traceOperation(context.trace, "app.bus", message.type, async () => {
+        switch (message.type) {
+          case "RenderHomeScreen":
+            return await renderScreen(context, message);
+          case "RunHealthCheck":
+            return await runHealthCheck(context, message);
+          case "SubmitUserIntent":
+            return await handleUserIntent(context, message);
+          case "ClarifyUserIntent":
+            return await continueIntentWorkflow(context, message);
+          case "RequestExplanation":
+            return await requestExplanation(context, message);
+        }
+      });
     },
   };
 }

@@ -45,6 +45,7 @@ Local development in this repo targets macOS. Other platforms may need script an
 - `POST /api/intent` classifies a request into a bounded set of supported intents and can request clarification.
 - `POST /api/intent/clarify` continues the bounded clarification workflow for ambiguous intent input.
 - `POST /api/explanation` returns grounded explanation text from a bounded query payload.
+- App responses include lightweight `x-trace-id` and `x-trace-events` headers for debugging request flow.
 
 ## Source Layout
 

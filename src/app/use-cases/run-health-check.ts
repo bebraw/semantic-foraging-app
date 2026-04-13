@@ -6,6 +6,12 @@ import type { RunHealthCheckMessage } from "../message";
 export async function runHealthCheck(context: AppContext, message: RunHealthCheckMessage): Promise<HealthCheckResult> {
   switch (message.type) {
     case "RunHealthCheck":
+      context.trace.addEvent({
+        module: "app.use-cases.run-health-check",
+        messageType: message.type,
+        notes: [`routes:${context.routes.length}`],
+      });
+
       return {
         kind: "health",
         payload: createHealthPayload(

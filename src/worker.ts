@@ -3,6 +3,8 @@ import { exampleRoutes } from "./app-routes";
 import { handleIntentClarificationRequest, handleIntentCommandRequest } from "./api/app-command";
 import { handleExplanationQueryRequest, handleHealthRequest, handleHomePageRequest } from "./api/app-query";
 import { resolveModelProvider } from "./infra/llm";
+import { consoleLogger, logTraceSummary, silentLogger } from "./infra/observability/logger";
+import { attachTraceHeaders, createRequestTrace } from "./infra/observability/trace";
 import { renderNotFoundPage } from "./views/not-found";
 import { cssResponse, htmlResponse } from "./views/shared";
 
@@ -14,33 +16,42 @@ export default {
 
 export async function handleRequest(request: Request, env: Env = {}): Promise<Response> {
   const url = new URL(request.url);
-  const context = createAppContext(exampleRoutes, resolveModelProvider(env));
+  const trace = createRequestTrace(url.pathname);
+  const context = createAppContext(exampleRoutes, resolveModelProvider(env), trace);
+  let response: Response;
 
   if (url.pathname === "/styles.css") {
-    return cssResponse(await loadStylesheet());
+    response = cssResponse(await loadStylesheet());
+    return finalizeResponse(response, trace);
   }
 
   if (url.pathname === "/") {
-    return await handleHomePageRequest(context);
+    response = await handleHomePageRequest(context);
+    return finalizeResponse(response, trace);
   }
 
   if (url.pathname === "/api/health") {
-    return await handleHealthRequest(context);
+    response = await handleHealthRequest(context);
+    return finalizeResponse(response, trace);
   }
 
   if (url.pathname === "/api/intent" && request.method === "POST") {
-    return await handleIntentCommandRequest(request, context);
+    response = await handleIntentCommandRequest(request, context);
+    return finalizeResponse(response, trace);
   }
 
   if (url.pathname === "/api/intent/clarify" && request.method === "POST") {
-    return await handleIntentClarificationRequest(request, context);
+    response = await handleIntentClarificationRequest(request, context);
+    return finalizeResponse(response, trace);
   }
 
   if (url.pathname === "/api/explanation" && request.method === "POST") {
-    return await handleExplanationQueryRequest(request, context);
+    response = await handleExplanationQueryRequest(request, context);
+    return finalizeResponse(response, trace);
   }
 
-  return htmlResponse(renderNotFoundPage(url.pathname), 404);
+  response = htmlResponse(renderNotFoundPage(url.pathname), 404);
+  return finalizeResponse(response, trace);
 }
 
 async function loadStylesheet(): Promise<string> {
@@ -51,6 +62,15 @@ async function loadStylesheet(): Promise<string> {
 
   const styles = await import("./generated/styles");
   return styles.default;
+}
+
+function finalizeResponse(response: Response, trace: ReturnType<typeof createRequestTrace>): Response {
+  logTraceSummary(isTestRuntime() ? silentLogger : consoleLogger, trace);
+  return attachTraceHeaders(response, trace);
+}
+
+function isTestRuntime(): boolean {
+  return typeof process !== "undefined" && process.env.VITEST === "true";
 }
 
 export interface Env {

@@ -5,6 +5,12 @@ import type { ScreenResult } from "../../domain/contracts/result";
 export async function renderScreen(context: AppContext, message: RenderHomeScreenMessage): Promise<ScreenResult> {
   switch (message.type) {
     case "RenderHomeScreen":
+      context.trace.addEvent({
+        module: "app.use-cases.render-screen",
+        messageType: message.type,
+        notes: ["screen:home"],
+      });
+
       return {
         kind: "screen",
         screen: {

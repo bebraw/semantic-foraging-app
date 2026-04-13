@@ -21,6 +21,8 @@ describe("worker", () => {
 
     expect(response.status).toBe(200);
     expect(response.headers.get("content-type")).toContain("application/json");
+    expect(response.headers.get("x-trace-id")).toBeTruthy();
+    expect(response.headers.get("x-trace-events")).toBe("2");
     await expect(response.json()).resolves.toEqual({
       ok: true,
       name: "vibe-template-worker",
@@ -40,6 +42,7 @@ describe("worker", () => {
     );
 
     expect(response.status).toBe(200);
+    expect(response.headers.get("x-trace-id")).toBeTruthy();
     await expect(response.json()).resolves.toEqual({
       ok: true,
       input: "Explain why this happened",
@@ -112,6 +115,7 @@ describe("worker", () => {
     const response = await handleRequest(new Request("http://example.com/missing"));
 
     expect(response.status).toBe(404);
+    expect(response.headers.get("x-trace-id")).toBeTruthy();
 
     const body = await response.text();
     expect(body).toContain("Not Found");
@@ -130,6 +134,7 @@ describe("worker", () => {
 
     expect(response.status).toBe(200);
     expect(response.headers.get("content-type")).toContain("text/css");
+    expect(response.headers.get("x-trace-id")).toBeTruthy();
     await expect(response.text()).resolves.toContain("--color-app-canvas:#f5efe6");
   });
 });

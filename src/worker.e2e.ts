@@ -25,6 +25,8 @@ test("serves the health endpoint", async ({ request }) => {
   const response = await request.get("/api/health");
 
   expect(response.ok()).toBe(true);
+  expect(response.headers()["x-trace-id"]).toBeTruthy();
+  expect(response.headers()["x-trace-events"]).toBe("2");
   await expect(response.json()).resolves.toEqual({
     ok: true,
     name: "vibe-template-worker",

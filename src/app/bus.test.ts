@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { exampleRoutes } from "../app-routes";
+import { createRequestTrace } from "../infra/observability/trace";
 import { createAppBus } from "./bus";
 import { createAppContext } from "./context";
 
@@ -130,5 +131,24 @@ describe("createAppBus", () => {
         explanation: "Search result selected. This result is based on the available structured information in the application.",
       },
     });
+  });
+
+  it("records trace events for dispatched app messages", async () => {
+    const trace = createRequestTrace("/api/health");
+    const context = createAppContext(exampleRoutes, null, trace);
+    const bus = createAppBus(context);
+
+    await bus.dispatch({ type: "RunHealthCheck" });
+
+    expect(trace.events).toEqual([
+      expect.objectContaining({
+        module: "app.use-cases.run-health-check",
+        messageType: "RunHealthCheck",
+      }),
+      expect.objectContaining({
+        module: "app.bus",
+        messageType: "RunHealthCheck",
+      }),
+    ]);
   });
 });

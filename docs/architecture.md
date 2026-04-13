@@ -28,6 +28,7 @@ The repo now implements the first application-layer slice from this document:
 - `POST /api/explanation` now translates into a typed app query and dispatches through `src/app/bus.ts`.
 - `src/app/use-cases/` now handles route-level queries plus bounded command and workflow flows.
 - `src/domain/agents/intent-workflow.ts` now defines the first serializable workflow-state contract and deterministic transition helper.
+- `src/infra/observability/trace.ts` now creates per-request traces and wraps model-provider calls with traced operations.
 - `src/domain/contracts/` now defines typed screen and result models for those query flows.
 - `src/views/home.ts` now renders from a typed `HomeScreenModel` instead of route-local primitives.
 - `src/infra/llm/` already provides a typed model-provider boundary with deterministic fallback behavior.
@@ -35,7 +36,8 @@ The repo now implements the first application-layer slice from this document:
 The repo does not yet implement the full architecture described below. In particular:
 
 - workflow state is still limited to one client-roundtripped clarification flow
-- there is no storage or observability layer yet
+- there is no storage layer yet
+- observability is currently limited to lightweight per-request tracing
 - the model layer is currently Cloudflare-native, not a local inference adapter stack
 
 ---
@@ -164,6 +166,9 @@ src/
         cloudflare-workers-ai.ts
         cloudflare-ai-gateway.ts
       runtime-capability.ts
+    observability/
+      logger.ts
+      trace.ts
   views/
     home.ts
     not-found.ts
