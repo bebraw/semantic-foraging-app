@@ -44,7 +44,7 @@ Local development in this repo targets macOS. Other platforms may need script an
 - `GET /api/health` serves a JSON health response for smoke tests and tooling.
 - `POST /api/app/query` returns a typed screen model for bounded app-query requests.
 - `POST /api/intent` classifies a request into a bounded set of supported intents and can request clarification.
-- `POST /api/intent/clarify` continues the bounded clarification workflow for ambiguous intent input.
+- `POST /api/intent/clarify` continues the bounded clarification workflow using a stored `workflowId`.
 - `POST /api/explanation` returns grounded explanation text from a bounded query payload.
 - App responses include lightweight `x-trace-id` and `x-trace-events` headers for debugging request flow.
 - Intent and explanation responses also report whether the final output came from deterministic fallback logic or model-backed inference.

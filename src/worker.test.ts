@@ -91,11 +91,22 @@ describe("worker", () => {
   });
 
   it("accepts clarification follow-up commands through the worker route", async () => {
+    const initialResponse = await handleRequest(
+      new Request("http://example.com/api/intent", {
+        method: "POST",
+        body: JSON.stringify({ input: "Help" }),
+        headers: {
+          "content-type": "application/json",
+        },
+      }),
+    );
+    const initialPayload = await initialResponse.json();
+
     const response = await handleRequest(
       new Request("http://example.com/api/intent/clarify", {
         method: "POST",
         body: JSON.stringify({
-          input: "Help",
+          workflowId: initialPayload.workflow.workflowId,
           clarification: "Search for similar notes",
         }),
         headers: {

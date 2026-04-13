@@ -15,6 +15,10 @@ The first concrete workflow is intent clarification:
 
 - Workflow state must be serializable JSON.
 - Workflow state must be returned explicitly in app results and HTTP responses.
+- `awaiting_clarification` responses must include a `workflowId`.
+- `POST /api/intent/clarify` accepts JSON with:
+  - `workflowId: string`
+  - `clarification: string`
 - The first workflow supports these states:
   - `completed`
   - `awaiting_clarification`
@@ -26,11 +30,11 @@ The first concrete workflow is intent clarification:
 
 - Workflow transitions must remain deterministic and testable.
 - The model may assist with intent classification, but it must not bypass workflow state rules.
-- The clarification continuation must preserve the original input while incorporating the follow-up clarification text.
+- The clarification continuation must load the original input from stored workflow state before incorporating the follow-up clarification text.
 - Unsupported or invalid workflow inputs must fail with stable validation errors rather than partial state mutation.
 
 ## Regression Guardrails
 
-- Workflow state must stay independent of durable storage in this slice.
+- Workflow state must stay backed by a lightweight in-memory repository in this slice instead of durable storage.
 - The no-model path must still support both workflow steps.
 - HTTP handlers must remain thin adapters over typed app messages and results.

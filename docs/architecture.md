@@ -25,7 +25,7 @@ The repo now implements the first application-layer slice from this document:
 - `GET /` and `GET /api/health` now translate into typed app messages and dispatch through `src/app/bus.ts`.
 - `POST /api/app/query` now returns typed screen models through the same app-layer query flow.
 - `POST /api/intent` now translates into a typed app command and dispatches through `src/app/bus.ts`.
-- `POST /api/intent/clarify` now continues a bounded clarification workflow through `src/app/bus.ts`.
+- `POST /api/intent/clarify` now continues a bounded clarification workflow through stored in-memory workflow state.
 - `POST /api/explanation` now translates into a typed app query and dispatches through `src/app/bus.ts`.
 - `src/app/use-cases/` now handles route-level queries plus bounded command and workflow flows.
 - `src/domain/agents/intent-workflow.ts` now defines the first serializable workflow-state contract and deterministic transition helper.
@@ -38,7 +38,7 @@ The repo now implements the first application-layer slice from this document:
 The repo does not yet implement the full architecture described below. In particular:
 
 - workflow state is still limited to one client-roundtripped clarification flow
-- there is no storage layer yet
+- workflow state now has a repository boundary with an in-memory implementation
 - observability is currently limited to lightweight per-request tracing
 - the model layer is currently Cloudflare-native, not a local inference adapter stack
 
@@ -171,6 +171,9 @@ src/
     observability/
       logger.ts
       trace.ts
+    storage/
+      memory-store.ts
+      repository.ts
   views/
     home.ts
     not-found.ts

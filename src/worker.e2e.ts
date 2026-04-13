@@ -83,9 +83,16 @@ test("classifies intent through the command endpoint without a model provider", 
 });
 
 test("continues an intent workflow through the clarification endpoint without a model provider", async ({ request }) => {
-  const response = await request.post("/api/intent/clarify", {
+  const initialResponse = await request.post("/api/intent", {
     data: {
       input: "Help",
+    },
+  });
+  const initialPayload = await initialResponse.json();
+
+  const response = await request.post("/api/intent/clarify", {
+    data: {
+      workflowId: initialPayload.workflow.workflowId,
       clarification: "Search for similar notes",
     },
   });

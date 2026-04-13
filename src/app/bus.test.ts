@@ -96,6 +96,7 @@ describe("createAppBus", () => {
         workflow: {
           name: "intent-classification",
           state: "awaiting_clarification",
+          workflowId: expect.any(String),
           question: 'What do you want to do with "Help": search, create, or explain?',
           options: ["search", "create", "explain"],
         },
@@ -104,11 +105,21 @@ describe("createAppBus", () => {
   });
 
   it("resolves a clarification follow-up through the workflow continuation message", async () => {
-    const bus = createAppBus(createAppContext(exampleRoutes));
+    const context = createAppContext(exampleRoutes);
+    const bus = createAppBus(context);
+
+    const initial = await bus.dispatch({
+      type: "SubmitUserIntent",
+      rawInput: "Help",
+    });
+
+    if (initial.kind !== "intent" || initial.payload.workflow.state !== "awaiting_clarification") {
+      throw new Error("Expected an awaiting clarification workflow");
+    }
 
     const result = await bus.dispatch({
       type: "ClarifyUserIntent",
-      rawInput: "Help",
+      workflowId: initial.payload.workflow.workflowId,
       clarification: "Search for similar notes",
     });
 

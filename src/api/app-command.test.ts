@@ -68,6 +68,7 @@ describe("handleIntentCommandRequest", () => {
       workflow: {
         name: "intent-classification",
         state: "awaiting_clarification",
+        workflowId: expect.any(String),
         question: 'What do you want to do with "Help": search, create, or explain?',
         options: ["search", "create", "explain"],
       },
@@ -96,18 +97,31 @@ describe("handleIntentCommandRequest", () => {
 
 describe("handleIntentClarificationRequest", () => {
   it("resolves a clarification follow-up when more detail is provided", async () => {
+    const context = createAppContext(exampleRoutes);
+    const initialResponse = await handleIntentCommandRequest(
+      new Request("http://example.com/api/intent", {
+        method: "POST",
+        body: JSON.stringify({ input: "Help" }),
+        headers: {
+          "content-type": "application/json",
+        },
+      }),
+      context,
+    );
+    const initialPayload = await initialResponse.json();
+
     const response = await handleIntentClarificationRequest(
       new Request("http://example.com/api/intent/clarify", {
         method: "POST",
         body: JSON.stringify({
-          input: "Help",
+          workflowId: initialPayload.workflow.workflowId,
           clarification: "Search for similar notes",
         }),
         headers: {
           "content-type": "application/json",
         },
       }),
-      createAppContext(exampleRoutes),
+      context,
     );
 
     expect(response.status).toBe(200);
@@ -136,7 +150,7 @@ describe("handleIntentClarificationRequest", () => {
     const response = await handleIntentClarificationRequest(
       new Request("http://example.com/api/intent/clarify", {
         method: "POST",
-        body: JSON.stringify({ input: "Help", clarification: "" }),
+        body: JSON.stringify({ workflowId: "", clarification: "" }),
         headers: {
           "content-type": "application/json",
         },
@@ -147,7 +161,26 @@ describe("handleIntentClarificationRequest", () => {
     expect(response.status).toBe(400);
     await expect(response.json()).resolves.toEqual({
       ok: false,
-      error: "Request body must be JSON with non-empty input and clarification strings.",
+      error: "Request body must be JSON with non-empty workflowId and clarification strings.",
+    });
+  });
+
+  it("returns a stable error when workflow state is missing", async () => {
+    const response = await handleIntentClarificationRequest(
+      new Request("http://example.com/api/intent/clarify", {
+        method: "POST",
+        body: JSON.stringify({ workflowId: "missing", clarification: "Search for similar notes" }),
+        headers: {
+          "content-type": "application/json",
+        },
+      }),
+      createAppContext(exampleRoutes),
+    );
+
+    expect(response.status).toBe(404);
+    await expect(response.json()).resolves.toEqual({
+      ok: false,
+      error: "Workflow state was not found for the provided workflowId.",
     });
   });
 });

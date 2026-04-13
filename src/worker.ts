@@ -5,8 +5,11 @@ import { handleAppQueryRequest, handleExplanationQueryRequest, handleHealthReque
 import { resolveModelProvider } from "./infra/llm";
 import { consoleLogger, logTraceSummary, silentLogger } from "./infra/observability/logger";
 import { attachTraceHeaders, createRequestTrace } from "./infra/observability/trace";
+import { InMemoryWorkflowRepository } from "./infra/storage/memory-store";
 import { renderNotFoundPage } from "./views/not-found";
 import { cssResponse, htmlResponse } from "./views/shared";
+
+const workflowRepository = new InMemoryWorkflowRepository();
 
 export default {
   async fetch(request: Request, env: Env): Promise<Response> {
@@ -17,7 +20,7 @@ export default {
 export async function handleRequest(request: Request, env: Env = {}): Promise<Response> {
   const url = new URL(request.url);
   const trace = createRequestTrace(url.pathname);
-  const context = createAppContext(exampleRoutes, resolveModelProvider(env), trace);
+  const context = createAppContext(exampleRoutes, resolveModelProvider(env), trace, workflowRepository);
   let response: Response;
 
   if (url.pathname === "/styles.css") {

@@ -1,13 +1,14 @@
 import { z } from "zod";
 import { createAppBus } from "../app/bus";
 import type { AppContext } from "../app/context";
+import { IntentWorkflowNotFoundError } from "../app/use-cases/continue-intent-workflow";
 
 const IntentCommandSchema = z.object({
   input: z.string().trim().min(1),
 });
 
 const IntentClarificationSchema = z.object({
-  input: z.string().trim().min(1),
+  workflowId: z.string().trim().min(1),
   clarification: z.string().trim().min(1),
 });
 
@@ -45,17 +46,35 @@ export async function handleIntentClarificationRequest(request: Request, context
     return Response.json(
       {
         ok: false,
-        error: "Request body must be JSON with non-empty input and clarification strings.",
+        error: "Request body must be JSON with non-empty workflowId and clarification strings.",
       },
       { status: 400 },
     );
   }
 
-  const result = await createAppBus(context).dispatch({
-    type: "ClarifyUserIntent",
-    rawInput: parsed.data.input,
-    clarification: parsed.data.clarification,
-  });
+  const result = await createAppBus(context)
+    .dispatch({
+      type: "ClarifyUserIntent",
+      workflowId: parsed.data.workflowId,
+      clarification: parsed.data.clarification,
+    })
+    .catch((error: unknown) => {
+      if (error instanceof IntentWorkflowNotFoundError) {
+        return null;
+      }
+
+      throw error;
+    });
+
+  if (result === null) {
+    return Response.json(
+      {
+        ok: false,
+        error: "Workflow state was not found for the provided workflowId.",
+      },
+      { status: 404 },
+    );
+  }
 
   if (result.kind !== "intent") {
     throw new Error("Expected an intent result");
@@ -77,7 +96,7 @@ function createIntentResponse(payload: {
     provider: string | null;
     reason: string;
   };
-  workflow: { name: string; state: string; question?: string; options?: string[] };
+  workflow: { name: string; state: string; workflowId?: string; question?: string; options?: string[] };
 }): Response {
   return Response.json({
     ok: true,
