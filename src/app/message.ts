@@ -6,4 +6,9 @@ export type RunHealthCheckMessage = {
   type: "RunHealthCheck";
 };
 
-export type AppMessage = RenderHomeScreenMessage | RunHealthCheckMessage;
+export type SubmitUserIntentMessage = {
+  type: "SubmitUserIntent";
+  rawInput: string;
+};
+
+export type AppMessage = RenderHomeScreenMessage | RunHealthCheckMessage | SubmitUserIntentMessage;

@@ -42,12 +42,13 @@ Local development in this repo targets macOS. Other platforms may need script an
 - `GET /` serves a minimal HTML Worker stub.
 - `GET /styles.css` serves the generated Tailwind stylesheet.
 - `GET /api/health` serves a JSON health response for smoke tests and tooling.
+- `POST /api/intent` classifies a request into a bounded set of supported intents.
 
 ## Source Layout
 
 - `src/worker.ts` is the Worker entry point and top-level router.
 - `src/app/` holds typed application messages, the app bus, and route-level use cases.
-- `src/api/` holds API response modules such as the health endpoint.
+- `src/api/` holds HTTP adapters for app queries and commands.
 - `src/domain/contracts/` holds typed app output models such as screens and result payloads.
 - `src/views/` holds HTML rendering modules for the starter UI.
 - Tests live next to the code they exercise under `src/`.

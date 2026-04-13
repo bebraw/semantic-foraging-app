@@ -30,7 +30,28 @@ describe("createAppBus", () => {
       payload: {
         ok: true,
         name: "vibe-template-worker",
-        routes: ["/", "/api/health"],
+        routes: ["/", "/api/health", "/api/intent"],
+      },
+    });
+  });
+
+  it("returns a deterministic intent result for command messages without a model provider", async () => {
+    const bus = createAppBus(createAppContext(exampleRoutes));
+
+    const result = await bus.dispatch({
+      type: "SubmitUserIntent",
+      rawInput: "Create a new note",
+    });
+
+    expect(result).toEqual({
+      kind: "intent",
+      payload: {
+        input: "Create a new note",
+        classification: {
+          intent: "create",
+          confidence: 0.66,
+          needsClarification: false,
+        },
       },
     });
   });

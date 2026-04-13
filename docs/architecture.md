@@ -23,14 +23,15 @@ The repo now implements the first application-layer slice from this document:
 
 - `src/worker.ts` still owns top-level HTTP routing.
 - `GET /` and `GET /api/health` now translate into typed app messages and dispatch through `src/app/bus.ts`.
+- `POST /api/intent` now translates into a typed app command and dispatches through `src/app/bus.ts`.
 - `src/app/use-cases/` now handles route-level queries for the home screen and health payload.
+- `src/app/use-cases/handle-user-intent.ts` now handles the first app command path.
 - `src/domain/contracts/` now defines typed screen and result models for those query flows.
 - `src/views/home.ts` now renders from a typed `HomeScreenModel` instead of route-local primitives.
 - `src/infra/llm/` already provides a typed model-provider boundary with deterministic fallback behavior.
 
 The repo does not yet implement the full architecture described below. In particular:
 
-- there is no `app-command.ts` path yet
 - there are no workflow-state modules yet
 - there is no storage or observability layer yet
 - the model layer is currently Cloudflare-native, not a local inference adapter stack
@@ -133,6 +134,7 @@ Current implemented subset:
 ```txt
 src/
   api/
+    app-command.ts
     app-query.ts
     health.ts
   app/
@@ -140,6 +142,7 @@ src/
     context.ts
     message.ts
     use-cases/
+      handle-user-intent.ts
       render-screen.ts
       run-health-check.ts
   domain/
@@ -184,6 +187,7 @@ Current implemented messages:
 
 - `RenderHomeScreen`
 - `RunHealthCheck`
+- `SubmitUserIntent`
 
 ### 3. App bus dispatches the message
 
@@ -203,6 +207,7 @@ Current implemented outputs:
 
 - a typed `HomeScreenModel`
 - a stable health payload
+- a typed intent-classification payload
 
 ### 5. View renderer turns screen model into HTML
 
@@ -232,8 +237,8 @@ Guidelines:
 
 Current implementation note:
 
-- the bus currently handles route-level query messages only
-- command handling and multi-step dispatch are not implemented yet
+- the bus currently handles route-level queries and one bounded command
+- multi-step dispatch and workflow state are not implemented yet
 
 Example message categories:
 

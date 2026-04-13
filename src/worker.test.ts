@@ -24,7 +24,30 @@ describe("worker", () => {
     await expect(response.json()).resolves.toEqual({
       ok: true,
       name: "vibe-template-worker",
-      routes: ["/", "/api/health"],
+      routes: ["/", "/api/health", "/api/intent"],
+    });
+  });
+
+  it("accepts intent classification commands through the worker route", async () => {
+    const response = await handleRequest(
+      new Request("http://example.com/api/intent", {
+        method: "POST",
+        body: JSON.stringify({ input: "Explain why this happened" }),
+        headers: {
+          "content-type": "application/json",
+        },
+      }),
+    );
+
+    expect(response.status).toBe(200);
+    await expect(response.json()).resolves.toEqual({
+      ok: true,
+      input: "Explain why this happened",
+      classification: {
+        intent: "explain",
+        confidence: 0.72,
+        needsClarification: false,
+      },
     });
   });
 
@@ -39,7 +62,7 @@ describe("worker", () => {
   });
 
   it("exposes the same behavior through the worker fetch entrypoint", async () => {
-    const response = await worker.fetch(new Request("http://example.com/api/health"));
+    const response = await worker.fetch(new Request("http://example.com/api/health"), {});
 
     expect(response.status).toBe(200);
     await expect(response.json()).resolves.toMatchObject({ ok: true });

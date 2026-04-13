@@ -1,18 +1,20 @@
 import { createAppContext } from "./app/context";
 import { exampleRoutes } from "./app-routes";
+import { handleIntentCommandRequest } from "./api/app-command";
 import { handleHealthRequest, handleHomePageRequest } from "./api/app-query";
+import { resolveModelProvider } from "./infra/llm";
 import { renderNotFoundPage } from "./views/not-found";
 import { cssResponse, htmlResponse } from "./views/shared";
 
 export default {
-  async fetch(request: Request): Promise<Response> {
-    return await handleRequest(request);
+  async fetch(request: Request, env: Env): Promise<Response> {
+    return await handleRequest(request, env);
   },
 };
 
-export async function handleRequest(request: Request): Promise<Response> {
+export async function handleRequest(request: Request, env: Env = {}): Promise<Response> {
   const url = new URL(request.url);
-  const context = createAppContext(exampleRoutes);
+  const context = createAppContext(exampleRoutes, resolveModelProvider(env));
 
   if (url.pathname === "/styles.css") {
     return cssResponse(await loadStylesheet());
@@ -24,6 +26,10 @@ export async function handleRequest(request: Request): Promise<Response> {
 
   if (url.pathname === "/api/health") {
     return await handleHealthRequest(context);
+  }
+
+  if (url.pathname === "/api/intent" && request.method === "POST") {
+    return await handleIntentCommandRequest(request, context);
   }
 
   return htmlResponse(renderNotFoundPage(url.pathname), 404);

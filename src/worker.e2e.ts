@@ -28,7 +28,26 @@ test("serves the health endpoint", async ({ request }) => {
   await expect(response.json()).resolves.toEqual({
     ok: true,
     name: "vibe-template-worker",
-    routes: ["/", "/api/health"],
+    routes: ["/", "/api/health", "/api/intent"],
+  });
+});
+
+test("classifies intent through the command endpoint without a model provider", async ({ request }) => {
+  const response = await request.post("/api/intent", {
+    data: {
+      input: "Create a new note",
+    },
+  });
+
+  expect(response.ok()).toBe(true);
+  await expect(response.json()).resolves.toEqual({
+    ok: true,
+    input: "Create a new note",
+    classification: {
+      intent: "create",
+      confidence: 0.66,
+      needsClarification: false,
+    },
   });
 });
 
