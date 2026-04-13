@@ -172,6 +172,7 @@ src/
   views/
     home.ts
     not-found.ts
+    render-page.ts
   worker.ts
 ```
 

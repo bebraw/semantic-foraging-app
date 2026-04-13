@@ -27,6 +27,9 @@ export async function renderScreen(context: AppContext, message: RenderHomeScree
             "Replace this stub with your real feature work, update the relevant spec, and keep the quality gate passing as the app evolves.",
           healthPath: "/api/health",
           routes: context.routes,
+          meta: {
+            traceId: context.trace.id,
+          },
         },
       };
   }

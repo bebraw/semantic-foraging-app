@@ -1,5 +1,9 @@
 import type { AppRoute } from "../../app-routes";
 
+export type ScreenMeta = {
+  traceId: string;
+};
+
 export type HomeScreenModel = {
   kind: "home";
   eyebrow: string;
@@ -12,6 +16,7 @@ export type HomeScreenModel = {
   nextStepsBody: string;
   healthPath: string;
   routes: AppRoute[];
+  meta: ScreenMeta;
 };
 
 export type ScreenModel = HomeScreenModel;

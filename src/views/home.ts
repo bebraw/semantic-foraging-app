@@ -1,5 +1,6 @@
 import type { HomeScreenModel } from "../domain/contracts/screen";
 import { escapeHtml } from "./shared";
+import { renderPage } from "./render-page";
 
 export function renderHomePage(screen: HomeScreenModel): string {
   const routeList = screen.routes
@@ -12,16 +13,10 @@ export function renderHomePage(screen: HomeScreenModel): string {
     )
     .join("");
 
-  return `<!doctype html>
-<html lang="en">
-  <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>${escapeHtml(screen.title)}</title>
-    <link rel="stylesheet" href="/styles.css">
-  </head>
-  <body class="min-h-screen bg-app-canvas text-app-text antialiased">
-    <main class="mx-auto w-[min(56rem,calc(100vw-2rem))] px-0 py-16">
+  return renderPage({
+    title: screen.title,
+    traceId: screen.meta.traceId,
+    body: `<main class="mx-auto w-[min(56rem,calc(100vw-2rem))] px-0 py-16">
       <article class="overflow-hidden rounded-[1.5rem] border border-app-line/80 bg-app-surface/95 shadow-panel backdrop-blur">
         <section class="border-b border-app-line/80 px-5 py-10 sm:px-8">
           <p class="mb-3 text-xs font-semibold uppercase tracking-[0.24em] text-app-accent">${escapeHtml(screen.eyebrow)}</p>
@@ -44,7 +39,6 @@ export function renderHomePage(screen: HomeScreenModel): string {
           </section>
         </div>
       </article>
-    </main>
-  </body>
-</html>`;
+    </main>`,
+  });
 }

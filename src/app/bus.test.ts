@@ -17,6 +17,9 @@ describe("createAppBus", () => {
         title: "vibe-template Worker",
         healthPath: "/api/health",
         routes: exampleRoutes,
+        meta: {
+          traceId: expect.any(String),
+        },
       }),
     });
   });

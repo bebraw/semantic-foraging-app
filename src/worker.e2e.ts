@@ -6,6 +6,7 @@ test("renders the worker home page", async ({ page }) => {
   await expect(page.getByRole("heading", { level: 1, name: "vibe-template Worker" })).toBeVisible();
   await expect(page.getByText("A minimal Cloudflare Worker baseline for experiments, tests, and local CI.")).toBeVisible();
   await expect(page.getByRole("link", { name: "/api/health" })).toBeVisible();
+  await expect(page.getByText("Trace ID:")).toBeVisible();
 });
 
 test("remains usable when no model provider is configured", async ({ page, request }) => {

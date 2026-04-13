@@ -18,10 +18,15 @@ describe("renderHomePage", () => {
         "Replace this stub with your real feature work, update the relevant spec, and keep the quality gate passing as the app evolves.",
       healthPath: "/api/health",
       routes: exampleRoutes,
+      meta: {
+        traceId: "trace-home-test",
+      },
     });
 
     expect(html).toContain("HTML stub app for developers");
     expect(html).toContain("A concrete Worker entry point");
     expect(html).toContain('rel="stylesheet" href="/styles.css"');
+    expect(html).toContain("Trace ID:");
+    expect(html).toContain("trace-home-test");
   });
 });

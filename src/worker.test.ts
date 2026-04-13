@@ -14,6 +14,7 @@ describe("worker", () => {
     const body = await response.text();
     expect(body).toContain("vibe-template Worker");
     expect(body).toContain("/api/health");
+    expect(body).toContain("Trace ID:");
   });
 
   it("returns a JSON health response", async () => {
