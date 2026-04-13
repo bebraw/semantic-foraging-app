@@ -11,4 +11,10 @@ export type SubmitUserIntentMessage = {
   rawInput: string;
 };
 
-export type AppMessage = RenderHomeScreenMessage | RunHealthCheckMessage | SubmitUserIntentMessage;
+export type RequestExplanationMessage = {
+  type: "RequestExplanation";
+  title: string;
+  facts: string[];
+};
+
+export type AppMessage = RenderHomeScreenMessage | RunHealthCheckMessage | SubmitUserIntentMessage | RequestExplanationMessage;

@@ -24,7 +24,7 @@ describe("worker", () => {
     await expect(response.json()).resolves.toEqual({
       ok: true,
       name: "vibe-template-worker",
-      routes: ["/", "/api/health", "/api/intent"],
+      routes: ["/", "/api/health", "/api/intent", "/api/explanation"],
     });
   });
 
@@ -48,6 +48,29 @@ describe("worker", () => {
         confidence: 0.72,
         needsClarification: false,
       },
+    });
+  });
+
+  it("accepts explanation queries through the worker route", async () => {
+    const response = await handleRequest(
+      new Request("http://example.com/api/explanation", {
+        method: "POST",
+        body: JSON.stringify({
+          title: "Search result selected",
+          facts: ["The query matched the title", "The result has a recent timestamp"],
+        }),
+        headers: {
+          "content-type": "application/json",
+        },
+      }),
+    );
+
+    expect(response.status).toBe(200);
+    await expect(response.json()).resolves.toEqual({
+      ok: true,
+      title: "Search result selected",
+      facts: ["The query matched the title", "The result has a recent timestamp"],
+      explanation: "Search result selected. This result is based on the available structured information in the application.",
     });
   });
 

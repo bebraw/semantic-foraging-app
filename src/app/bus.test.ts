@@ -30,7 +30,7 @@ describe("createAppBus", () => {
       payload: {
         ok: true,
         name: "vibe-template-worker",
-        routes: ["/", "/api/health", "/api/intent"],
+        routes: ["/", "/api/health", "/api/intent", "/api/explanation"],
       },
     });
   });
@@ -52,6 +52,25 @@ describe("createAppBus", () => {
           confidence: 0.66,
           needsClarification: false,
         },
+      },
+    });
+  });
+
+  it("returns a deterministic explanation result for query messages without a model provider", async () => {
+    const bus = createAppBus(createAppContext(exampleRoutes));
+
+    const result = await bus.dispatch({
+      type: "RequestExplanation",
+      title: "Search result selected",
+      facts: ["The query matched the title", "The result has a recent timestamp"],
+    });
+
+    expect(result).toEqual({
+      kind: "explanation",
+      payload: {
+        title: "Search result selected",
+        facts: ["The query matched the title", "The result has a recent timestamp"],
+        explanation: "Search result selected. This result is based on the available structured information in the application.",
       },
     });
   });

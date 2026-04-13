@@ -28,7 +28,7 @@ test("serves the health endpoint", async ({ request }) => {
   await expect(response.json()).resolves.toEqual({
     ok: true,
     name: "vibe-template-worker",
-    routes: ["/", "/api/health", "/api/intent"],
+    routes: ["/", "/api/health", "/api/intent", "/api/explanation"],
   });
 });
 
@@ -48,6 +48,23 @@ test("classifies intent through the command endpoint without a model provider", 
       confidence: 0.66,
       needsClarification: false,
     },
+  });
+});
+
+test("returns grounded explanation text through the query endpoint without a model provider", async ({ request }) => {
+  const response = await request.post("/api/explanation", {
+    data: {
+      title: "Search result selected",
+      facts: ["The query matched the title", "The result has a recent timestamp"],
+    },
+  });
+
+  expect(response.ok()).toBe(true);
+  await expect(response.json()).resolves.toEqual({
+    ok: true,
+    title: "Search result selected",
+    facts: ["The query matched the title", "The result has a recent timestamp"],
+    explanation: "Search result selected. This result is based on the available structured information in the application.",
   });
 });
 

@@ -43,6 +43,7 @@ Local development in this repo targets macOS. Other platforms may need script an
 - `GET /styles.css` serves the generated Tailwind stylesheet.
 - `GET /api/health` serves a JSON health response for smoke tests and tooling.
 - `POST /api/intent` classifies a request into a bounded set of supported intents.
+- `POST /api/explanation` returns grounded explanation text from a bounded query payload.
 
 ## Source Layout
 

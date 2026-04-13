@@ -20,4 +20,13 @@ export type IntentResult = {
   };
 };
 
-export type AppResult = ScreenResult | HealthCheckResult | IntentResult;
+export type ExplanationResult = {
+  kind: "explanation";
+  payload: {
+    title: string;
+    facts: string[];
+    explanation: string;
+  };
+};
+
+export type AppResult = ScreenResult | HealthCheckResult | IntentResult | ExplanationResult;
