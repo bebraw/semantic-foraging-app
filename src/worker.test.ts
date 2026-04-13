@@ -27,7 +27,32 @@ describe("worker", () => {
     await expect(response.json()).resolves.toEqual({
       ok: true,
       name: "vibe-template-worker",
-      routes: ["/", "/api/health", "/api/intent", "/api/intent/clarify", "/api/explanation"],
+      routes: ["/", "/api/health", "/api/app/query", "/api/intent", "/api/intent/clarify", "/api/explanation"],
+    });
+  });
+
+  it("returns the typed home screen through the app query route", async () => {
+    const response = await handleRequest(
+      new Request("http://example.com/api/app/query", {
+        method: "POST",
+        body: JSON.stringify({ screen: "home" }),
+        headers: {
+          "content-type": "application/json",
+        },
+      }),
+    );
+
+    expect(response.status).toBe(200);
+    expect(response.headers.get("x-trace-id")).toBeTruthy();
+    await expect(response.json()).resolves.toEqual({
+      ok: true,
+      screen: expect.objectContaining({
+        kind: "home",
+        title: "vibe-template Worker",
+        meta: {
+          traceId: expect.any(String),
+        },
+      }),
     });
   });
 

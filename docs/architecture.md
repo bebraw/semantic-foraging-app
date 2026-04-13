@@ -23,6 +23,7 @@ The repo now implements the first application-layer slice from this document:
 
 - `src/worker.ts` still owns top-level HTTP routing.
 - `GET /` and `GET /api/health` now translate into typed app messages and dispatch through `src/app/bus.ts`.
+- `POST /api/app/query` now returns typed screen models through the same app-layer query flow.
 - `POST /api/intent` now translates into a typed app command and dispatches through `src/app/bus.ts`.
 - `POST /api/intent/clarify` now continues a bounded clarification workflow through `src/app/bus.ts`.
 - `POST /api/explanation` now translates into a typed app query and dispatches through `src/app/bus.ts`.
@@ -201,6 +202,7 @@ Current implemented messages:
 - `RunHealthCheck`
 - `SubmitUserIntent`
 - `ClarifyUserIntent`
+- `RequestExplanation`
 - `RequestExplanation`
 
 ### 3. App bus dispatches the message

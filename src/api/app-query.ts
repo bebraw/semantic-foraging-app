@@ -9,6 +9,10 @@ const ExplanationQuerySchema = z.object({
   facts: z.array(z.string().trim().min(1)).min(1),
 });
 
+const AppQuerySchema = z.object({
+  screen: z.literal("home"),
+});
+
 export async function handleHomePageRequest(context: AppContext): Promise<Response> {
   const result = await createAppBus(context).dispatch({ type: "RenderHomeScreen" });
 
@@ -17,6 +21,32 @@ export async function handleHomePageRequest(context: AppContext): Promise<Respon
   }
 
   return htmlResponse(renderHomePage(result.screen));
+}
+
+export async function handleAppQueryRequest(request: Request, context: AppContext): Promise<Response> {
+  const body = await request.json().catch(() => null);
+  const parsed = AppQuerySchema.safeParse(body);
+
+  if (!parsed.success) {
+    return Response.json(
+      {
+        ok: false,
+        error: 'Request body must be JSON with screen: "home".',
+      },
+      { status: 400 },
+    );
+  }
+
+  const result = await createAppBus(context).dispatch({ type: "RenderHomeScreen" });
+
+  if (result.kind !== "screen") {
+    throw new Error("Expected a screen result");
+  }
+
+  return Response.json({
+    ok: true,
+    screen: result.screen,
+  });
 }
 
 export async function handleHealthRequest(context: AppContext): Promise<Response> {

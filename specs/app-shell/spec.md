@@ -18,6 +18,6 @@ The app must not require an end-user API key for normal operation.
 1. `GET /` must resolve through a typed application query that returns a screen model before HTML is rendered.
 2. `GET /api/health` must resolve through a typed application query that returns the stable health payload before JSON is returned.
 3. The app shell must preserve deterministic output in no-model mode.
-4. The app shell may expose command-style JSON endpoints, but route handlers must still translate them into typed app messages before app logic runs.
+4. The app shell may expose command-style or query-style JSON endpoints, but route handlers must still translate them into typed app messages before app logic runs.
 5. App-shell responses must include stable request-trace headers for debugging.
 6. The home screen model and shared page renderer may expose the active request trace ID in developer-facing HTML.

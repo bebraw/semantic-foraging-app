@@ -1,7 +1,7 @@
 import { createAppContext } from "./app/context";
 import { exampleRoutes } from "./app-routes";
 import { handleIntentClarificationRequest, handleIntentCommandRequest } from "./api/app-command";
-import { handleExplanationQueryRequest, handleHealthRequest, handleHomePageRequest } from "./api/app-query";
+import { handleAppQueryRequest, handleExplanationQueryRequest, handleHealthRequest, handleHomePageRequest } from "./api/app-query";
 import { resolveModelProvider } from "./infra/llm";
 import { consoleLogger, logTraceSummary, silentLogger } from "./infra/observability/logger";
 import { attachTraceHeaders, createRequestTrace } from "./infra/observability/trace";
@@ -32,6 +32,11 @@ export async function handleRequest(request: Request, env: Env = {}): Promise<Re
 
   if (url.pathname === "/api/health") {
     response = await handleHealthRequest(context);
+    return finalizeResponse(response, trace);
+  }
+
+  if (url.pathname === "/api/app/query" && request.method === "POST") {
+    response = await handleAppQueryRequest(request, context);
     return finalizeResponse(response, trace);
   }
 

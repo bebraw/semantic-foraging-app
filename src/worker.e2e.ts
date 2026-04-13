@@ -31,7 +31,25 @@ test("serves the health endpoint", async ({ request }) => {
   await expect(response.json()).resolves.toEqual({
     ok: true,
     name: "vibe-template-worker",
-    routes: ["/", "/api/health", "/api/intent", "/api/intent/clarify", "/api/explanation"],
+    routes: ["/", "/api/health", "/api/app/query", "/api/intent", "/api/intent/clarify", "/api/explanation"],
+  });
+});
+
+test("returns the typed home screen through the app query endpoint", async ({ request }) => {
+  const response = await request.post("/api/app/query", {
+    data: {
+      screen: "home",
+    },
+  });
+
+  expect(response.ok()).toBe(true);
+  expect(response.headers()["x-trace-id"]).toBeTruthy();
+  await expect(response.json()).resolves.toEqual({
+    ok: true,
+    screen: expect.objectContaining({
+      kind: "home",
+      title: "vibe-template Worker",
+    }),
   });
 });
 
