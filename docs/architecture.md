@@ -17,6 +17,24 @@ The architecture must fit these constraints:
 - strict quality gates
 - no required external LLM API key for core functionality
 
+## Current Status
+
+The repo now implements the first application-layer slice from this document:
+
+- `src/worker.ts` still owns top-level HTTP routing.
+- `GET /` and `GET /api/health` now translate into typed app messages and dispatch through `src/app/bus.ts`.
+- `src/app/use-cases/` now handles route-level queries for the home screen and health payload.
+- `src/domain/contracts/` now defines typed screen and result models for those query flows.
+- `src/views/home.ts` now renders from a typed `HomeScreenModel` instead of route-local primitives.
+- `src/infra/llm/` already provides a typed model-provider boundary with deterministic fallback behavior.
+
+The repo does not yet implement the full architecture described below. In particular:
+
+- there is no `app-command.ts` path yet
+- there are no workflow-state modules yet
+- there is no storage or observability layer yet
+- the model layer is currently Cloudflare-native, not a local inference adapter stack
+
 ---
 
 ## Design Principles
@@ -53,7 +71,7 @@ The core idea is:
 
 ---
 
-## Proposed Folder Layout
+## Target Folder Layout
 
 ```txt
 src/
@@ -110,6 +128,39 @@ src/
   worker.ts
 ```
 
+Current implemented subset:
+
+```txt
+src/
+  api/
+    app-query.ts
+    health.ts
+  app/
+    bus.ts
+    context.ts
+    message.ts
+    use-cases/
+      render-screen.ts
+      run-health-check.ts
+  domain/
+    agents/
+      intent-agent.ts
+    contracts/
+      result.ts
+      screen.ts
+  infra/
+    llm/
+      provider.ts
+      providers/
+        cloudflare-workers-ai.ts
+        cloudflare-ai-gateway.ts
+      runtime-capability.ts
+  views/
+    home.ts
+    not-found.ts
+  worker.ts
+```
+
 This extends the existing `src/api`, `src/views`, and `src/worker.ts` structure instead of replacing it.
 
 ---
@@ -129,6 +180,11 @@ Examples:
 - `RequestExplanation`
 - `RunHealthCheck`
 
+Current implemented messages:
+
+- `RenderHomeScreen`
+- `RunHealthCheck`
+
 ### 3. App bus dispatches the message
 
 The bus invokes one or more narrow agents.
@@ -142,6 +198,11 @@ Outputs may include:
 - a follow-up question
 - a request to call the model adapter
 - an explanation or classification
+
+Current implemented outputs:
+
+- a typed `HomeScreenModel`
+- a stable health payload
 
 ### 5. View renderer turns screen model into HTML
 
@@ -168,6 +229,11 @@ Guidelines:
 - no autonomous loops
 - one request should produce a bounded chain of work
 - message types should be explicit TypeScript unions
+
+Current implementation note:
+
+- the bus currently handles route-level query messages only
+- command handling and multi-step dispatch are not implemented yet
 
 Example message categories:
 
@@ -298,11 +364,11 @@ Rules:
 
 ## Inference Deployment Options
 
-Use one of these modes.
+Target end-state options. The current repo implementation only ships the Cloudflare-native provider boundary in `src/infra/llm/`.
 
 ### Mode A – local inference server outside Cloudflare
 
-Recommended for local([developers.cloudflare.com](https://developers.cloudflare.com/workers-ai/?utm_source=chatgpt.com))chine, then have the app call it over HTTP during local development or self-hosted deployment.
+Run a local inference server on the development machine, then have the app call it over HTTP during local development or self-hosted deployment.
 
 Examples:
 

@@ -46,7 +46,9 @@ Local development in this repo targets macOS. Other platforms may need script an
 ## Source Layout
 
 - `src/worker.ts` is the Worker entry point and top-level router.
+- `src/app/` holds typed application messages, the app bus, and route-level use cases.
 - `src/api/` holds API response modules such as the health endpoint.
+- `src/domain/contracts/` holds typed app output models such as screens and result payloads.
 - `src/views/` holds HTML rendering modules for the starter UI.
 - Tests live next to the code they exercise under `src/`.
 

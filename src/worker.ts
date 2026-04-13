@@ -1,6 +1,6 @@
-import { createHealthResponse } from "./api/health";
+import { createAppContext } from "./app/context";
 import { exampleRoutes } from "./app-routes";
-import { renderHomePage } from "./views/home";
+import { handleHealthRequest, handleHomePageRequest } from "./api/app-query";
 import { renderNotFoundPage } from "./views/not-found";
 import { cssResponse, htmlResponse } from "./views/shared";
 
@@ -12,17 +12,18 @@ export default {
 
 export async function handleRequest(request: Request): Promise<Response> {
   const url = new URL(request.url);
+  const context = createAppContext(exampleRoutes);
 
   if (url.pathname === "/styles.css") {
     return cssResponse(await loadStylesheet());
   }
 
   if (url.pathname === "/") {
-    return htmlResponse(renderHomePage(exampleRoutes));
+    return await handleHomePageRequest(context);
   }
 
   if (url.pathname === "/api/health") {
-    return createHealthResponse(exampleRoutes.map((route) => route.path));
+    return await handleHealthRequest(context);
   }
 
   return htmlResponse(renderNotFoundPage(url.pathname), 404);
