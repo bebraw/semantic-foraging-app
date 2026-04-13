@@ -69,6 +69,12 @@ test("classifies intent through the command endpoint without a model provider", 
       confidence: 0.66,
       needsClarification: false,
     },
+    confidenceBand: "medium",
+    provenance: {
+      source: "deterministic-fallback",
+      provider: null,
+      reason: "model-inference-failed",
+    },
     workflow: {
       name: "intent-classification",
       state: "completed",
@@ -93,6 +99,12 @@ test("continues an intent workflow through the clarification endpoint without a 
       confidence: 0.61,
       needsClarification: false,
     },
+    confidenceBand: "medium",
+    provenance: {
+      source: "deterministic-fallback",
+      provider: null,
+      reason: "model-inference-failed",
+    },
     workflow: {
       name: "intent-classification",
       state: "completed",
@@ -114,6 +126,11 @@ test("returns grounded explanation text through the query endpoint without a mod
     title: "Search result selected",
     facts: ["The query matched the title", "The result has a recent timestamp"],
     explanation: "Search result selected. This result is based on the available structured information in the application.",
+    provenance: {
+      source: "deterministic-fallback",
+      provider: null,
+      reason: "model-inference-failed",
+    },
   });
 });
 

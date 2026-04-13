@@ -25,6 +25,12 @@ describe("handleIntentCommandRequest", () => {
         confidence: 0.72,
         needsClarification: false,
       },
+      confidenceBand: "medium",
+      provenance: {
+        source: "deterministic-fallback",
+        provider: null,
+        reason: "no-model-provider",
+      },
       workflow: {
         name: "intent-classification",
         state: "completed",
@@ -52,6 +58,12 @@ describe("handleIntentCommandRequest", () => {
         intent: "clarify",
         confidence: 0.31,
         needsClarification: true,
+      },
+      confidenceBand: "low",
+      provenance: {
+        source: "deterministic-fallback",
+        provider: null,
+        reason: "no-model-provider",
       },
       workflow: {
         name: "intent-classification",
@@ -106,6 +118,12 @@ describe("handleIntentClarificationRequest", () => {
         intent: "search",
         confidence: 0.61,
         needsClarification: false,
+      },
+      confidenceBand: "medium",
+      provenance: {
+        source: "deterministic-fallback",
+        provider: null,
+        reason: "no-model-provider",
       },
       workflow: {
         name: "intent-classification",

@@ -71,12 +71,20 @@ function createIntentResponse(payload: {
     confidence: number;
     needsClarification: boolean;
   };
+  confidenceBand: string;
+  provenance: {
+    source: string;
+    provider: string | null;
+    reason: string;
+  };
   workflow: { name: string; state: string; question?: string; options?: string[] };
 }): Response {
   return Response.json({
     ok: true,
     input: payload.input,
     classification: payload.classification,
+    confidenceBand: payload.confidenceBand,
+    provenance: payload.provenance,
     workflow: payload.workflow,
   });
 }

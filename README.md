@@ -47,6 +47,7 @@ Local development in this repo targets macOS. Other platforms may need script an
 - `POST /api/intent/clarify` continues the bounded clarification workflow for ambiguous intent input.
 - `POST /api/explanation` returns grounded explanation text from a bounded query payload.
 - App responses include lightweight `x-trace-id` and `x-trace-events` headers for debugging request flow.
+- Intent and explanation responses also report whether the final output came from deterministic fallback logic or model-backed inference.
 
 ## Source Layout
 

@@ -30,6 +30,7 @@ The repo now implements the first application-layer slice from this document:
 - `src/app/use-cases/` now handles route-level queries plus bounded command and workflow flows.
 - `src/domain/agents/intent-workflow.ts` now defines the first serializable workflow-state contract and deterministic transition helper.
 - `src/infra/observability/trace.ts` now creates per-request traces and wraps model-provider calls with traced operations.
+- intent and explanation outputs now expose explicit provenance metadata for model-backed versus deterministic paths.
 - `src/domain/contracts/` now defines typed screen and result models for those query flows.
 - `src/views/home.ts` now renders from a typed `HomeScreenModel` instead of route-local primitives.
 - `src/infra/llm/` already provides a typed model-provider boundary with deterministic fallback behavior.

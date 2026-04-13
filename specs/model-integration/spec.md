@@ -86,6 +86,13 @@ The provider must expose capabilities so the app can decide whether to:
 Route handlers must not call Cloudflare AI APIs directly.
 All model access must flow through `src/infra/llm/`.
 
+### FR-7 Provenance reporting
+
+Model-assisted results must expose whether the final output came from:
+
+- model-backed inference
+- deterministic fallback behavior
+
 ## User stories
 
 ### US-1 Intent assistance

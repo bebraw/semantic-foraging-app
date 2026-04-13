@@ -17,6 +17,10 @@ The app exposes small JSON command endpoints for classifying a user request into
   - `classification.intent`
   - `classification.confidence`
   - `classification.needsClarification`
+  - `confidenceBand`
+  - `provenance.source`
+  - `provenance.provider`
+  - `provenance.reason`
   - `workflow.name`
   - `workflow.state`
 - successful responses also include stable request-trace headers
@@ -34,6 +38,7 @@ The app exposes small JSON command endpoints for classifying a user request into
 - The app bus must dispatch that command through a bounded use case.
 - Intent classification must use the shared model-provider boundary when available.
 - If no model provider is configured or inference fails, the route must still return deterministic classification output.
+- Responses must expose whether classification came from deterministic fallback logic or model-backed inference.
 - Ambiguous input must return an explicit workflow state instead of an implicit retry expectation.
 - The clarification route must continue the same bounded workflow using the original input plus the follow-up clarification text.
 

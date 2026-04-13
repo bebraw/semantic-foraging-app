@@ -20,9 +20,14 @@ describe("explainDecision", () => {
   };
 
   it("returns deterministic copy when no provider is configured", async () => {
-    await expect(explainDecision(null, input)).resolves.toBe(
-      "Search result selected. This result is based on the available structured information in the application.",
-    );
+    await expect(explainDecision(null, input)).resolves.toEqual({
+      explanation: "Search result selected. This result is based on the available structured information in the application.",
+      provenance: {
+        source: "deterministic-fallback",
+        provider: null,
+        reason: "no-model-provider",
+      },
+    });
   });
 
   it("returns model output when inference succeeds", async () => {
@@ -30,7 +35,14 @@ describe("explainDecision", () => {
       completeText: vi.fn().mockResolvedValue("The title and recency best match the request."),
     });
 
-    await expect(explainDecision(provider, input)).resolves.toBe("The title and recency best match the request.");
+    await expect(explainDecision(provider, input)).resolves.toEqual({
+      explanation: "The title and recency best match the request.",
+      provenance: {
+        source: "model",
+        provider: "test-provider",
+        reason: "structured-inference",
+      },
+    });
   });
 
   it("falls back to deterministic copy when inference throws", async () => {
@@ -38,8 +50,13 @@ describe("explainDecision", () => {
       completeText: vi.fn().mockRejectedValue(new Error("model unavailable")),
     });
 
-    await expect(explainDecision(provider, input)).resolves.toBe(
-      "Search result selected. This result is based on the available structured information in the application.",
-    );
+    await expect(explainDecision(provider, input)).resolves.toEqual({
+      explanation: "Search result selected. This result is based on the available structured information in the application.",
+      provenance: {
+        source: "deterministic-fallback",
+        provider: null,
+        reason: "model-inference-failed",
+      },
+    });
   });
 });

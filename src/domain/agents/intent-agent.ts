@@ -1,5 +1,7 @@
 import { z } from "zod";
 import type { ModelProvider } from "../../infra/llm/provider";
+import { describeConfidence, type ConfidenceBand } from "../policies/confidence";
+import { deterministicProvenance, modelProvenance, type Provenance } from "../policies/provenance";
 
 const IntentSchema = z.object({
   intent: z.enum(["search", "create", "explain", "clarify"]),
@@ -9,9 +11,19 @@ const IntentSchema = z.object({
 
 export type ClassifiedIntent = z.infer<typeof IntentSchema>;
 
-export async function classifyIntent(provider: ModelProvider | null, rawInput: string): Promise<ClassifiedIntent> {
-  if (!provider || !(await provider.isAvailable())) {
-    return deterministicIntent(rawInput);
+export type IntentClassificationResult = {
+  classification: ClassifiedIntent;
+  confidenceBand: ConfidenceBand;
+  provenance: Provenance;
+};
+
+export async function classifyIntent(provider: ModelProvider | null, rawInput: string): Promise<IntentClassificationResult> {
+  if (!provider) {
+    return finalizeDeterministicIntent(rawInput, "no-model-provider");
+  }
+
+  if (!(await provider.isAvailable())) {
+    return finalizeDeterministicIntent(rawInput, "provider-unavailable");
   }
 
   try {
@@ -42,9 +54,15 @@ export async function classifyIntent(provider: ModelProvider | null, rawInput: s
       maxOutputTokens: 120,
     });
 
-    return IntentSchema.parse(result);
+    const classification = IntentSchema.parse(result);
+
+    return {
+      classification,
+      confidenceBand: describeConfidence(classification.confidence),
+      provenance: modelProvenance(provider.name),
+    };
   } catch {
-    return deterministicIntent(rawInput);
+    return finalizeDeterministicIntent(rawInput, "model-inference-failed");
   }
 }
 
@@ -68,4 +86,14 @@ function deterministicIntent(rawInput: string): ClassifiedIntent {
   }
 
   return { intent: "search", confidence: 0.55, needsClarification: false };
+}
+
+function finalizeDeterministicIntent(rawInput: string, reason: string): IntentClassificationResult {
+  const classification = deterministicIntent(rawInput);
+
+  return {
+    classification,
+    confidenceBand: describeConfidence(classification.confidence),
+    provenance: deterministicProvenance(reason),
+  };
 }

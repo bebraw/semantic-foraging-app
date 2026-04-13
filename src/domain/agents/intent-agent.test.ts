@@ -16,9 +16,17 @@ function createProvider(overrides: Partial<ModelProvider> = {}): ModelProvider {
 describe("classifyIntent", () => {
   it("uses deterministic explain fallback when no provider is configured", async () => {
     await expect(classifyIntent(null, "Explain why this happened")).resolves.toEqual({
-      intent: "explain",
-      confidence: 0.72,
-      needsClarification: false,
+      classification: {
+        intent: "explain",
+        confidence: 0.72,
+        needsClarification: false,
+      },
+      confidenceBand: "medium",
+      provenance: {
+        source: "deterministic-fallback",
+        provider: null,
+        reason: "no-model-provider",
+      },
     });
   });
 
@@ -28,9 +36,17 @@ describe("classifyIntent", () => {
     });
 
     await expect(classifyIntent(provider, "Create a new note")).resolves.toEqual({
-      intent: "create",
-      confidence: 0.66,
-      needsClarification: false,
+      classification: {
+        intent: "create",
+        confidence: 0.66,
+        needsClarification: false,
+      },
+      confidenceBand: "medium",
+      provenance: {
+        source: "deterministic-fallback",
+        provider: null,
+        reason: "model-inference-failed",
+      },
     });
   });
 
@@ -40,17 +56,33 @@ describe("classifyIntent", () => {
     });
 
     await expect(classifyIntent(provider, "Find similar items")).resolves.toEqual({
-      intent: "search",
-      confidence: 0.61,
-      needsClarification: false,
+      classification: {
+        intent: "search",
+        confidence: 0.61,
+        needsClarification: false,
+      },
+      confidenceBand: "medium",
+      provenance: {
+        source: "deterministic-fallback",
+        provider: null,
+        reason: "provider-unavailable",
+      },
     });
   });
 
   it("uses deterministic clarification fallback for ambiguous inputs", async () => {
     await expect(classifyIntent(null, "Help")).resolves.toEqual({
-      intent: "clarify",
-      confidence: 0.31,
-      needsClarification: true,
+      classification: {
+        intent: "clarify",
+        confidence: 0.31,
+        needsClarification: true,
+      },
+      confidenceBand: "low",
+      provenance: {
+        source: "deterministic-fallback",
+        provider: null,
+        reason: "no-model-provider",
+      },
     });
   });
 
@@ -64,9 +96,17 @@ describe("classifyIntent", () => {
     });
 
     await expect(classifyIntent(provider, "I need help")).resolves.toEqual({
-      intent: "clarify",
-      confidence: 0.87,
-      needsClarification: true,
+      classification: {
+        intent: "clarify",
+        confidence: 0.87,
+        needsClarification: true,
+      },
+      confidenceBand: "high",
+      provenance: {
+        source: "model",
+        provider: "test-provider",
+        reason: "structured-inference",
+      },
     });
   });
 });

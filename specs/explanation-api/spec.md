@@ -14,6 +14,9 @@ The app exposes a small JSON query endpoint for returning grounded explanation t
   - `title: string`
   - `facts: string[]`
   - `explanation: string`
+  - `provenance.source`
+  - `provenance.provider`
+  - `provenance.reason`
 - successful responses also include stable request-trace headers
 - invalid request bodies return:
   - HTTP `400`
@@ -27,6 +30,7 @@ The app exposes a small JSON query endpoint for returning grounded explanation t
 - Explanation generation must use the shared model-provider boundary when available.
 - If no model provider is configured or inference fails, the route must still return deterministic explanation text.
 - Explanation text must be grounded only in the submitted structured inputs.
+- Responses must expose whether the explanation came from deterministic fallback logic or a model-backed path.
 
 ## Regression Guardrails
 

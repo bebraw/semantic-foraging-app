@@ -1,5 +1,7 @@
 import type { HealthPayload } from "../../api/health";
 import type { ClassifiedIntent } from "../agents/intent-agent";
+import type { ConfidenceBand } from "../policies/confidence";
+import type { Provenance } from "../policies/provenance";
 import type { ScreenModel } from "./screen";
 import type { IntentWorkflow } from "./workflow";
 
@@ -18,6 +20,8 @@ export type IntentResult = {
   payload: {
     input: string;
     classification: ClassifiedIntent;
+    confidenceBand: ConfidenceBand;
+    provenance: Provenance;
     workflow: IntentWorkflow;
   };
 };
@@ -28,6 +32,7 @@ export type ExplanationResult = {
     title: string;
     facts: string[];
     explanation: string;
+    provenance: Provenance;
   };
 };
 

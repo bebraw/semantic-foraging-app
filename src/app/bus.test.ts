@@ -56,6 +56,12 @@ describe("createAppBus", () => {
           confidence: 0.66,
           needsClarification: false,
         },
+        confidenceBand: "medium",
+        provenance: {
+          source: "deterministic-fallback",
+          provider: null,
+          reason: "no-model-provider",
+        },
         workflow: {
           name: "intent-classification",
           state: "completed",
@@ -80,6 +86,12 @@ describe("createAppBus", () => {
           intent: "clarify",
           confidence: 0.31,
           needsClarification: true,
+        },
+        confidenceBand: "low",
+        provenance: {
+          source: "deterministic-fallback",
+          provider: null,
+          reason: "no-model-provider",
         },
         workflow: {
           name: "intent-classification",
@@ -109,6 +121,12 @@ describe("createAppBus", () => {
           confidence: 0.61,
           needsClarification: false,
         },
+        confidenceBand: "medium",
+        provenance: {
+          source: "deterministic-fallback",
+          provider: null,
+          reason: "no-model-provider",
+        },
         workflow: {
           name: "intent-classification",
           state: "completed",
@@ -132,6 +150,11 @@ describe("createAppBus", () => {
         title: "Search result selected",
         facts: ["The query matched the title", "The result has a recent timestamp"],
         explanation: "Search result selected. This result is based on the available structured information in the application.",
+        provenance: {
+          source: "deterministic-fallback",
+          provider: null,
+          reason: "no-model-provider",
+        },
       },
     });
   });

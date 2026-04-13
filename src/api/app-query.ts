@@ -88,5 +88,6 @@ export async function handleExplanationQueryRequest(request: Request, context: A
     title: result.payload.title,
     facts: result.payload.facts,
     explanation: result.payload.explanation,
+    provenance: result.payload.provenance,
   });
 }
