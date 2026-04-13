@@ -31,7 +31,38 @@ test("serves the health endpoint", async ({ request }) => {
   await expect(response.json()).resolves.toEqual({
     ok: true,
     name: "vibe-template-worker",
-    routes: ["/", "/api/health", "/api/app/query", "/api/intent", "/api/intent/clarify", "/api/explanation"],
+    routes: ["/", "/api/health", "/api/app/command", "/api/app/query", "/api/intent", "/api/intent/clarify", "/api/explanation"],
+  });
+});
+
+test("dispatches typed commands through the generic app-command endpoint", async ({ request }) => {
+  const response = await request.post("/api/app/command", {
+    data: {
+      type: "SubmitUserIntent",
+      input: "Create a new note",
+    },
+  });
+
+  expect(response.ok()).toBe(true);
+  expect(response.headers()["x-trace-id"]).toBeTruthy();
+  await expect(response.json()).resolves.toEqual({
+    ok: true,
+    input: "Create a new note",
+    classification: {
+      intent: "create",
+      confidence: 0.66,
+      needsClarification: false,
+    },
+    confidenceBand: "medium",
+    provenance: {
+      source: "deterministic-fallback",
+      provider: null,
+      reason: "model-inference-failed",
+    },
+    workflow: {
+      name: "intent-classification",
+      state: "completed",
+    },
   });
 });
 

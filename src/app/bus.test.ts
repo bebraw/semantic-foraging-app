@@ -34,7 +34,7 @@ describe("createAppBus", () => {
       payload: {
         ok: true,
         name: "vibe-template-worker",
-        routes: ["/", "/api/health", "/api/app/query", "/api/intent", "/api/intent/clarify", "/api/explanation"],
+        routes: ["/", "/api/health", "/api/app/command", "/api/app/query", "/api/intent", "/api/intent/clarify", "/api/explanation"],
       },
     });
   });

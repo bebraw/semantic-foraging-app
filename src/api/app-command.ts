@@ -12,6 +12,18 @@ const IntentClarificationSchema = z.object({
   clarification: z.string().trim().min(1),
 });
 
+const AppCommandSchema = z.discriminatedUnion("type", [
+  z.object({
+    type: z.literal("SubmitUserIntent"),
+    input: z.string().trim().min(1),
+  }),
+  z.object({
+    type: z.literal("ClarifyUserIntent"),
+    workflowId: z.string().trim().min(1),
+    clarification: z.string().trim().min(1),
+  }),
+]);
+
 export async function handleIntentCommandRequest(request: Request, context: AppContext): Promise<Response> {
   const body = await request.json().catch(() => null);
   const parsed = IntentCommandSchema.safeParse(body);
@@ -38,6 +50,43 @@ export async function handleIntentCommandRequest(request: Request, context: AppC
   return createIntentResponse(result.payload);
 }
 
+export async function handleAppCommandRequest(request: Request, context: AppContext): Promise<Response> {
+  const body = await request.json().catch(() => null);
+  const parsed = AppCommandSchema.safeParse(body);
+
+  if (!parsed.success) {
+    return Response.json(
+      {
+        ok: false,
+        error:
+          'Request body must be JSON with type "SubmitUserIntent" plus input, or type "ClarifyUserIntent" plus workflowId and clarification.',
+      },
+      { status: 400 },
+    );
+  }
+
+  if (parsed.data.type === "SubmitUserIntent") {
+    return createIntentResponseFromDispatch(
+      context,
+      {
+        type: "SubmitUserIntent",
+        rawInput: parsed.data.input,
+      },
+      false,
+    );
+  }
+
+  return createIntentResponseFromDispatch(
+    context,
+    {
+      type: "ClarifyUserIntent",
+      workflowId: parsed.data.workflowId,
+      clarification: parsed.data.clarification,
+    },
+    true,
+  );
+}
+
 export async function handleIntentClarificationRequest(request: Request, context: AppContext): Promise<Response> {
   const body = await request.json().catch(() => null);
   const parsed = IntentClarificationSchema.safeParse(body);
@@ -52,35 +101,15 @@ export async function handleIntentClarificationRequest(request: Request, context
     );
   }
 
-  const result = await createAppBus(context)
-    .dispatch({
+  return createIntentResponseFromDispatch(
+    context,
+    {
       type: "ClarifyUserIntent",
       workflowId: parsed.data.workflowId,
       clarification: parsed.data.clarification,
-    })
-    .catch((error: unknown) => {
-      if (error instanceof IntentWorkflowNotFoundError) {
-        return null;
-      }
-
-      throw error;
-    });
-
-  if (result === null) {
-    return Response.json(
-      {
-        ok: false,
-        error: "Workflow state was not found for the provided workflowId.",
-      },
-      { status: 404 },
-    );
-  }
-
-  if (result.kind !== "intent") {
-    throw new Error("Expected an intent result");
-  }
-
-  return createIntentResponse(result.payload);
+    },
+    true,
+  );
 }
 
 function createIntentResponse(payload: {
@@ -106,4 +135,45 @@ function createIntentResponse(payload: {
     provenance: payload.provenance,
     workflow: payload.workflow,
   });
+}
+
+async function createIntentResponseFromDispatch(
+  context: AppContext,
+  message:
+    | {
+        type: "SubmitUserIntent";
+        rawInput: string;
+      }
+    | {
+        type: "ClarifyUserIntent";
+        workflowId: string;
+        clarification: string;
+      },
+  allowMissingWorkflow: boolean,
+): Promise<Response> {
+  const result = await createAppBus(context)
+    .dispatch(message)
+    .catch((error: unknown) => {
+      if (allowMissingWorkflow && error instanceof IntentWorkflowNotFoundError) {
+        return null;
+      }
+
+      throw error;
+    });
+
+  if (result === null) {
+    return Response.json(
+      {
+        ok: false,
+        error: "Workflow state was not found for the provided workflowId.",
+      },
+      { status: 404 },
+    );
+  }
+
+  if (result.kind !== "intent") {
+    throw new Error("Expected an intent result");
+  }
+
+  return createIntentResponse(result.payload);
 }

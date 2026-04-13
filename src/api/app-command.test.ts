@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { exampleRoutes } from "../app-routes";
 import { createAppContext } from "../app/context";
-import { handleIntentClarificationRequest, handleIntentCommandRequest } from "./app-command";
+import { handleAppCommandRequest, handleIntentClarificationRequest, handleIntentCommandRequest } from "./app-command";
 
 describe("handleIntentCommandRequest", () => {
   it("returns a deterministic intent classification when no model provider is configured", async () => {
@@ -91,6 +91,116 @@ describe("handleIntentCommandRequest", () => {
     await expect(response.json()).resolves.toEqual({
       ok: false,
       error: "Request body must be JSON with a non-empty input string.",
+    });
+  });
+});
+
+describe("handleAppCommandRequest", () => {
+  it("dispatches typed submit commands through the generic app-command endpoint", async () => {
+    const response = await handleAppCommandRequest(
+      new Request("http://example.com/api/app/command", {
+        method: "POST",
+        body: JSON.stringify({
+          type: "SubmitUserIntent",
+          input: "Explain why this happened",
+        }),
+        headers: {
+          "content-type": "application/json",
+        },
+      }),
+      createAppContext(exampleRoutes),
+    );
+
+    expect(response.status).toBe(200);
+    await expect(response.json()).resolves.toEqual({
+      ok: true,
+      input: "Explain why this happened",
+      classification: {
+        intent: "explain",
+        confidence: 0.72,
+        needsClarification: false,
+      },
+      confidenceBand: "medium",
+      provenance: {
+        source: "deterministic-fallback",
+        provider: null,
+        reason: "no-model-provider",
+      },
+      workflow: {
+        name: "intent-classification",
+        state: "completed",
+      },
+    });
+  });
+
+  it("dispatches typed clarification commands through the generic app-command endpoint", async () => {
+    const context = createAppContext(exampleRoutes);
+    const initialResponse = await handleIntentCommandRequest(
+      new Request("http://example.com/api/intent", {
+        method: "POST",
+        body: JSON.stringify({ input: "Help" }),
+        headers: {
+          "content-type": "application/json",
+        },
+      }),
+      context,
+    );
+    const initialPayload = await initialResponse.json();
+
+    const response = await handleAppCommandRequest(
+      new Request("http://example.com/api/app/command", {
+        method: "POST",
+        body: JSON.stringify({
+          type: "ClarifyUserIntent",
+          workflowId: initialPayload.workflow.workflowId,
+          clarification: "Search for similar notes",
+        }),
+        headers: {
+          "content-type": "application/json",
+        },
+      }),
+      context,
+    );
+
+    expect(response.status).toBe(200);
+    await expect(response.json()).resolves.toEqual({
+      ok: true,
+      input: "Help",
+      classification: {
+        intent: "search",
+        confidence: 0.61,
+        needsClarification: false,
+      },
+      confidenceBand: "medium",
+      provenance: {
+        source: "deterministic-fallback",
+        provider: null,
+        reason: "no-model-provider",
+      },
+      workflow: {
+        name: "intent-classification",
+        state: "completed",
+      },
+    });
+  });
+
+  it("rejects invalid generic app-command request bodies", async () => {
+    const response = await handleAppCommandRequest(
+      new Request("http://example.com/api/app/command", {
+        method: "POST",
+        body: JSON.stringify({ type: "UnknownCommand" }),
+        headers: {
+          "content-type": "application/json",
+        },
+      }),
+      createAppContext(exampleRoutes),
+    );
+
+    expect(response.status).toBe(400);
+    await expect(response.json()).resolves.toEqual({
+      ok: false,
+      error:
+        'Request body must be JSON with type "SubmitUserIntent" plus input, or type "ClarifyUserIntent" plus workflowId and clarification.',
     });
   });
 });

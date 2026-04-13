@@ -27,7 +27,44 @@ describe("worker", () => {
     await expect(response.json()).resolves.toEqual({
       ok: true,
       name: "vibe-template-worker",
-      routes: ["/", "/api/health", "/api/app/query", "/api/intent", "/api/intent/clarify", "/api/explanation"],
+      routes: ["/", "/api/health", "/api/app/command", "/api/app/query", "/api/intent", "/api/intent/clarify", "/api/explanation"],
+    });
+  });
+
+  it("dispatches typed commands through the generic app-command route", async () => {
+    const response = await handleRequest(
+      new Request("http://example.com/api/app/command", {
+        method: "POST",
+        body: JSON.stringify({
+          type: "SubmitUserIntent",
+          input: "Explain why this happened",
+        }),
+        headers: {
+          "content-type": "application/json",
+        },
+      }),
+    );
+
+    expect(response.status).toBe(200);
+    expect(response.headers.get("x-trace-id")).toBeTruthy();
+    await expect(response.json()).resolves.toEqual({
+      ok: true,
+      input: "Explain why this happened",
+      classification: {
+        intent: "explain",
+        confidence: 0.72,
+        needsClarification: false,
+      },
+      confidenceBand: "medium",
+      provenance: {
+        source: "deterministic-fallback",
+        provider: null,
+        reason: "no-model-provider",
+      },
+      workflow: {
+        name: "intent-classification",
+        state: "completed",
+      },
     });
   });
 
