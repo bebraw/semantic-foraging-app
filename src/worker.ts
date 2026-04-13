@@ -37,3 +37,17 @@ async function loadStylesheet(): Promise<string> {
   const styles = await import("../.generated/styles.css");
   return styles.default;
 }
+
+export interface Env {
+  AI?: {
+    run(model: string, input: Record<string, unknown>): Promise<unknown>;
+  };
+
+  WORKERS_AI_MODEL?: string;
+
+  AI_GATEWAY_ACCOUNT_ID?: string;
+  AI_GATEWAY_ID?: string;
+  AI_GATEWAY_TOKEN?: string;
+  AI_GATEWAY_PROVIDER_PATH?: string;
+  AI_GATEWAY_MODEL?: string;
+}

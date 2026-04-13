@@ -53,3 +53,33 @@ Local development in this repo targets macOS. Other platforms may need script an
 ## Application Screenshot
 
 ![Starter app screenshot](docs/screenshots/home.png)
+
+## Model setup
+
+This app supports Cloudflare-native model execution.
+
+### Default path: Workers AI
+
+1. Add a Workers AI binding in Wrangler
+2. Set `WORKERS_AI_MODEL`
+3. Use the built-in provider resolver
+
+### Optional path: AI Gateway
+
+Use AI Gateway in front of Workers AI when you want:
+- analytics
+- centralized logging
+- retries
+- caching
+- routing or future fallback controls
+
+Set:
+- `AI_GATEWAY_ACCOUNT_ID`
+- `AI_GATEWAY_ID`
+- `AI_GATEWAY_TOKEN`
+- `AI_GATEWAY_PROVIDER_PATH`
+- `AI_GATEWAY_MODEL`
+
+### Failure behavior
+
+If no model provider is configured or inference fails, the application falls back to deterministic logic.
