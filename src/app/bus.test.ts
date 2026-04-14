@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { exampleRoutes } from "../app-routes";
 import { createRequestTrace } from "../infra/observability/trace";
 import { createAppBus } from "./bus";
@@ -104,6 +104,29 @@ describe("createAppBus", () => {
     });
   });
 
+  it("returns a typed storage error when workflow state cannot be stored", async () => {
+    const bus = createAppBus(
+      createAppContext(exampleRoutes, null, createRequestTrace("unknown"), {
+        saveIntentWorkflow: vi.fn().mockRejectedValue(new Error("storage unavailable")),
+        getIntentWorkflow: vi.fn(),
+      }),
+    );
+
+    const result = await bus.dispatch({
+      type: "SubmitUserIntent",
+      rawInput: "Help",
+    });
+
+    expect(result).toEqual({
+      kind: "error",
+      error: {
+        category: "storage_failure",
+        message: "Workflow state could not be stored.",
+        status: 503,
+      },
+    });
+  });
+
   it("resolves a clarification follow-up through the workflow continuation message", async () => {
     const context = createAppContext(exampleRoutes);
     const bus = createAppBus(context);
@@ -161,6 +184,30 @@ describe("createAppBus", () => {
         category: "unsupported_workflow_transition",
         message: "Workflow state was not found for the provided workflowId.",
         status: 404,
+      },
+    });
+  });
+
+  it("returns a typed storage error when workflow state cannot be loaded", async () => {
+    const bus = createAppBus(
+      createAppContext(exampleRoutes, null, createRequestTrace("unknown"), {
+        saveIntentWorkflow: vi.fn(),
+        getIntentWorkflow: vi.fn().mockRejectedValue(new Error("storage unavailable")),
+      }),
+    );
+
+    const result = await bus.dispatch({
+      type: "ClarifyUserIntent",
+      workflowId: "workflow-123",
+      clarification: "Search for similar notes",
+    });
+
+    expect(result).toEqual({
+      kind: "error",
+      error: {
+        category: "storage_failure",
+        message: "Workflow state could not be loaded.",
+        status: 503,
       },
     });
   });

@@ -33,6 +33,7 @@ The first concrete workflow is intent clarification:
 - The clarification continuation must load the original input from stored workflow state before incorporating the follow-up clarification text.
 - Unsupported or invalid workflow inputs must fail with stable validation errors rather than partial state mutation.
 - Missing workflow state must return the typed `unsupported_workflow_transition` error category rather than a generic route-local failure.
+- Workflow repository read or write failures must return the typed `storage_failure` error category rather than escaping the workflow boundary.
 
 ## Regression Guardrails
 

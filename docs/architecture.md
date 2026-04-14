@@ -34,6 +34,7 @@ The repo now implements the first application-layer slice from this document:
 - intent and explanation outputs now expose explicit provenance metadata for model-backed versus deterministic paths.
 - `src/domain/contracts/` now defines typed screen and result models for those query flows.
 - typed app error results now carry explicit categories that HTTP adapters translate into stable JSON error payloads.
+- workflow repository misses and storage failures now map to typed app error categories instead of route-local exception handling.
 - `src/views/home.ts` now renders from a typed `HomeScreenModel` instead of route-local primitives.
 - `src/infra/llm/` already provides a typed model-provider boundary with deterministic fallback behavior.
 

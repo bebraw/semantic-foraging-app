@@ -38,6 +38,11 @@ The app exposes small JSON command endpoints for classifying a user request into
   - `ok: false`
   - `category: "unsupported_workflow_transition"`
   - a stable workflow-transition error message
+- workflow repository read or write failures return:
+  - HTTP `503`
+  - `ok: false`
+  - `category: "storage_failure"`
+  - a stable storage error message
 
 ## Runtime Behavior
 

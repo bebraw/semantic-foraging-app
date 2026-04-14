@@ -8,7 +8,19 @@ export async function continueIntentWorkflow(
   context: AppContext,
   message: ClarifyUserIntentMessage,
 ): Promise<IntentResult | AppErrorResult> {
-  const storedWorkflow = await context.workflowRepository.getIntentWorkflow(message.workflowId);
+  let storedWorkflow;
+
+  try {
+    storedWorkflow = await context.workflowRepository.getIntentWorkflow(message.workflowId);
+  } catch {
+    context.trace.addEvent({
+      module: "app.use-cases.continue-intent-workflow",
+      messageType: message.type,
+      notes: [`workflow-id:${message.workflowId}`, "storage:get-failed"],
+    });
+
+    return createAppErrorResult("storage_failure", "Workflow state could not be loaded.", 503);
+  }
 
   if (!storedWorkflow) {
     return createAppErrorResult("unsupported_workflow_transition", "Workflow state was not found for the provided workflowId.", 404);

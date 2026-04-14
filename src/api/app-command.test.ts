@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { exampleRoutes } from "../app-routes";
 import { createAppContext } from "../app/context";
 import { handleAppCommandRequest, handleIntentClarificationRequest, handleIntentCommandRequest } from "./app-command";
@@ -72,6 +72,29 @@ describe("handleIntentCommandRequest", () => {
         question: 'What do you want to do with "Help": search, create, or explain?',
         options: ["search", "create", "explain"],
       },
+    });
+  });
+
+  it("returns a typed storage error when workflow state cannot be stored", async () => {
+    const response = await handleIntentCommandRequest(
+      new Request("http://example.com/api/intent", {
+        method: "POST",
+        body: JSON.stringify({ input: "Help" }),
+        headers: {
+          "content-type": "application/json",
+        },
+      }),
+      createAppContext(exampleRoutes, null, undefined, {
+        saveIntentWorkflow: vi.fn().mockRejectedValue(new Error("storage unavailable")),
+        getIntentWorkflow: vi.fn(),
+      }),
+    );
+
+    expect(response.status).toBe(503);
+    await expect(response.json()).resolves.toEqual({
+      ok: false,
+      category: "storage_failure",
+      error: "Workflow state could not be stored.",
     });
   });
 
@@ -295,6 +318,29 @@ describe("handleIntentClarificationRequest", () => {
       ok: false,
       category: "unsupported_workflow_transition",
       error: "Workflow state was not found for the provided workflowId.",
+    });
+  });
+
+  it("returns a typed storage error when workflow state cannot be loaded", async () => {
+    const response = await handleIntentClarificationRequest(
+      new Request("http://example.com/api/intent/clarify", {
+        method: "POST",
+        body: JSON.stringify({ workflowId: "workflow-123", clarification: "Search for similar notes" }),
+        headers: {
+          "content-type": "application/json",
+        },
+      }),
+      createAppContext(exampleRoutes, null, undefined, {
+        saveIntentWorkflow: vi.fn(),
+        getIntentWorkflow: vi.fn().mockRejectedValue(new Error("storage unavailable")),
+      }),
+    );
+
+    expect(response.status).toBe(503);
+    await expect(response.json()).resolves.toEqual({
+      ok: false,
+      category: "storage_failure",
+      error: "Workflow state could not be loaded.",
     });
   });
 });

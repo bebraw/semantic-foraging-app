@@ -1,15 +1,25 @@
 import { classifyIntent } from "../../domain/agents/intent-agent";
 import { createIntentWorkflow, createStoredIntentWorkflow } from "../../domain/agents/intent-workflow";
-import type { IntentResult } from "../../domain/contracts/result";
+import { createAppErrorResult, type AppErrorResult, type IntentResult } from "../../domain/contracts/result";
 import type { AppContext } from "../context";
 import type { SubmitUserIntentMessage } from "../message";
 
-export async function handleUserIntent(context: AppContext, message: SubmitUserIntentMessage): Promise<IntentResult> {
+export async function handleUserIntent(context: AppContext, message: SubmitUserIntentMessage): Promise<IntentResult | AppErrorResult> {
   const result = await classifyIntent(context.modelProvider, message.rawInput);
   const workflow = createIntentWorkflow(message.rawInput, result.classification);
 
   if (workflow.state === "awaiting_clarification") {
-    await context.workflowRepository.saveIntentWorkflow(createStoredIntentWorkflow(message.rawInput, workflow));
+    try {
+      await context.workflowRepository.saveIntentWorkflow(createStoredIntentWorkflow(message.rawInput, workflow));
+    } catch {
+      context.trace.addEvent({
+        module: "app.use-cases.handle-user-intent",
+        messageType: message.type,
+        notes: [`workflow-id:${workflow.workflowId}`, "workflow:awaiting_clarification", "storage:save-failed"],
+      });
+
+      return createAppErrorResult("storage_failure", "Workflow state could not be stored.", 503);
+    }
   }
 
   context.trace.addEvent({
