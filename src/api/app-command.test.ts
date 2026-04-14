@@ -90,6 +90,7 @@ describe("handleIntentCommandRequest", () => {
     expect(response.status).toBe(400);
     await expect(response.json()).resolves.toEqual({
       ok: false,
+      category: "validation_error",
       error: "Request body must be JSON with a non-empty input string.",
     });
   });
@@ -199,6 +200,7 @@ describe("handleAppCommandRequest", () => {
     expect(response.status).toBe(400);
     await expect(response.json()).resolves.toEqual({
       ok: false,
+      category: "validation_error",
       error:
         'Request body must be JSON with type "SubmitUserIntent" plus input, or type "ClarifyUserIntent" plus workflowId and clarification.',
     });
@@ -271,6 +273,7 @@ describe("handleIntentClarificationRequest", () => {
     expect(response.status).toBe(400);
     await expect(response.json()).resolves.toEqual({
       ok: false,
+      category: "validation_error",
       error: "Request body must be JSON with non-empty workflowId and clarification strings.",
     });
   });
@@ -290,6 +293,7 @@ describe("handleIntentClarificationRequest", () => {
     expect(response.status).toBe(404);
     await expect(response.json()).resolves.toEqual({
       ok: false,
+      category: "unsupported_workflow_transition",
       error: "Workflow state was not found for the provided workflowId.",
     });
   });

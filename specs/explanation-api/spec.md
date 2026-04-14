@@ -21,6 +21,7 @@ The app exposes a small JSON query endpoint for returning grounded explanation t
 - invalid request bodies return:
   - HTTP `400`
   - `ok: false`
+  - `category: "validation_error"`
   - a stable validation error message
 
 ## Runtime Behavior

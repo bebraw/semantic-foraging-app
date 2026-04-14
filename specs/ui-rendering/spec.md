@@ -18,6 +18,7 @@ The app represents rendered UI as typed screen models between the app layer and 
 - invalid request bodies return:
   - HTTP `400`
   - `ok: false`
+  - `category: "validation_error"`
   - a stable validation error message
 
 ## Runtime Behavior

@@ -10,6 +10,23 @@ export type ScreenResult = {
   screen: ScreenModel;
 };
 
+export type AppErrorCategory =
+  | "validation_error"
+  | "unsupported_workflow_transition"
+  | "storage_failure"
+  | "model_timeout"
+  | "model_schema_failure"
+  | "rendering_failure";
+
+export type AppErrorResult = {
+  kind: "error";
+  error: {
+    category: AppErrorCategory;
+    message: string;
+    status: number;
+  };
+};
+
 export type HealthCheckResult = {
   kind: "health";
   payload: HealthPayload;
@@ -36,4 +53,15 @@ export type ExplanationResult = {
   };
 };
 
-export type AppResult = ScreenResult | HealthCheckResult | IntentResult | ExplanationResult;
+export type AppResult = ScreenResult | HealthCheckResult | IntentResult | ExplanationResult | AppErrorResult;
+
+export function createAppErrorResult(category: AppErrorCategory, message: string, status: number): AppErrorResult {
+  return {
+    kind: "error",
+    error: {
+      category,
+      message,
+      status,
+    },
+  };
+}

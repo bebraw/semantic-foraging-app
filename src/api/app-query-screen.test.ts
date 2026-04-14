@@ -45,6 +45,7 @@ describe("handleAppQueryRequest", () => {
     expect(response.status).toBe(400);
     await expect(response.json()).resolves.toEqual({
       ok: false,
+      category: "validation_error",
       error: 'Request body must be JSON with screen: "home".',
     });
   });

@@ -1,8 +1,10 @@
 import { createAppBus } from "../app/bus";
 import type { AppContext } from "../app/context";
+import { createAppErrorResult } from "../domain/contracts/result";
 import { renderHomePage } from "../views/home";
 import { htmlResponse } from "../views/shared";
 import { z } from "zod";
+import { createErrorResponse } from "./error-response";
 
 const ExplanationQuerySchema = z.object({
   title: z.string().trim().min(1),
@@ -28,13 +30,7 @@ export async function handleAppQueryRequest(request: Request, context: AppContex
   const parsed = AppQuerySchema.safeParse(body);
 
   if (!parsed.success) {
-    return Response.json(
-      {
-        ok: false,
-        error: 'Request body must be JSON with screen: "home".',
-      },
-      { status: 400 },
-    );
+    return createErrorResponse(createAppErrorResult("validation_error", 'Request body must be JSON with screen: "home".', 400));
   }
 
   const result = await createAppBus(context).dispatch({ type: "RenderHomeScreen" });
@@ -64,12 +60,8 @@ export async function handleExplanationQueryRequest(request: Request, context: A
   const parsed = ExplanationQuerySchema.safeParse(body);
 
   if (!parsed.success) {
-    return Response.json(
-      {
-        ok: false,
-        error: "Request body must be JSON with a non-empty title and at least one fact.",
-      },
-      { status: 400 },
+    return createErrorResponse(
+      createAppErrorResult("validation_error", "Request body must be JSON with a non-empty title and at least one fact.", 400),
     );
   }
 

@@ -1,20 +1,17 @@
 import { classifyIntent } from "../../domain/agents/intent-agent";
 import { createIntentWorkflow, mergeIntentClarification } from "../../domain/agents/intent-workflow";
-import type { IntentResult } from "../../domain/contracts/result";
+import { createAppErrorResult, type AppErrorResult, type IntentResult } from "../../domain/contracts/result";
 import type { AppContext } from "../context";
 import type { ClarifyUserIntentMessage } from "../message";
 
-export class IntentWorkflowNotFoundError extends Error {
-  constructor(workflowId: string) {
-    super(`Intent workflow not found: ${workflowId}`);
-  }
-}
-
-export async function continueIntentWorkflow(context: AppContext, message: ClarifyUserIntentMessage): Promise<IntentResult> {
+export async function continueIntentWorkflow(
+  context: AppContext,
+  message: ClarifyUserIntentMessage,
+): Promise<IntentResult | AppErrorResult> {
   const storedWorkflow = await context.workflowRepository.getIntentWorkflow(message.workflowId);
 
   if (!storedWorkflow) {
-    throw new IntentWorkflowNotFoundError(message.workflowId);
+    return createAppErrorResult("unsupported_workflow_transition", "Workflow state was not found for the provided workflowId.", 404);
   }
 
   const mergedInput = mergeIntentClarification(storedWorkflow.rawInput, message.clarification);

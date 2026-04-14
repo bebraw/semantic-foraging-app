@@ -146,6 +146,25 @@ describe("createAppBus", () => {
     });
   });
 
+  it("returns a typed error result when clarification workflow state is missing", async () => {
+    const bus = createAppBus(createAppContext(exampleRoutes));
+
+    const result = await bus.dispatch({
+      type: "ClarifyUserIntent",
+      workflowId: "missing",
+      clarification: "Search for similar notes",
+    });
+
+    expect(result).toEqual({
+      kind: "error",
+      error: {
+        category: "unsupported_workflow_transition",
+        message: "Workflow state was not found for the provided workflowId.",
+        status: 404,
+      },
+    });
+  });
+
   it("returns a deterministic explanation result for query messages without a model provider", async () => {
     const bus = createAppBus(createAppContext(exampleRoutes));
 

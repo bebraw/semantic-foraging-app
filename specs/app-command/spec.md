@@ -13,7 +13,13 @@ The app exposes a generic JSON command endpoint for submitting typed app command
 - invalid request bodies return:
   - HTTP `400`
   - `ok: false`
+  - `category: "validation_error"`
   - a stable validation error message
+- clarification requests with a missing `workflowId` return:
+  - HTTP `404`
+  - `ok: false`
+  - `category: "unsupported_workflow_transition"`
+  - a stable workflow-transition error message
 
 ## Runtime Behavior
 

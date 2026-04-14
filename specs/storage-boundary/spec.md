@@ -21,3 +21,4 @@ The app exposes a small repository boundary for workflow-state persistence so bo
 - The repository boundary must stay easy to swap for a more durable backend later.
 - Workflow state must remain serializable when written to the repository.
 - Missing workflow snapshots must fail with a stable API error instead of implicit fallback behavior.
+- Missing workflow snapshots must map to the typed `unsupported_workflow_transition` app error category.
