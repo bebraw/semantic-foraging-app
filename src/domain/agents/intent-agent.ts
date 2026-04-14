@@ -1,7 +1,7 @@
 import { z } from "zod";
 import type { ModelProvider } from "../../infra/llm/provider";
 import { describeConfidence, type ConfidenceBand } from "../policies/confidence";
-import { deterministicProvenance, modelProvenance, type Provenance } from "../policies/provenance";
+import { deterministicProvenance, modelProvenance, type DeterministicProvenanceReason, type Provenance } from "../policies/provenance";
 
 const IntentSchema = z.object({
   intent: z.enum(["search", "create", "explain", "clarify"]),
@@ -58,11 +58,15 @@ export async function classifyIntent(provider: ModelProvider | null, rawInput: s
       maxOutputTokens: 120,
     });
 
-    const classification = IntentSchema.parse(result);
+    const parsed = IntentSchema.safeParse(result);
+
+    if (!parsed.success) {
+      return finalizeDeterministicIntent(rawInput, "model-schema-failed");
+    }
 
     return {
-      classification,
-      confidenceBand: describeConfidence(classification.confidence),
+      classification: parsed.data,
+      confidenceBand: describeConfidence(parsed.data.confidence),
       provenance: modelProvenance(provider.name),
     };
   } catch {
@@ -92,7 +96,7 @@ function deterministicIntent(rawInput: string): ClassifiedIntent {
   return { intent: "search", confidence: 0.55, needsClarification: false };
 }
 
-function finalizeDeterministicIntent(rawInput: string, reason: string): IntentClassificationResult {
+function finalizeDeterministicIntent(rawInput: string, reason: DeterministicProvenanceReason): IntentClassificationResult {
   const classification = deterministicIntent(rawInput);
 
   return {

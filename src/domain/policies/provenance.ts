@@ -1,10 +1,20 @@
-export type Provenance = {
-  source: "deterministic-fallback" | "model";
-  provider: string | null;
-  reason: string;
-};
+export type DeterministicProvenanceReason = "no-model-provider" | "provider-unavailable" | "model-inference-failed" | "model-schema-failed";
 
-export function deterministicProvenance(reason: string): Provenance {
+export type ModelProvenanceReason = "structured-inference";
+
+export type Provenance =
+  | {
+      source: "deterministic-fallback";
+      provider: null;
+      reason: DeterministicProvenanceReason;
+    }
+  | {
+      source: "model";
+      provider: string;
+      reason: ModelProvenanceReason;
+    };
+
+export function deterministicProvenance(reason: DeterministicProvenanceReason): Provenance {
   return {
     source: "deterministic-fallback",
     provider: null,

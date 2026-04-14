@@ -9,6 +9,14 @@ describe("deterministicProvenance", () => {
       reason: "provider-unavailable",
     });
   });
+
+  it("supports a model schema failure fallback reason", () => {
+    expect(deterministicProvenance("model-schema-failed")).toEqual({
+      source: "deterministic-fallback",
+      provider: null,
+      reason: "model-schema-failed",
+    });
+  });
 });
 
 describe("modelProvenance", () => {

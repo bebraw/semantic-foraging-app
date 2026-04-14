@@ -72,6 +72,7 @@ If the model is unavailable, its availability check fails, or it returns invalid
 ### FR-4 Typed outputs
 
 All structured model outputs must be schema-validated before use.
+Schema validation failures must fall back deterministically instead of being treated as accepted model output.
 
 ### FR-5 Capability detection
 
@@ -92,6 +93,7 @@ Model-assisted results must expose whether the final output came from:
 
 - model-backed inference
 - deterministic fallback behavior
+- enough provenance detail to distinguish inference failures from schema-validation fallback
 
 ## User stories
 

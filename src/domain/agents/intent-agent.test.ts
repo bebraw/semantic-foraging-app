@@ -50,6 +50,30 @@ describe("classifyIntent", () => {
     });
   });
 
+  it("uses deterministic fallback when structured model output fails schema validation", async () => {
+    const provider = createProvider({
+      completeJson: vi.fn().mockResolvedValue({
+        intent: "search",
+        confidence: 2,
+        needsClarification: false,
+      }),
+    });
+
+    await expect(classifyIntent(provider, "Find similar items")).resolves.toEqual({
+      classification: {
+        intent: "search",
+        confidence: 0.61,
+        needsClarification: false,
+      },
+      confidenceBand: "medium",
+      provenance: {
+        source: "deterministic-fallback",
+        provider: null,
+        reason: "model-schema-failed",
+      },
+    });
+  });
+
   it("uses deterministic search fallback for other inputs", async () => {
     const provider = createProvider({
       isAvailable: vi.fn().mockResolvedValue(false),
