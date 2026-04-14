@@ -109,6 +109,7 @@ describe("createAppBus", () => {
       createAppContext(exampleRoutes, null, createRequestTrace("unknown"), {
         saveIntentWorkflow: vi.fn().mockRejectedValue(new Error("storage unavailable")),
         getIntentWorkflow: vi.fn(),
+        deleteIntentWorkflow: vi.fn(),
       }),
     );
 
@@ -193,6 +194,7 @@ describe("createAppBus", () => {
       createAppContext(exampleRoutes, null, createRequestTrace("unknown"), {
         saveIntentWorkflow: vi.fn(),
         getIntentWorkflow: vi.fn().mockRejectedValue(new Error("storage unavailable")),
+        deleteIntentWorkflow: vi.fn(),
       }),
     );
 
@@ -207,6 +209,79 @@ describe("createAppBus", () => {
       error: {
         category: "storage_failure",
         message: "Workflow state could not be loaded.",
+        status: 503,
+      },
+    });
+  });
+
+  it("consumes clarification workflow state after a successful continuation", async () => {
+    const context = createAppContext(exampleRoutes);
+    const bus = createAppBus(context);
+
+    const initial = await bus.dispatch({
+      type: "SubmitUserIntent",
+      rawInput: "Help",
+    });
+
+    if (initial.kind !== "intent" || initial.payload.workflow.state !== "awaiting_clarification") {
+      throw new Error("Expected an awaiting clarification workflow");
+    }
+
+    const first = await bus.dispatch({
+      type: "ClarifyUserIntent",
+      workflowId: initial.payload.workflow.workflowId,
+      clarification: "Search for similar notes",
+    });
+    const second = await bus.dispatch({
+      type: "ClarifyUserIntent",
+      workflowId: initial.payload.workflow.workflowId,
+      clarification: "Search for similar notes",
+    });
+
+    expect(first).toMatchObject({
+      kind: "intent",
+      payload: {
+        workflow: {
+          state: "completed",
+        },
+      },
+    });
+    expect(second).toEqual({
+      kind: "error",
+      error: {
+        category: "unsupported_workflow_transition",
+        message: "Workflow state was not found for the provided workflowId.",
+        status: 404,
+      },
+    });
+  });
+
+  it("returns a typed storage error when workflow state cannot be cleared", async () => {
+    const bus = createAppBus(
+      createAppContext(exampleRoutes, null, createRequestTrace("unknown"), {
+        saveIntentWorkflow: vi.fn(),
+        getIntentWorkflow: vi.fn().mockResolvedValue({
+          workflowId: "workflow-123",
+          rawInput: "Help",
+          state: "awaiting_clarification",
+          question: 'What do you want to do with "Help": search, create, or explain?',
+          options: ["search", "create", "explain"],
+        }),
+        deleteIntentWorkflow: vi.fn().mockRejectedValue(new Error("storage unavailable")),
+      }),
+    );
+
+    const result = await bus.dispatch({
+      type: "ClarifyUserIntent",
+      workflowId: "workflow-123",
+      clarification: "Search for similar notes",
+    });
+
+    expect(result).toEqual({
+      kind: "error",
+      error: {
+        category: "storage_failure",
+        message: "Workflow state could not be cleared.",
         status: 503,
       },
     });

@@ -26,6 +26,18 @@ export async function continueIntentWorkflow(
     return createAppErrorResult("unsupported_workflow_transition", "Workflow state was not found for the provided workflowId.", 404);
   }
 
+  try {
+    await context.workflowRepository.deleteIntentWorkflow(message.workflowId);
+  } catch {
+    context.trace.addEvent({
+      module: "app.use-cases.continue-intent-workflow",
+      messageType: message.type,
+      notes: [`workflow-id:${message.workflowId}`, "storage:delete-failed"],
+    });
+
+    return createAppErrorResult("storage_failure", "Workflow state could not be cleared.", 503);
+  }
+
   const mergedInput = mergeIntentClarification(storedWorkflow.rawInput, message.clarification);
   const result = await classifyIntent(context.modelProvider, mergedInput);
   const workflow = createIntentWorkflow(storedWorkflow.rawInput, result.classification);

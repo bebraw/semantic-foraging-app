@@ -11,4 +11,8 @@ export class InMemoryWorkflowRepository implements WorkflowRepository {
   async getIntentWorkflow(workflowId: string): Promise<StoredIntentWorkflow | null> {
     return this.intentWorkflows.get(workflowId) ?? null;
   }
+
+  async deleteIntentWorkflow(workflowId: string): Promise<void> {
+    this.intentWorkflows.delete(workflowId);
+  }
 }

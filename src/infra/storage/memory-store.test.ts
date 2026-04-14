@@ -27,4 +27,20 @@ describe("InMemoryWorkflowRepository", () => {
 
     await expect(repository.getIntentWorkflow("missing")).resolves.toBeNull();
   });
+
+  it("removes stored workflow snapshots", async () => {
+    const repository = new InMemoryWorkflowRepository();
+
+    await repository.saveIntentWorkflow({
+      workflowId: "workflow-123",
+      rawInput: "Help",
+      state: "awaiting_clarification",
+      question: 'What do you want to do with "Help": search, create, or explain?',
+      options: ["search", "create", "explain"],
+    });
+
+    await repository.deleteIntentWorkflow("workflow-123");
+
+    await expect(repository.getIntentWorkflow("workflow-123")).resolves.toBeNull();
+  });
 });

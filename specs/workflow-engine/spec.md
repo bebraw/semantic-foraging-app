@@ -31,6 +31,7 @@ The first concrete workflow is intent clarification:
 - Workflow transitions must remain deterministic and testable.
 - The model may assist with intent classification, but it must not bypass workflow state rules.
 - The clarification continuation must load the original input from stored workflow state before incorporating the follow-up clarification text.
+- The clarification continuation must consume the stored workflow snapshot so the same `workflowId` cannot be reused after success.
 - Unsupported or invalid workflow inputs must fail with stable validation errors rather than partial state mutation.
 - Missing workflow state must return the typed `unsupported_workflow_transition` error category rather than a generic route-local failure.
 - Workflow repository read or write failures must return the typed `storage_failure` error category rather than escaping the workflow boundary.

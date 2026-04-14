@@ -54,6 +54,7 @@ The app exposes small JSON command endpoints for classifying a user request into
 - Ambiguous input must return an explicit workflow state instead of an implicit retry expectation.
 - The clarification route must continue the same bounded workflow using the original input plus the follow-up clarification text.
 - The clarification route must reload the original input from stored workflow state keyed by `workflowId`.
+- The clarification route must consume successful workflow state so repeated reuse of the same `workflowId` returns the stable missing-workflow error.
 - Route handlers must translate typed app errors into the stable JSON error payload without inventing route-local categories.
 
 ## Supported Intents

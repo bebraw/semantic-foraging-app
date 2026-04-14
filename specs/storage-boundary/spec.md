@@ -23,3 +23,4 @@ The app exposes a small repository boundary for workflow-state persistence so bo
 - Missing workflow snapshots must fail with a stable API error instead of implicit fallback behavior.
 - Missing workflow snapshots must map to the typed `unsupported_workflow_transition` app error category.
 - Repository read or write failures must map to the typed `storage_failure` app error category instead of escaping as untyped exceptions.
+- Successful workflow continuation must clear consumed clarification snapshots from the repository.

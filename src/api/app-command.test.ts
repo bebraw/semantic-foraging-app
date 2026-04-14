@@ -87,6 +87,7 @@ describe("handleIntentCommandRequest", () => {
       createAppContext(exampleRoutes, null, undefined, {
         saveIntentWorkflow: vi.fn().mockRejectedValue(new Error("storage unavailable")),
         getIntentWorkflow: vi.fn(),
+        deleteIntentWorkflow: vi.fn(),
       }),
     );
 
@@ -281,6 +282,56 @@ describe("handleIntentClarificationRequest", () => {
     });
   });
 
+  it("consumes workflow state after a successful clarification", async () => {
+    const context = createAppContext(exampleRoutes);
+    const initialResponse = await handleIntentCommandRequest(
+      new Request("http://example.com/api/intent", {
+        method: "POST",
+        body: JSON.stringify({ input: "Help" }),
+        headers: {
+          "content-type": "application/json",
+        },
+      }),
+      context,
+    );
+    const initialPayload = await initialResponse.json();
+
+    const firstResponse = await handleIntentClarificationRequest(
+      new Request("http://example.com/api/intent/clarify", {
+        method: "POST",
+        body: JSON.stringify({
+          workflowId: initialPayload.workflow.workflowId,
+          clarification: "Search for similar notes",
+        }),
+        headers: {
+          "content-type": "application/json",
+        },
+      }),
+      context,
+    );
+    const secondResponse = await handleIntentClarificationRequest(
+      new Request("http://example.com/api/intent/clarify", {
+        method: "POST",
+        body: JSON.stringify({
+          workflowId: initialPayload.workflow.workflowId,
+          clarification: "Search for similar notes",
+        }),
+        headers: {
+          "content-type": "application/json",
+        },
+      }),
+      context,
+    );
+
+    expect(firstResponse.status).toBe(200);
+    expect(secondResponse.status).toBe(404);
+    await expect(secondResponse.json()).resolves.toEqual({
+      ok: false,
+      category: "unsupported_workflow_transition",
+      error: "Workflow state was not found for the provided workflowId.",
+    });
+  });
+
   it("rejects invalid clarification request bodies", async () => {
     const response = await handleIntentClarificationRequest(
       new Request("http://example.com/api/intent/clarify", {
@@ -333,6 +384,7 @@ describe("handleIntentClarificationRequest", () => {
       createAppContext(exampleRoutes, null, undefined, {
         saveIntentWorkflow: vi.fn(),
         getIntentWorkflow: vi.fn().mockRejectedValue(new Error("storage unavailable")),
+        deleteIntentWorkflow: vi.fn(),
       }),
     );
 
@@ -341,6 +393,36 @@ describe("handleIntentClarificationRequest", () => {
       ok: false,
       category: "storage_failure",
       error: "Workflow state could not be loaded.",
+    });
+  });
+
+  it("returns a typed storage error when workflow state cannot be cleared", async () => {
+    const response = await handleIntentClarificationRequest(
+      new Request("http://example.com/api/intent/clarify", {
+        method: "POST",
+        body: JSON.stringify({ workflowId: "workflow-123", clarification: "Search for similar notes" }),
+        headers: {
+          "content-type": "application/json",
+        },
+      }),
+      createAppContext(exampleRoutes, null, undefined, {
+        saveIntentWorkflow: vi.fn(),
+        getIntentWorkflow: vi.fn().mockResolvedValue({
+          workflowId: "workflow-123",
+          rawInput: "Help",
+          state: "awaiting_clarification",
+          question: 'What do you want to do with "Help": search, create, or explain?',
+          options: ["search", "create", "explain"],
+        }),
+        deleteIntentWorkflow: vi.fn().mockRejectedValue(new Error("storage unavailable")),
+      }),
+    );
+
+    expect(response.status).toBe(503);
+    await expect(response.json()).resolves.toEqual({
+      ok: false,
+      category: "storage_failure",
+      error: "Workflow state could not be cleared.",
     });
   });
 });
