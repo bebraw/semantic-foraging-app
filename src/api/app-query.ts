@@ -19,6 +19,9 @@ const ExplanationQuerySchema = z.object({
 
 const AppQuerySchema = z.discriminatedUnion("type", [
   z.object({
+    type: z.literal("RunHealthCheck"),
+  }),
+  z.object({
     type: z.literal("RenderHomeScreen"),
   }),
   AppExplanationQuerySchema,
@@ -42,10 +45,14 @@ export async function handleAppQueryRequest(request: Request, context: AppContex
     return createErrorResponse(
       createAppErrorResult(
         "validation_error",
-        'Request body must be JSON with type "RenderHomeScreen", or type "RequestExplanation" plus title and at least one fact.',
+        'Request body must be JSON with type "RunHealthCheck", type "RenderHomeScreen", or type "RequestExplanation" plus title and at least one fact.',
         400,
       ),
     );
+  }
+
+  if (parsed.data.type === "RunHealthCheck") {
+    return createHealthQueryResponse(context);
   }
 
   if (parsed.data.type === "RenderHomeScreen") {
@@ -63,6 +70,25 @@ export async function handleHealthRequest(context: AppContext): Promise<Response
   }
 
   return Response.json(result.payload);
+}
+
+async function createHealthQueryResponse(context: AppContext): Promise<Response> {
+  const result = await createAppBus(context).dispatch({ type: "RunHealthCheck" });
+
+  if (result.kind === "error") {
+    return createErrorResponse(result);
+  }
+
+  if (result.kind !== "health") {
+    throw new Error("Expected a health result");
+  }
+
+  return Response.json({
+    ok: true,
+    type: "RunHealthCheck",
+    name: result.payload.name,
+    routes: result.payload.routes,
+  });
 }
 
 export async function handleExplanationQueryRequest(request: Request, context: AppContext): Promise<Response> {

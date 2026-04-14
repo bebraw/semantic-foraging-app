@@ -85,6 +85,23 @@ test("returns the typed home screen through the app query endpoint", async ({ re
   });
 });
 
+test("returns the health payload through the generic app query endpoint", async ({ request }) => {
+  const response = await request.post("/api/app/query", {
+    data: {
+      type: "RunHealthCheck",
+    },
+  });
+
+  expect(response.ok()).toBe(true);
+  expect(response.headers()["x-trace-id"]).toBeTruthy();
+  await expect(response.json()).resolves.toEqual({
+    ok: true,
+    type: "RunHealthCheck",
+    name: "vibe-template-worker",
+    routes: ["/", "/api/health", "/api/app/command", "/api/app/query", "/api/intent", "/api/intent/clarify", "/api/explanation"],
+  });
+});
+
 test("returns explanation results through the generic app query endpoint", async ({ request }) => {
   const response = await request.post("/api/app/query", {
     data: {

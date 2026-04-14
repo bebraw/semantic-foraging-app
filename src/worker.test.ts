@@ -94,6 +94,27 @@ describe("worker", () => {
     });
   });
 
+  it("returns the health payload through the generic app query route", async () => {
+    const response = await handleRequest(
+      new Request("http://example.com/api/app/query", {
+        method: "POST",
+        body: JSON.stringify({ type: "RunHealthCheck" }),
+        headers: {
+          "content-type": "application/json",
+        },
+      }),
+    );
+
+    expect(response.status).toBe(200);
+    expect(response.headers.get("x-trace-id")).toBeTruthy();
+    await expect(response.json()).resolves.toEqual({
+      ok: true,
+      type: "RunHealthCheck",
+      name: "vibe-template-worker",
+      routes: ["/", "/api/health", "/api/app/command", "/api/app/query", "/api/intent", "/api/intent/clarify", "/api/explanation"],
+    });
+  });
+
   it("returns explanation results through the generic app query route", async () => {
     const response = await handleRequest(
       new Request("http://example.com/api/app/query", {

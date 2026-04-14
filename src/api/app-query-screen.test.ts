@@ -4,6 +4,27 @@ import { createAppContext } from "../app/context";
 import { handleAppQueryRequest } from "./app-query";
 
 describe("handleAppQueryRequest", () => {
+  it("returns the stable health payload through the generic app query route", async () => {
+    const response = await handleAppQueryRequest(
+      new Request("http://example.com/api/app/query", {
+        method: "POST",
+        body: JSON.stringify({ type: "RunHealthCheck" }),
+        headers: {
+          "content-type": "application/json",
+        },
+      }),
+      createAppContext(exampleRoutes),
+    );
+
+    expect(response.status).toBe(200);
+    await expect(response.json()).resolves.toEqual({
+      ok: true,
+      type: "RunHealthCheck",
+      name: "vibe-template-worker",
+      routes: ["/", "/api/health", "/api/app/command", "/api/app/query", "/api/intent", "/api/intent/clarify", "/api/explanation"],
+    });
+  });
+
   it("returns the typed home screen model", async () => {
     const response = await handleAppQueryRequest(
       new Request("http://example.com/api/app/query", {
@@ -78,7 +99,8 @@ describe("handleAppQueryRequest", () => {
     await expect(response.json()).resolves.toEqual({
       ok: false,
       category: "validation_error",
-      error: 'Request body must be JSON with type "RenderHomeScreen", or type "RequestExplanation" plus title and at least one fact.',
+      error:
+        'Request body must be JSON with type "RunHealthCheck", type "RenderHomeScreen", or type "RequestExplanation" plus title and at least one fact.',
     });
   });
 });

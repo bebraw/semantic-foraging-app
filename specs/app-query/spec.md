@@ -7,11 +7,15 @@ The app exposes a generic JSON query endpoint for dispatching typed app queries 
 ## Contract
 
 - `POST /api/app/query` accepts JSON in one of these shapes:
+  - `type: "RunHealthCheck"`
   - `type: "RenderHomeScreen"`
   - `type: "RequestExplanation"` with `title: string` and `facts: string[]`
 - successful responses return JSON with:
   - `ok: true`
   - `type`
+- `RunHealthCheck` responses additionally return:
+  - `name: string`
+  - `routes: string[]`
 - `RenderHomeScreen` responses additionally return:
   - `screen.kind`
   - `screen.title`
@@ -34,7 +38,7 @@ The app exposes a generic JSON query endpoint for dispatching typed app queries 
 
 - The generic query route must remain a thin adapter over typed app messages.
 - The route may reuse existing query use cases and response shaping helpers instead of duplicating business logic.
-- Narrow query routes such as `POST /api/explanation` may remain as compatibility adapters, but they must dispatch through the same app-layer query path.
+- Narrow query routes such as `GET /api/health` and `POST /api/explanation` may remain as compatibility adapters, but they must dispatch through the same app-layer query path.
 
 ## Regression Guardrails
 
