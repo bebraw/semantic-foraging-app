@@ -6,14 +6,23 @@ import { htmlResponse } from "../views/shared";
 import { z } from "zod";
 import { createErrorResponse } from "./error-response";
 
+const AppExplanationQuerySchema = z.object({
+  type: z.literal("RequestExplanation"),
+  title: z.string().trim().min(1),
+  facts: z.array(z.string().trim().min(1)).min(1),
+});
+
 const ExplanationQuerySchema = z.object({
   title: z.string().trim().min(1),
   facts: z.array(z.string().trim().min(1)).min(1),
 });
 
-const AppQuerySchema = z.object({
-  screen: z.literal("home"),
-});
+const AppQuerySchema = z.discriminatedUnion("type", [
+  z.object({
+    type: z.literal("RenderHomeScreen"),
+  }),
+  AppExplanationQuerySchema,
+]);
 
 export async function handleHomePageRequest(context: AppContext): Promise<Response> {
   const result = await createAppBus(context).dispatch({ type: "RenderHomeScreen" });
@@ -30,19 +39,20 @@ export async function handleAppQueryRequest(request: Request, context: AppContex
   const parsed = AppQuerySchema.safeParse(body);
 
   if (!parsed.success) {
-    return createErrorResponse(createAppErrorResult("validation_error", 'Request body must be JSON with screen: "home".', 400));
+    return createErrorResponse(
+      createAppErrorResult(
+        "validation_error",
+        'Request body must be JSON with type "RenderHomeScreen", or type "RequestExplanation" plus title and at least one fact.',
+        400,
+      ),
+    );
   }
 
-  const result = await createAppBus(context).dispatch({ type: "RenderHomeScreen" });
-
-  if (result.kind !== "screen") {
-    throw new Error("Expected a screen result");
+  if (parsed.data.type === "RenderHomeScreen") {
+    return createHomeScreenQueryResponse(context);
   }
 
-  return Response.json({
-    ok: true,
-    screen: result.screen,
-  });
+  return createExplanationQueryResponse(context, parsed.data.title, parsed.data.facts, true);
 }
 
 export async function handleHealthRequest(context: AppContext): Promise<Response> {
@@ -65,11 +75,37 @@ export async function handleExplanationQueryRequest(request: Request, context: A
     );
   }
 
+  return createExplanationQueryResponse(context, parsed.data.title, parsed.data.facts);
+}
+
+async function createHomeScreenQueryResponse(context: AppContext): Promise<Response> {
+  const result = await createAppBus(context).dispatch({ type: "RenderHomeScreen" });
+
+  if (result.kind === "error") {
+    return createErrorResponse(result);
+  }
+
+  if (result.kind !== "screen") {
+    throw new Error("Expected a screen result");
+  }
+
+  return Response.json({
+    ok: true,
+    type: "RenderHomeScreen",
+    screen: result.screen,
+  });
+}
+
+async function createExplanationQueryResponse(context: AppContext, title: string, facts: string[], includeType = false): Promise<Response> {
   const result = await createAppBus(context).dispatch({
     type: "RequestExplanation",
-    title: parsed.data.title,
-    facts: parsed.data.facts,
+    title,
+    facts,
   });
+
+  if (result.kind === "error") {
+    return createErrorResponse(result);
+  }
 
   if (result.kind !== "explanation") {
     throw new Error("Expected an explanation result");
@@ -77,6 +113,7 @@ export async function handleExplanationQueryRequest(request: Request, context: A
 
   return Response.json({
     ok: true,
+    ...(includeType ? { type: "RequestExplanation" } : {}),
     title: result.payload.title,
     facts: result.payload.facts,
     explanation: result.payload.explanation,

@@ -72,7 +72,7 @@ describe("worker", () => {
     const response = await handleRequest(
       new Request("http://example.com/api/app/query", {
         method: "POST",
-        body: JSON.stringify({ screen: "home" }),
+        body: JSON.stringify({ type: "RenderHomeScreen" }),
         headers: {
           "content-type": "application/json",
         },
@@ -83,6 +83,7 @@ describe("worker", () => {
     expect(response.headers.get("x-trace-id")).toBeTruthy();
     await expect(response.json()).resolves.toEqual({
       ok: true,
+      type: "RenderHomeScreen",
       screen: expect.objectContaining({
         kind: "home",
         title: "vibe-template Worker",
@@ -90,6 +91,37 @@ describe("worker", () => {
           traceId: expect.any(String),
         },
       }),
+    });
+  });
+
+  it("returns explanation results through the generic app query route", async () => {
+    const response = await handleRequest(
+      new Request("http://example.com/api/app/query", {
+        method: "POST",
+        body: JSON.stringify({
+          type: "RequestExplanation",
+          title: "Search result selected",
+          facts: ["The query matched the title", "The result has a recent timestamp"],
+        }),
+        headers: {
+          "content-type": "application/json",
+        },
+      }),
+    );
+
+    expect(response.status).toBe(200);
+    expect(response.headers.get("x-trace-id")).toBeTruthy();
+    await expect(response.json()).resolves.toEqual({
+      ok: true,
+      type: "RequestExplanation",
+      title: "Search result selected",
+      facts: ["The query matched the title", "The result has a recent timestamp"],
+      explanation: "Search result selected. This result is based on the available structured information in the application.",
+      provenance: {
+        source: "deterministic-fallback",
+        provider: null,
+        reason: "no-model-provider",
+      },
     });
   });
 

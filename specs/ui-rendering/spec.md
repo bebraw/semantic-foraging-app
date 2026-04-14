@@ -7,10 +7,10 @@ The app represents rendered UI as typed screen models between the app layer and 
 ## Contract
 
 - Screen models must remain typed application data rather than raw HTML.
-- `POST /api/app/query` accepts JSON with:
-  - `screen: "home"`
+- `POST /api/app/query` accepts `type: "RenderHomeScreen"` for the home-screen query shape
 - successful responses return JSON with:
   - `ok: true`
+  - `type: "RenderHomeScreen"`
   - `screen.kind`
   - `screen.title`
   - `screen.routes`

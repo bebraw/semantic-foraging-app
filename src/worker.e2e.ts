@@ -69,7 +69,7 @@ test("dispatches typed commands through the generic app-command endpoint", async
 test("returns the typed home screen through the app query endpoint", async ({ request }) => {
   const response = await request.post("/api/app/query", {
     data: {
-      screen: "home",
+      type: "RenderHomeScreen",
     },
   });
 
@@ -77,10 +77,36 @@ test("returns the typed home screen through the app query endpoint", async ({ re
   expect(response.headers()["x-trace-id"]).toBeTruthy();
   await expect(response.json()).resolves.toEqual({
     ok: true,
+    type: "RenderHomeScreen",
     screen: expect.objectContaining({
       kind: "home",
       title: "vibe-template Worker",
     }),
+  });
+});
+
+test("returns explanation results through the generic app query endpoint", async ({ request }) => {
+  const response = await request.post("/api/app/query", {
+    data: {
+      type: "RequestExplanation",
+      title: "Search result selected",
+      facts: ["The query matched the title", "The result has a recent timestamp"],
+    },
+  });
+
+  expect(response.ok()).toBe(true);
+  expect(response.headers()["x-trace-id"]).toBeTruthy();
+  await expect(response.json()).resolves.toEqual({
+    ok: true,
+    type: "RequestExplanation",
+    title: "Search result selected",
+    facts: ["The query matched the title", "The result has a recent timestamp"],
+    explanation: "Search result selected. This result is based on the available structured information in the application.",
+    provenance: {
+      source: "deterministic-fallback",
+      provider: null,
+      reason: "model-inference-failed",
+    },
   });
 });
 
