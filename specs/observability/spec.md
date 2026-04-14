@@ -17,7 +17,7 @@ The app captures lightweight per-request traces so message-oriented flows stay i
 ## Runtime Behavior
 
 - The app bus must record traced dispatch events for typed app messages.
-- Bounded use cases may add domain-specific trace notes such as intent, workflow state, or fact count.
+- Bounded use cases may add domain-specific trace notes such as intent, workflow state, fact count, and provenance reason.
 - Model provider calls must be wrapped so model availability checks and completions are traced without leaking provider-specific code into routes.
 - Trace logging must stay lightweight and avoid logging secrets or raw provider payloads.
 

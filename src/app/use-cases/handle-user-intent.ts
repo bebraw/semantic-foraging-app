@@ -30,6 +30,7 @@ export async function handleUserIntent(context: AppContext, message: SubmitUserI
       `confidence:${result.classification.confidence.toFixed(2)}`,
       `confidence-band:${result.confidenceBand}`,
       `provenance:${result.provenance.source}`,
+      `provenance-reason:${result.provenance.reason}`,
       ...(workflow.state === "awaiting_clarification" ? [`workflow-id:${workflow.workflowId}`] : []),
       `workflow:${workflow.state}`,
     ],

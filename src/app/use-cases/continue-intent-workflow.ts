@@ -39,6 +39,7 @@ export async function continueIntentWorkflow(
       `confidence:${result.classification.confidence.toFixed(2)}`,
       `confidence-band:${result.confidenceBand}`,
       `provenance:${result.provenance.source}`,
+      `provenance-reason:${result.provenance.reason}`,
       `workflow:${workflow.state}`,
     ],
   });

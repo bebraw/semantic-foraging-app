@@ -254,4 +254,45 @@ describe("createAppBus", () => {
       }),
     ]);
   });
+
+  it("records provenance reasons in intent trace notes", async () => {
+    const trace = createRequestTrace("/api/intent");
+    const bus = createAppBus(createAppContext(exampleRoutes, null, trace));
+
+    await bus.dispatch({
+      type: "SubmitUserIntent",
+      rawInput: "Create a new note",
+    });
+
+    expect(trace.events).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          module: "app.use-cases.handle-user-intent",
+          messageType: "SubmitUserIntent",
+          notes: expect.arrayContaining(["provenance:deterministic-fallback", "provenance-reason:no-model-provider"]),
+        }),
+      ]),
+    );
+  });
+
+  it("records provenance reasons in explanation trace notes", async () => {
+    const trace = createRequestTrace("/api/explanation");
+    const bus = createAppBus(createAppContext(exampleRoutes, null, trace));
+
+    await bus.dispatch({
+      type: "RequestExplanation",
+      title: "Search result selected",
+      facts: ["The query matched the title", "The result has a recent timestamp"],
+    });
+
+    expect(trace.events).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          module: "app.use-cases.request-explanation",
+          messageType: "RequestExplanation",
+          notes: expect.arrayContaining(["provenance:deterministic-fallback", "provenance-reason:no-model-provider"]),
+        }),
+      ]),
+    );
+  });
 });

@@ -12,7 +12,7 @@ export async function requestExplanation(context: AppContext, message: RequestEx
   context.trace.addEvent({
     module: "app.use-cases.request-explanation",
     messageType: message.type,
-    notes: [`facts:${message.facts.length}`, `provenance:${result.provenance.source}`],
+    notes: [`facts:${message.facts.length}`, `provenance:${result.provenance.source}`, `provenance-reason:${result.provenance.reason}`],
   });
 
   return {
