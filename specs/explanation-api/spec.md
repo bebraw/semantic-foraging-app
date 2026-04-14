@@ -29,7 +29,7 @@ The app exposes a small JSON query endpoint for returning grounded explanation t
 - The route must translate HTTP input into a typed app query.
 - The app bus must dispatch that query through a bounded use case.
 - Explanation generation must use the shared model-provider boundary when available.
-- If no model provider is configured or inference fails, the route must still return deterministic explanation text.
+- If no model provider is configured, availability checks fail, or inference fails, the route must still return deterministic explanation text.
 - Explanation text must be grounded only in the submitted structured inputs.
 - Responses must expose whether the explanation came from deterministic fallback logic or a model-backed path.
 

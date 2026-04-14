@@ -49,7 +49,7 @@ The app exposes small JSON command endpoints for classifying a user request into
 - The route must translate HTTP input into a typed app command.
 - The app bus must dispatch that command through a bounded use case.
 - Intent classification must use the shared model-provider boundary when available.
-- If no model provider is configured or inference fails, the route must still return deterministic classification output.
+- If no model provider is configured, availability checks fail, or inference fails, the route must still return deterministic classification output.
 - Responses must expose whether classification came from deterministic fallback logic or model-backed inference.
 - Ambiguous input must return an explicit workflow state instead of an implicit retry expectation.
 - The clarification route must continue the same bounded workflow using the original input plus the follow-up clarification text.

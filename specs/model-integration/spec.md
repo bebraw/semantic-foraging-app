@@ -63,7 +63,7 @@ The default production provider must be:
 
 ### FR-3 Safe fallback
 
-If the model is unavailable or returns invalid output:
+If the model is unavailable, its availability check fails, or it returns invalid output:
 
 - the request must still complete
 - the app must render deterministic fallback UI

@@ -22,7 +22,11 @@ export async function classifyIntent(provider: ModelProvider | null, rawInput: s
     return finalizeDeterministicIntent(rawInput, "no-model-provider");
   }
 
-  if (!(await provider.isAvailable())) {
+  try {
+    if (!(await provider.isAvailable())) {
+      return finalizeDeterministicIntent(rawInput, "provider-unavailable");
+    }
+  } catch {
     return finalizeDeterministicIntent(rawInput, "provider-unavailable");
   }
 

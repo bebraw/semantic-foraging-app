@@ -59,4 +59,19 @@ describe("explainDecision", () => {
       },
     });
   });
+
+  it("falls back to deterministic copy when the availability check throws", async () => {
+    const provider = createProvider({
+      isAvailable: vi.fn().mockRejectedValue(new Error("availability probe failed")),
+    });
+
+    await expect(explainDecision(provider, input)).resolves.toEqual({
+      explanation: "Search result selected. This result is based on the available structured information in the application.",
+      provenance: {
+        source: "deterministic-fallback",
+        provider: null,
+        reason: "provider-unavailable",
+      },
+    });
+  });
 });

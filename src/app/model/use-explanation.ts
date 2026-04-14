@@ -19,7 +19,14 @@ export async function explainDecision(provider: ModelProvider | null, input: Exp
     };
   }
 
-  if (!(await provider.isAvailable())) {
+  try {
+    if (!(await provider.isAvailable())) {
+      return {
+        explanation: deterministicExplanation(input),
+        provenance: deterministicProvenance("provider-unavailable"),
+      };
+    }
+  } catch {
     return {
       explanation: deterministicExplanation(input),
       provenance: deterministicProvenance("provider-unavailable"),

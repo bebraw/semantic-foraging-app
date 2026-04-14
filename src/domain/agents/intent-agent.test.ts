@@ -70,6 +70,26 @@ describe("classifyIntent", () => {
     });
   });
 
+  it("uses deterministic fallback when the availability check throws", async () => {
+    const provider = createProvider({
+      isAvailable: vi.fn().mockRejectedValue(new Error("availability probe failed")),
+    });
+
+    await expect(classifyIntent(provider, "Find similar items")).resolves.toEqual({
+      classification: {
+        intent: "search",
+        confidence: 0.61,
+        needsClarification: false,
+      },
+      confidenceBand: "medium",
+      provenance: {
+        source: "deterministic-fallback",
+        provider: null,
+        reason: "provider-unavailable",
+      },
+    });
+  });
+
   it("uses deterministic clarification fallback for ambiguous inputs", async () => {
     await expect(classifyIntent(null, "Help")).resolves.toEqual({
       classification: {
