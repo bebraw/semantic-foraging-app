@@ -30,7 +30,7 @@ The home screen includes a typed map fragment that can project candidate leads a
 
 - The map view must be assembled from typed application data rather than from ad hoc HTML-only calculations.
 - The first slice must stay server-rendered and useful without any client-side enhancement.
-- Later interaction may progressively enhance the same server-rendered fragment, but the enhancement layer must only switch focus between already-rendered typed features.
+- Later interaction may progressively enhance the same server-rendered fragment, and when a basemap provider is configured the browser may render physical map tiles plus projected typed overlays from server-provided map state.
 - Candidate leads and recent sessions may degrade into a simplified physical fallback panel when basemap or overlay providers are unavailable.
 - Basemap provider configuration must be resolved on the server and exposed to the view through typed screen data.
 - Real observation overlays must come through an explicit provider boundary rather than being hard-coded in the view.
@@ -43,5 +43,6 @@ The home screen includes a typed map fragment that can project candidate leads a
 - The map fragment must degrade gracefully into an empty-state panel when no leads are available.
 - The view layer must only render map geometry and legend data that the screen model already contains.
 - Browser enhancement must not fetch, invent, or reorder map features independently of the screen model.
+- Browser enhancement may fetch provider-owned basemap tiles referenced by the typed screen model, but feature geometry and overlay membership must still come from the server-owned screen data.
 - Provider credentials must not be required for the baseline no-model development path.
 - Sensitive or restricted occurrence data must not be exposed through public map overlays by default.

@@ -30,6 +30,7 @@ export function renderHomePage(screen: HomeScreenModel): string {
   const clarificationWorkflow = latestIntent?.workflow.state === "awaiting_clarification" ? latestIntent.workflow : null;
   const initialMapFeature = screen.mapView.features[0] ?? null;
   const overlay = screen.mapView.overlays[0];
+  const serializedMapState = serializeMapClientState(screen.mapView);
   const mapMarkup = screen.mapView.features
     .map((feature) =>
       renderMapFeature(
@@ -44,7 +45,9 @@ export function renderHomePage(screen: HomeScreenModel): string {
   const overlayMarkup =
     overlay?.status === "ready"
       ? overlay.points
-          .map((point) => renderOverlayPoint(point, screen.mapView.viewport.width, screen.mapView.viewport.height, screen.mapView.viewport.bounds))
+          .map((point) =>
+            renderOverlayPoint(point, screen.mapView.viewport.width, screen.mapView.viewport.height, screen.mapView.viewport.bounds),
+          )
           .join("")
       : "";
   const mapLegendMarkup = screen.mapView.features
@@ -238,14 +241,28 @@ export function renderHomePage(screen: HomeScreenModel): string {
             <p class="leading-7 text-app-text-soft">${escapeHtml(screen.mapView.description)}</p>
             ${
               screen.mapView.features.length > 0
-                ? `<div class="mt-6 grid gap-5 lg:grid-cols-[minmax(0,1.4fr)_minmax(18rem,0.9fr)]" data-map-root data-map-active-id="${escapeHtml(initialMapFeature?.id ?? "")}">
+                ? `<div class="mt-6 grid gap-5 lg:grid-cols-[minmax(0,1.4fr)_minmax(18rem,0.9fr)]" data-map-root data-map-active-id="${escapeHtml(initialMapFeature?.id ?? "")}" data-map-state="${escapeHtml(serializedMapState)}">
                     <figure class="overflow-hidden rounded-[1rem] border border-app-line/70 bg-[linear-gradient(180deg,rgba(11,110,79,0.09),rgba(255,255,255,0.6)),linear-gradient(135deg,rgba(255,255,255,0.75),rgba(245,239,230,0.95))] p-4">
-                      <svg viewBox="0 0 ${screen.mapView.viewport.width} ${screen.mapView.viewport.height}" class="h-auto w-full rounded-[0.9rem] border border-app-line/60 bg-[linear-gradient(180deg,rgba(255,255,255,0.88),rgba(244,236,226,0.96))]" role="img" aria-label="${escapeHtml(screen.mapView.viewport.frameLabel)}">
-                        <rect x="18" y="22" width="604" height="316" rx="26" fill="rgba(255,255,255,0.42)" stroke="rgba(30,26,22,0.08)"/>
-                        ${renderMapGraticule(screen.mapView.viewport.width, screen.mapView.viewport.height, screen.mapView.viewport.bounds)}
-                        ${overlayMarkup}
-                        ${mapMarkup}
-                      </svg>
+                      <div class="relative aspect-[16/9]">
+                        <div class="absolute inset-0 hidden overflow-hidden rounded-[0.9rem] border border-app-line/60 bg-[#d9e5dc]" data-map-browser-frame aria-hidden="true">
+                          <div class="absolute inset-0" data-map-tiles></div>
+                          <svg class="absolute inset-0 h-full w-full" viewBox="0 0 ${screen.mapView.viewport.width} ${screen.mapView.viewport.height}" data-map-browser-overlay aria-hidden="true"></svg>
+                          <div class="pointer-events-none absolute inset-x-3 bottom-3 flex items-end justify-between gap-3">
+                            <p class="max-w-[18rem] rounded-full bg-white/88 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-app-text-soft shadow-[0_12px_24px_-20px_rgba(30,26,22,0.5)]" data-map-browser-source></p>
+                            <p class="rounded-full bg-white/88 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-app-text-soft shadow-[0_12px_24px_-20px_rgba(30,26,22,0.5)]" data-map-browser-zoom></p>
+                          </div>
+                        </div>
+                        <svg viewBox="0 0 ${screen.mapView.viewport.width} ${screen.mapView.viewport.height}" class="absolute inset-0 h-full w-full rounded-[0.9rem] border border-app-line/60 bg-[linear-gradient(180deg,rgba(255,255,255,0.88),rgba(244,236,226,0.96))]" role="img" aria-label="${escapeHtml(screen.mapView.viewport.frameLabel)}" data-map-fallback>
+                          <rect x="18" y="22" width="604" height="316" rx="26" fill="rgba(255,255,255,0.42)" stroke="rgba(30,26,22,0.08)"/>
+                          ${renderMapGraticule(screen.mapView.viewport.width, screen.mapView.viewport.height, screen.mapView.viewport.bounds)}
+                          ${overlayMarkup}
+                          ${mapMarkup}
+                        </svg>
+                        <div class="absolute right-3 top-3 hidden gap-2" data-map-zoom-controls>
+                          <button class="rounded-full border border-app-line/70 bg-white/90 px-3 py-2 text-xs font-semibold uppercase tracking-[0.16em] text-app-text shadow-[0_12px_24px_-20px_rgba(30,26,22,0.45)]" type="button" data-map-zoom-out aria-label="Zoom out">-</button>
+                          <button class="rounded-full border border-app-line/70 bg-white/90 px-3 py-2 text-xs font-semibold uppercase tracking-[0.16em] text-app-text shadow-[0_12px_24px_-20px_rgba(30,26,22,0.45)]" type="button" data-map-zoom-in aria-label="Zoom in">+</button>
+                        </div>
+                      </div>
                     </figure>
                     <div class="grid gap-3">
                       <section class="rounded-[1rem] border border-app-line/70 bg-app-canvas/45 px-4 py-3">
@@ -429,11 +446,7 @@ function renderOverlayPoint(
   </g>`;
 }
 
-function renderMapGraticule(
-  width: number,
-  height: number,
-  bounds: HomeScreenModel["mapView"]["viewport"]["bounds"],
-): string {
+function renderMapGraticule(width: number, height: number, bounds: HomeScreenModel["mapView"]["viewport"]["bounds"]): string {
   const longitudeStep = Math.max(1, Math.round((bounds.east - bounds.west) / 4));
   const latitudeStep = Math.max(1, Math.round((bounds.north - bounds.south) / 4));
   const longitudeLines: string[] = [];
@@ -469,9 +482,213 @@ function formatMapDetailMeta(feature: HomeScreenModel["mapView"]["features"][num
   return `${feature.kind} / ${feature.sourceSection}`;
 }
 
+function serializeMapClientState(mapView: HomeScreenModel["mapView"]): string {
+  return JSON.stringify({
+    basemap: mapView.basemap,
+    viewport: mapView.viewport,
+    features: mapView.features,
+    overlays: mapView.overlays,
+  });
+}
+
 function renderMapEnhancementScript(): string {
   return `
 (() => {
+  const svgNamespace = "http://www.w3.org/2000/svg";
+  const clamp = (value, min, max) => Math.max(min, Math.min(max, value));
+  const clampLatitude = (latitude) => clamp(latitude, -85.05112878, 85.05112878);
+  const createSvgNode = (name) => document.createElementNS(svgNamespace, name);
+  const setAttributes = (element, attributes) => {
+    for (const [name, value] of Object.entries(attributes)) {
+      if (value === null || value === undefined) continue;
+
+      element.setAttribute(name, String(value));
+    }
+
+    return element;
+  };
+  const projectWorldPoint = (point, zoom) => {
+    const size = 256 * 2 ** zoom;
+    const latitude = clampLatitude(point.latitude);
+    const x = ((point.longitude + 180) / 360) * size;
+    const sinLatitude = Math.sin((latitude * Math.PI) / 180);
+    const y = (0.5 - Math.log((1 + sinLatitude) / (1 - sinLatitude)) / (4 * Math.PI)) * size;
+
+    return { x, y };
+  };
+  const createProjector = (center, zoom, width, height) => {
+    const centerWorld = projectWorldPoint(center, zoom);
+    const topLeft = {
+      x: centerWorld.x - width / 2,
+      y: centerWorld.y - height / 2,
+    };
+
+    return (point) => {
+      const world = projectWorldPoint(point, zoom);
+
+      return {
+        x: world.x - topLeft.x,
+        y: world.y - topLeft.y,
+      };
+    };
+  };
+  const createTileUrl = (template, zoom, x, y) =>
+    template.replaceAll("{z}", String(zoom)).replaceAll("{x}", String(x)).replaceAll("{y}", String(y));
+  const collectOverlayPoints = (overlays) =>
+    overlays.flatMap((overlay) => (overlay.status === "ready" ? overlay.points : []));
+  const renderTiles = (container, template, center, zoom, width, height) => {
+    const centerWorld = projectWorldPoint(center, zoom);
+    const topLeft = {
+      x: centerWorld.x - width / 2,
+      y: centerWorld.y - height / 2,
+    };
+    const maxTileIndex = 2 ** zoom - 1;
+    const startX = Math.floor(topLeft.x / 256);
+    const startY = Math.floor(topLeft.y / 256);
+    const endX = Math.floor((topLeft.x + width) / 256);
+    const endY = Math.floor((topLeft.y + height) / 256);
+
+    container.textContent = "";
+
+    for (let tileX = startX; tileX <= endX; tileX += 1) {
+      for (let tileY = startY; tileY <= endY; tileY += 1) {
+        if (tileY < 0 || tileY > maxTileIndex) {
+          continue;
+        }
+
+        const wrappedX = ((tileX % (maxTileIndex + 1)) + (maxTileIndex + 1)) % (maxTileIndex + 1);
+        const tile = document.createElement("img");
+
+        tile.alt = "";
+        tile.loading = "lazy";
+        tile.decoding = "async";
+        tile.src = createTileUrl(template, zoom, wrappedX, tileY);
+        tile.width = 256;
+        tile.height = 256;
+        tile.style.left = \`\${tileX * 256 - topLeft.x}px\`;
+        tile.style.top = \`\${tileY * 256 - topLeft.y}px\`;
+        tile.style.position = "absolute";
+        tile.style.width = "256px";
+        tile.style.height = "256px";
+        container.appendChild(tile);
+      }
+    }
+  };
+  const renderBrowserOverlay = (layer, features, overlayPoints, projector, activeId, width, height) => {
+    layer.textContent = "";
+    layer.setAttribute("viewBox", \`0 0 \${width} \${height}\`);
+
+    for (const overlayPoint of overlayPoints) {
+      const position = projector(overlayPoint.point);
+      const node = setAttributes(createSvgNode("circle"), {
+        cx: position.x,
+        cy: position.y,
+        r: 4,
+        fill: "rgba(160,90,42,0.72)",
+      });
+
+      layer.appendChild(node);
+    }
+
+    for (const feature of features) {
+      const active = feature.id === activeId;
+      const tone = feature.sourceSection === "recent-sessions" ? "#0b6e4f" : "#1e1a16";
+      const group = setAttributes(createSvgNode("g"), {
+        "data-browser-feature-id": feature.id,
+        "data-map-active": active ? "true" : "false",
+      });
+      let labelPosition = null;
+
+      switch (feature.geometry.kind) {
+        case "point": {
+          const position = projector(feature.geometry.point);
+
+          group.appendChild(
+            setAttributes(createSvgNode("circle"), {
+              cx: position.x,
+              cy: position.y,
+              r: active ? 15 : 12,
+              fill: "rgba(255,255,255,0.82)",
+              stroke: tone,
+              "stroke-width": active ? 3 : 2,
+            }),
+          );
+          group.appendChild(
+            setAttributes(createSvgNode("circle"), {
+              cx: position.x,
+              cy: position.y,
+              r: active ? 6 : 5,
+              fill: tone,
+            }),
+          );
+          labelPosition = position;
+          break;
+        }
+        case "area": {
+          const ring = feature.geometry.ring.map((point) => projector(point));
+          const center = projector(feature.geometry.center);
+
+          group.appendChild(
+            setAttributes(createSvgNode("path"), {
+              d: \`M \${ring.map((point) => \`\${point.x} \${point.y}\`).join(" L ")} Z\`,
+              fill: active ? "rgba(11,110,79,0.22)" : "rgba(11,110,79,0.12)",
+              stroke: tone,
+              "stroke-width": active ? 3 : 2,
+            }),
+          );
+          group.appendChild(
+            setAttributes(createSvgNode("circle"), {
+              cx: center.x,
+              cy: center.y,
+              r: active ? 6 : 5,
+              fill: tone,
+            }),
+          );
+          labelPosition = center;
+          break;
+        }
+        case "trail": {
+          const points = feature.geometry.points.map((point) => projector(point));
+
+          group.appendChild(
+            setAttributes(createSvgNode("path"), {
+              d: \`M \${points[0].x} \${points[0].y} Q \${points[1].x} \${points[1].y} \${points[2].x} \${points[2].y}\`,
+              fill: "none",
+              stroke: tone,
+              "stroke-width": active ? 5 : 4,
+              "stroke-linecap": "round",
+            }),
+          );
+          group.appendChild(
+            setAttributes(createSvgNode("circle"), {
+              cx: points[1].x,
+              cy: points[1].y,
+              r: active ? 7 : 6,
+              fill: tone,
+            }),
+          );
+          labelPosition = points[1];
+          break;
+        }
+      }
+
+      if (active && labelPosition) {
+        const label = setAttributes(createSvgNode("text"), {
+          x: labelPosition.x + 16,
+          y: labelPosition.y - 12,
+          fill: "rgba(30,26,22,0.88)",
+          "font-size": 12,
+          "font-weight": 600,
+        });
+
+        label.textContent = feature.label;
+        group.appendChild(label);
+      }
+
+      layer.appendChild(group);
+    }
+  };
+
   for (const root of document.querySelectorAll("[data-map-root]")) {
     const featureNodes = Array.from(root.querySelectorAll("[data-map-feature]"));
     const itemNodes = Array.from(root.querySelectorAll("[data-map-item]"));
@@ -479,6 +696,84 @@ function renderMapEnhancementScript(): string {
     const detailLabel = root.querySelector("[data-map-detail-label]");
     const detailSummary = root.querySelector("[data-map-detail-summary]");
     const detailEvidence = root.querySelector("[data-map-detail-evidence]");
+    const browserFrame = root.querySelector("[data-map-browser-frame]");
+    const tileLayer = root.querySelector("[data-map-tiles]");
+    const browserOverlay = root.querySelector("[data-map-browser-overlay]");
+    const browserSource = root.querySelector("[data-map-browser-source]");
+    const browserZoom = root.querySelector("[data-map-browser-zoom]");
+    const zoomControls = root.querySelector("[data-map-zoom-controls]");
+    const zoomOut = root.querySelector("[data-map-zoom-out]");
+    const zoomIn = root.querySelector("[data-map-zoom-in]");
+    const fallbackFrame = root.querySelector("[data-map-fallback]");
+    const rawState = root.getAttribute("data-map-state");
+    const state = rawState ? JSON.parse(rawState) : null;
+    let activeZoom = null;
+    let browserReady = false;
+    const renderBrowserMap = (activeId) => {
+      if (
+        !state ||
+        !state.basemap ||
+        !state.basemap.available ||
+        !state.basemap.tileTemplateUrl ||
+        !browserFrame ||
+        !tileLayer ||
+        !browserOverlay ||
+        !fallbackFrame
+      ) {
+        return;
+      }
+
+      const frameWidth = browserFrame.clientWidth || state.viewport.width;
+      const frameHeight = browserFrame.clientHeight || state.viewport.height;
+      const minZoom = Number.isFinite(state.basemap.minZoom) ? state.basemap.minZoom : 0;
+      const maxZoom = Number.isFinite(state.basemap.maxZoom) ? state.basemap.maxZoom : 16;
+
+      if (activeZoom === null) {
+        activeZoom = clamp(Math.round(state.viewport.zoom ?? minZoom), minZoom, maxZoom);
+      }
+
+      renderTiles(tileLayer, state.basemap.tileTemplateUrl, state.viewport.center, activeZoom, frameWidth, frameHeight);
+      renderBrowserOverlay(
+        browserOverlay,
+        state.features,
+        collectOverlayPoints(state.overlays ?? []),
+        createProjector(state.viewport.center, activeZoom, frameWidth, frameHeight),
+        activeId,
+        frameWidth,
+        frameHeight,
+      );
+
+      browserFrame.removeAttribute("hidden");
+      browserFrame.setAttribute("data-map-mode", "browser");
+      fallbackFrame.setAttribute("hidden", "");
+
+      if (!browserReady) {
+        root.setAttribute("data-map-browser", "true");
+        zoomControls?.removeAttribute("hidden");
+
+        zoomOut?.addEventListener("click", () => {
+          activeZoom = clamp((activeZoom ?? minZoom) - 1, minZoom, maxZoom);
+          renderBrowserMap(root.getAttribute("data-map-active-id"));
+        });
+
+        zoomIn?.addEventListener("click", () => {
+          activeZoom = clamp((activeZoom ?? minZoom) + 1, minZoom, maxZoom);
+          renderBrowserMap(root.getAttribute("data-map-active-id"));
+        });
+
+        browserReady = true;
+      }
+
+      if (browserSource) {
+        const overlayLabel = (state.overlays ?? []).find((overlay) => overlay.status === "ready")?.label ?? "Deterministic overlays";
+
+        browserSource.textContent = \`\${state.basemap.label} + \${overlayLabel}\`;
+      }
+
+      if (browserZoom) {
+        browserZoom.textContent = \`Zoom \${activeZoom}\`;
+      }
+    };
     const activate = (id) => {
       if (!id) return;
 
@@ -519,6 +814,14 @@ function renderMapEnhancementScript(): string {
       if (detailEvidence) {
         detailEvidence.textContent = source.getAttribute("data-map-evidence") ?? "";
       }
+
+      for (const node of root.querySelectorAll("[data-browser-feature-id]")) {
+        const isActive = node.getAttribute("data-browser-feature-id") === id;
+
+        node.setAttribute("data-map-active", isActive ? "true" : "false");
+      }
+
+      renderBrowserMap(id);
     };
 
     for (const node of featureNodes) {
@@ -535,24 +838,21 @@ function renderMapEnhancementScript(): string {
       node.addEventListener("click", () => activate(node.getAttribute("data-map-item")));
     }
 
-    activate(root.getAttribute("data-map-active-id"));
+    const initialId =
+      root.getAttribute("data-map-active-id") ??
+      itemNodes[0]?.getAttribute("data-map-item") ??
+      featureNodes[0]?.getAttribute("data-map-feature");
+
+    activate(initialId);
   }
 })();
 `.trim();
 }
 
-function longitudeToFrame(
-  longitude: number,
-  bounds: HomeScreenModel["mapView"]["viewport"]["bounds"],
-  frameWidth: number,
-): number {
+function longitudeToFrame(longitude: number, bounds: HomeScreenModel["mapView"]["viewport"]["bounds"], frameWidth: number): number {
   return ((longitude - bounds.west) / (bounds.east - bounds.west)) * frameWidth;
 }
 
-function latitudeToFrame(
-  latitude: number,
-  bounds: HomeScreenModel["mapView"]["viewport"]["bounds"],
-  frameHeight: number,
-): number {
+function latitudeToFrame(latitude: number, bounds: HomeScreenModel["mapView"]["viewport"]["bounds"], frameHeight: number): number {
   return ((bounds.north - latitude) / (bounds.north - bounds.south)) * frameHeight;
 }

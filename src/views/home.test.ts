@@ -33,9 +33,30 @@ describe("renderHomePage", () => {
     expect(html).toContain("artifact_scope");
     expect(html).toContain('rel="stylesheet" href="/styles.css"');
     expect(html).toContain("data-map-detail-label");
+    expect(html).toContain("data-map-browser-frame");
+    expect(html).toContain("data-map-state=");
     expect(html).toContain("<script>");
     expect(html).toContain("Trace ID:");
     expect(html).toContain("trace-home-test");
+  });
+
+  it("serializes tile-backed basemap state for browser enhancement", () => {
+    const screen = createHomeScreenModel();
+
+    screen.mapView.basemap = {
+      ...screen.mapView.basemap,
+      available: true,
+      note: "Tile preview is active.",
+      tileTemplateUrl: "https://tiles.example.test/topographic/{z}/{x}/{y}.png",
+    };
+
+    const html = renderHomePage(screen);
+
+    expect(html).toContain("https://tiles.example.test/topographic/{z}/{x}/{y}.png");
+    expect(html).toContain('data-map-zoom-in aria-label="Zoom in"');
+    expect(html).toContain('data-map-zoom-out aria-label="Zoom out"');
+    expect(html).toContain("data-map-browser-overlay");
+    expect(html).toContain("data-map-fallback");
   });
 
   it("renders area and trail map geometries plus unparsed saved timestamps", () => {

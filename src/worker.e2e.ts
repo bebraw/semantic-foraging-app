@@ -204,9 +204,11 @@ test("progressively enhances the map detail panel without changing the server-re
   await page.getByRole("button", { name: "Classify request" }).click();
 
   const mapSection = page.locator("section").filter({ hasText: "Foraging map" }).first();
+  const mapRoot = mapSection.locator("[data-map-root]");
   const detailLabel = mapSection.locator("[data-map-detail-label]");
   const detailEvidence = mapSection.locator("[data-map-detail-evidence]");
 
+  await expect(mapRoot).toHaveAttribute("data-map-enhanced", "true");
   await expect(detailLabel).toHaveText("Autumn chanterelle cluster");
   await expect(detailEvidence).toContainText("Ranked for find-observations.");
 

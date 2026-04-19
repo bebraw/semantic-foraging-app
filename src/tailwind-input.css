@@ -44,6 +44,26 @@
 }
 
 @layer components {
+  [data-map-browser-frame][data-map-mode="browser"] [data-map-tiles] img {
+    user-select: none;
+    -webkit-user-drag: none;
+  }
+
+  [data-map-root][data-map-browser="true"] [data-browser-feature-id] {
+    transition:
+      opacity 160ms ease,
+      transform 160ms ease,
+      filter 160ms ease;
+  }
+
+  [data-map-root][data-map-browser="true"] [data-browser-feature-id][data-map-active="false"] {
+    opacity: 0.8;
+  }
+
+  [data-map-root][data-map-browser="true"] [data-browser-feature-id][data-map-active="true"] {
+    filter: drop-shadow(0 10px 16px rgb(30 26 22 / 0.22));
+  }
+
   [data-map-root][data-map-enhanced="true"] [data-map-feature],
   [data-map-root][data-map-enhanced="true"] [data-map-item] {
     transition:
