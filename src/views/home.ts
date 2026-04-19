@@ -28,6 +28,22 @@ export function renderHomePage(screen: HomeScreenModel): string {
   const latestIntent = screen.intentWorkbench.latestSubmission;
   const latestExplanation = screen.explanationWorkbench.latestSubmission;
   const clarificationWorkflow = latestIntent?.workflow.state === "awaiting_clarification" ? latestIntent.workflow : null;
+  const recentSessionMarkup = screen.recentSessions
+    .map(
+      (session) =>
+        `<li class="grid gap-3 rounded-[1rem] border border-app-line/70 bg-white/80 p-5 shadow-[0_16px_40px_-30px_rgba(30,26,22,0.3)]">
+          <div class="flex flex-wrap items-center gap-3">
+            <p class="rounded-full bg-app-accent/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-app-accent-strong">${escapeHtml(session.sourceIntent)}</p>
+            <p class="text-sm text-app-text-soft">${escapeHtml(formatSavedAtLabel(session.savedAt))}</p>
+          </div>
+          <div>
+            <h3 class="text-lg font-semibold tracking-[-0.02em]">${escapeHtml(session.title)}</h3>
+            <p class="mt-2 leading-7 text-app-text-soft">${escapeHtml(session.summary)}</p>
+          </div>
+          <p class="text-sm text-app-text-soft">Detected cues: ${escapeHtml(formatCueSummary(session.cues))}</p>
+        </li>`,
+    )
+    .join("");
   const candidateMarkup = screen.candidateCards
     .map(
       (card) =>
@@ -178,6 +194,15 @@ export function renderHomePage(screen: HomeScreenModel): string {
             }
           </section>
           <section class="rounded-[1rem] border border-app-line/70 bg-white/72 p-6 shadow-[0_16px_40px_-30px_rgba(30,26,22,0.3)]">
+            <h2 class="mb-3 text-lg font-semibold tracking-[-0.02em]">${escapeHtml(screen.recentSessionsTitle)}</h2>
+            <p class="leading-7 text-app-text-soft">${escapeHtml(screen.recentSessionsBody)}</p>
+            ${
+              screen.recentSessions.length > 0
+                ? `<ul class="mt-6 grid gap-4 lg:grid-cols-2">${recentSessionMarkup}</ul>`
+                : `<p class="mt-4 rounded-2xl border border-dashed border-app-line/80 bg-app-canvas/40 px-4 py-4 leading-7 text-app-text-soft">${escapeHtml(screen.recentSessionsEmptyState)}</p>`
+            }
+          </section>
+          <section class="rounded-[1rem] border border-app-line/70 bg-white/72 p-6 shadow-[0_16px_40px_-30px_rgba(30,26,22,0.3)]">
             <div class="flex flex-wrap items-center gap-3">
               <h2 class="text-lg font-semibold tracking-[-0.02em]">${escapeHtml(screen.runtimeTitle)}</h2>
               <span class="rounded-full bg-app-accent/10 px-3 py-1 text-sm font-semibold text-app-accent-strong">${escapeHtml(screen.runtimeModeLabel)}</span>
@@ -242,4 +267,14 @@ function formatCueGroup(label: string, values: string[]): string {
 
 function formatMissingSummary(missing: string[]): string {
   return missing.length > 0 ? missing.join(", ") : "No clarification needed.";
+}
+
+function formatSavedAtLabel(savedAt: string): string {
+  const date = new Date(savedAt);
+
+  if (Number.isNaN(date.getTime())) {
+    return savedAt;
+  }
+
+  return `Saved ${date.toISOString().slice(0, 16).replace("T", " ")}`;
 }

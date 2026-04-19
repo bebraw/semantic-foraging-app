@@ -23,6 +23,7 @@ describe("ui-agent", () => {
         title: "",
         factsText: "",
       },
+      recentSessions: [],
     });
   });
 
@@ -47,6 +48,7 @@ describe("ui-agent", () => {
         title: "Foraging Workbench",
         workbenchTitle: "Manual flow rehearsal",
         retrievalTitle: "Candidate leads",
+        recentSessionsTitle: "Recent sessions",
         intentWorkbench: expect.objectContaining({
           actionPath: "/actions/intent",
           rawInputValue: "Find chanterelle notes",
@@ -195,6 +197,42 @@ describe("ui-agent", () => {
         }),
       ]),
     );
+  });
+
+  it("preserves recent sessions in the home screen model", () => {
+    const screen = createHomeScreenModel({
+      routes: exampleRoutes,
+      runtime: {
+        mode: "no-model",
+        provider: null,
+        available: false,
+        supportsStructuredOutput: false,
+        supportsStreaming: false,
+        maxContextClass: "unknown",
+      },
+      traceId: "trace-sessions",
+      workbench: {
+        ...createInitialForagingWorkbenchState(),
+        recentSessions: [
+          {
+            sessionId: "session-1",
+            input: "Find chanterelles",
+            title: "Find chanterelles",
+            summary: "Intent: find-observations",
+            sourceIntent: "find-observations",
+            cues: {
+              species: ["chanterelle"],
+              habitat: [],
+              region: [],
+              season: [],
+            },
+            savedAt: "2026-04-19T12:00:00.000Z",
+          },
+        ],
+      },
+    });
+
+    expect(screen.recentSessions).toEqual([expect.objectContaining({ sessionId: "session-1" })]);
   });
 
   it("describes hosted and unavailable runtime tiers in the screen summary", () => {

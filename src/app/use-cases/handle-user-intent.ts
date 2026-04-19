@@ -1,4 +1,5 @@
 import { classifyIntent } from "../../domain/agents/intent-agent";
+import { createStoredForagingSession } from "../../domain/agents/session-agent";
 import { createIntentWorkflow, createStoredIntentWorkflow } from "../../domain/agents/intent-workflow";
 import { createAppErrorResult, type AppErrorResult, type IntentResult } from "../../domain/contracts/result";
 import type { AppContext } from "../context";
@@ -22,11 +23,30 @@ export async function handleUserIntent(context: AppContext, message: SubmitUserI
     }
   }
 
+  if (workflow.state === "completed") {
+    const session = createStoredForagingSession(message.rawInput, result.classification, result.confidenceBand);
+
+    if (session) {
+      try {
+        await context.recentSessionRepository.saveRecentSession(session);
+      } catch {
+        context.trace.addEvent({
+          module: "app.use-cases.handle-user-intent",
+          messageType: message.type,
+          notes: ["session:save-failed", `intent:${result.classification.intent}`],
+        });
+
+        return createAppErrorResult("storage_failure", "Recent session state could not be stored.", 503);
+      }
+    }
+  }
+
   context.trace.addEvent({
     module: "app.use-cases.handle-user-intent",
     messageType: message.type,
     notes: [
       `intent:${result.classification.intent}`,
+      ...(workflow.state === "completed" ? ["session:stored"] : []),
       `missing:${result.classification.missing.join("|") || "none"}`,
       `confidence:${result.classification.confidence.toFixed(2)}`,
       `confidence-band:${result.confidenceBand}`,

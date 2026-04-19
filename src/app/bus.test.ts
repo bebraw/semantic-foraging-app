@@ -17,6 +17,7 @@ describe("createAppBus", () => {
         title: "Foraging Workbench",
         healthPath: "/api/health",
         workbenchTitle: "Manual flow rehearsal",
+        recentSessionsTitle: "Recent sessions",
         routes: exampleRoutes,
         meta: {
           traceId: expect.any(String),
@@ -157,6 +158,39 @@ describe("createAppBus", () => {
       error: {
         category: "storage_failure",
         message: "Workflow state could not be stored.",
+        status: 503,
+      },
+    });
+  });
+
+  it("returns a typed storage error when recent session state cannot be stored for completed intents", async () => {
+    const bus = createAppBus(
+      createAppContext(
+        exampleRoutes,
+        null,
+        createRequestTrace("unknown"),
+        {
+          saveIntentWorkflow: vi.fn(),
+          getIntentWorkflow: vi.fn(),
+          deleteIntentWorkflow: vi.fn(),
+        },
+        {
+          saveRecentSession: vi.fn().mockRejectedValue(new Error("storage unavailable")),
+          listRecentSessions: vi.fn().mockResolvedValue([]),
+        },
+      ),
+    );
+
+    const result = await bus.dispatch({
+      type: "SubmitUserIntent",
+      rawInput: "Create a new note",
+    });
+
+    expect(result).toEqual({
+      kind: "error",
+      error: {
+        category: "storage_failure",
+        message: "Recent session state could not be stored.",
         status: 503,
       },
     });
@@ -326,6 +360,39 @@ describe("createAppBus", () => {
         message: "Workflow state could not be cleared.",
         status: 503,
       },
+    });
+  });
+
+  it("loads recent sessions into the home screen model", async () => {
+    const bus = createAppBus(
+      createAppContext(exampleRoutes, null, createRequestTrace("unknown"), undefined, {
+        saveRecentSession: vi.fn(),
+        listRecentSessions: vi.fn().mockResolvedValue([
+          {
+            sessionId: "session-1",
+            input: "Find chanterelles",
+            title: "Find chanterelles",
+            summary: "Intent: find-observations",
+            sourceIntent: "find-observations",
+            cues: {
+              species: ["chanterelle"],
+              habitat: [],
+              region: [],
+              season: [],
+            },
+            savedAt: "2026-04-19T12:00:00.000Z",
+          },
+        ]),
+      }),
+    );
+
+    const result = await bus.dispatch({ type: "RenderHomeScreen" });
+
+    expect(result).toEqual({
+      kind: "screen",
+      screen: expect.objectContaining({
+        recentSessions: [expect.objectContaining({ sessionId: "session-1" })],
+      }),
     });
   });
 

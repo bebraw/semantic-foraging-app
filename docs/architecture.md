@@ -33,6 +33,7 @@ The repo now implements the first application-layer slice from this document:
 - `src/app/use-cases/` now handles route-level queries plus bounded command and workflow flows.
 - `src/domain/agents/intent-agent.ts` now classifies into bounded semantic-foraging intents and extracts deterministic species, habitat, region, and season cues.
 - `src/domain/agents/knowledge-agent.ts` now surfaces deterministic candidate observations, patches, trails, sessions, and field-note scaffolds with explicit evidence notes.
+- completed intent flows now persist lightweight recent-session snapshots through the storage boundary, and the workbench renders those snapshots as recent sessions.
 - `src/domain/agents/intent-workflow.ts` now defines the first serializable workflow-state contract and deterministic transition helper.
 - `src/domain/agents/ui-agent.ts` now owns the home/workbench screen model instead of leaving screen assembly inside the use case.
 - `src/infra/observability/trace.ts` now creates per-request traces and wraps model-provider calls with traced operations.

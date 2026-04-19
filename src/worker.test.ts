@@ -15,6 +15,7 @@ describe("worker", () => {
     expect(body).toContain("Foraging Workbench");
     expect(body).toContain("Intent rehearsal");
     expect(body).toContain("Candidate leads");
+    expect(body).toContain("Recent sessions");
     expect(body).toContain("/api/health");
     expect(body).toContain("Trace ID:");
   });

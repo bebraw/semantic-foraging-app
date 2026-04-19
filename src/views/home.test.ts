@@ -128,6 +128,26 @@ describe("renderHomePage", () => {
           ],
         },
       ],
+      recentSessionsTitle: "Recent sessions",
+      recentSessionsBody:
+        "Completed intents are now persisted as lightweight recent-session snapshots through the storage boundary so resume flows have real state to target.",
+      recentSessionsEmptyState: "Complete a foraging intent to start building a recent-session trail.",
+      recentSessions: [
+        {
+          sessionId: "session-1",
+          input: "Find chanterelles",
+          title: "Find chanterelles",
+          summary: "Intent: find-observations | species: chanterelle",
+          sourceIntent: "find-observations",
+          cues: {
+            species: ["chanterelle"],
+            habitat: ["spruce"],
+            region: ["helsinki"],
+            season: ["autumn"],
+          },
+          savedAt: "2026-04-19T12:00:00.000Z",
+        },
+      ],
       routesTitle: "Programmatic routes",
       nextStepsTitle: "Roadmap focus",
       nextStepsBody:
@@ -149,6 +169,9 @@ describe("renderHomePage", () => {
     expect(html).toContain("Candidate leads");
     expect(html).toContain("Autumn chanterelle cluster");
     expect(html).toContain("Species overlap");
+    expect(html).toContain("Recent sessions");
+    expect(html).toContain("Find chanterelles");
+    expect(html).toContain("Saved 2026-04-19 12:00");
     expect(html).toContain("Clarification focus");
     expect(html).toContain("artifact_scope");
     expect(html).toContain('rel="stylesheet" href="/styles.css"');

@@ -27,6 +27,7 @@ export function createInitialForagingWorkbenchState(): ForagingWorkbenchState {
       title: "",
       factsText: "",
     },
+    recentSessions: [],
   };
 }
 
@@ -152,6 +153,11 @@ export function createHomeScreenModel(input: CreateHomeScreenInput): HomeScreenM
       "Completed foraging intents now surface deterministic observation, patch, trail, note, and session candidates with explicit evidence instead of leaving retrieval implied.",
     retrievalEmptyState: "Run a completed intent to surface grounded candidate cards and evidence notes.",
     candidateCards,
+    recentSessionsTitle: "Recent sessions",
+    recentSessionsBody:
+      "Completed intents are now persisted as lightweight recent-session snapshots through the storage boundary so resume flows have real state to target.",
+    recentSessionsEmptyState: "Complete a foraging intent to start building a recent-session trail.",
+    recentSessions: input.workbench.recentSessions,
     routesTitle: "Programmatic routes",
     nextStepsTitle: "Roadmap focus",
     nextStepsBody:

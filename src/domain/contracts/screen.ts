@@ -2,6 +2,7 @@ import type { AppRoute } from "../../app-routes";
 import type { ForagingWorkbenchState, WorkbenchAlert } from "./app-state";
 import type { ForagingCandidateCard } from "./foraging-knowledge";
 import type { RuntimeModelCapability } from "./model-runtime";
+import type { StoredForagingSession } from "./session";
 
 export type ScreenMeta = {
   traceId: string;
@@ -63,6 +64,10 @@ export type HomeScreenModel = {
   retrievalBody: string;
   retrievalEmptyState: string;
   candidateCards: ForagingCandidateCard[];
+  recentSessionsTitle: string;
+  recentSessionsBody: string;
+  recentSessionsEmptyState: string;
+  recentSessions: StoredForagingSession[];
   routesTitle: string;
   nextStepsTitle: string;
   nextStepsBody: string;

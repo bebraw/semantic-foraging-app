@@ -25,6 +25,8 @@ describe("workbench actions", () => {
     expect(body).toContain("create-field-note");
     expect(body).toContain("Detected cues");
     expect(body).toContain("Field note scaffold");
+    expect(body).toContain("Recent sessions");
+    expect(body).toContain("Create a new field note");
   });
 
   it("renders a clarification prompt back into the workbench page", async () => {
