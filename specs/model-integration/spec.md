@@ -102,6 +102,10 @@ Model-assisted results must expose whether the final output came from:
 - deterministic fallback behavior
 - enough provenance detail to distinguish inference failures from schema-validation fallback
 
+### FR-9 Runtime capability exposure
+
+The app must be able to expose the active runtime tier and capability summary through typed app results so shell rendering and generic app queries can report whether the app is running in no-model, local-model, or hosted-model mode.
+
 ## User stories
 
 ### US-1 Intent assistance
@@ -129,6 +133,7 @@ the app still works using deterministic UI and rules.
 - A `CloudflareWorkersAiProvider` exists
 - A `CloudflareAiGatewayProvider` exists
 - A provider resolver selects the configured provider
+- The active runtime capability can be queried through typed app-layer results
 - At least one end-to-end use case uses the model layer
 - Model failures are covered by tests
 - The app remains usable with inference disabled

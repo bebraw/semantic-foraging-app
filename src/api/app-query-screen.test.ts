@@ -44,11 +44,46 @@ describe("handleAppQueryRequest", () => {
       screen: expect.objectContaining({
         kind: "home",
         title: "vibe-template Worker",
+        runtime: {
+          mode: "no-model",
+          provider: null,
+          available: false,
+          supportsStructuredOutput: false,
+          supportsStreaming: false,
+          maxContextClass: "unknown",
+        },
         routes: exampleRoutes,
         meta: {
           traceId: expect.any(String),
         },
       }),
+    });
+  });
+
+  it("returns the typed runtime capability payload", async () => {
+    const response = await handleAppQueryRequest(
+      new Request("http://example.com/api/app/query", {
+        method: "POST",
+        body: JSON.stringify({ type: "InspectModelRuntime" }),
+        headers: {
+          "content-type": "application/json",
+        },
+      }),
+      createAppContext(exampleRoutes),
+    );
+
+    expect(response.status).toBe(200);
+    await expect(response.json()).resolves.toEqual({
+      ok: true,
+      type: "InspectModelRuntime",
+      runtime: {
+        mode: "no-model",
+        provider: null,
+        available: false,
+        supportsStructuredOutput: false,
+        supportsStreaming: false,
+        maxContextClass: "unknown",
+      },
     });
   });
 
@@ -100,7 +135,7 @@ describe("handleAppQueryRequest", () => {
       ok: false,
       category: "validation_error",
       error:
-        'Request body must be JSON with type "RunHealthCheck", type "RenderHomeScreen", or type "RequestExplanation" plus title and at least one fact.',
+        'Request body must be JSON with type "RunHealthCheck", type "InspectModelRuntime", type "RenderHomeScreen", or type "RequestExplanation" plus title and at least one fact.',
     });
   });
 });

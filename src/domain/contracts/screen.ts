@@ -1,4 +1,5 @@
 import type { AppRoute } from "../../app-routes";
+import type { RuntimeModelCapability } from "./model-runtime";
 
 export type ScreenMeta = {
   traceId: string;
@@ -11,6 +12,10 @@ export type HomeScreenModel = {
   description: string;
   overviewTitle: string;
   overviewBody: string;
+  runtimeTitle: string;
+  runtimeModeLabel: string;
+  runtimeSummary: string;
+  runtime: RuntimeModelCapability;
   routesTitle: string;
   nextStepsTitle: string;
   nextStepsBody: string;

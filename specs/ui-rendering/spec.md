@@ -13,6 +13,8 @@ The app represents rendered UI as typed screen models between the app layer and 
   - `type: "RenderHomeScreen"`
   - `screen.kind`
   - `screen.title`
+  - `screen.runtime.mode`
+  - `screen.runtime.available`
   - `screen.routes`
   - `screen.meta.traceId`
 - invalid request bodies return:
@@ -26,6 +28,7 @@ The app represents rendered UI as typed screen models between the app layer and 
 - The home page HTML path must render from the same `HomeScreenModel` contract returned by the app query endpoint.
 - The app query route must stay a thin adapter over typed app messages and results.
 - Screen models may include lightweight developer-facing metadata such as the active trace ID.
+- Screen models may expose runtime capability details when that data helps contributors understand the current model tier without inspecting environment variables directly.
 
 ## Regression Guardrails
 

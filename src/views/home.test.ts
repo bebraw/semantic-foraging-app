@@ -12,6 +12,18 @@ describe("renderHomePage", () => {
       overviewTitle: "What this gives you",
       overviewBody:
         "A concrete Worker entry point, a simple HTML page, a health endpoint, and testable flows that keep the template green from the start.",
+      runtimeTitle: "Model runtime",
+      runtimeModeLabel: "No-model mode",
+      runtimeSummary:
+        "No model provider is configured. The app stays deterministic and keeps the shell, query, and workflow paths available.",
+      runtime: {
+        mode: "no-model",
+        provider: null,
+        available: false,
+        supportsStructuredOutput: false,
+        supportsStreaming: false,
+        maxContextClass: "unknown",
+      },
       routesTitle: "Available routes",
       nextStepsTitle: "Next steps",
       nextStepsBody:
@@ -25,6 +37,8 @@ describe("renderHomePage", () => {
 
     expect(html).toContain("HTML stub app for developers");
     expect(html).toContain("A concrete Worker entry point");
+    expect(html).toContain("No-model mode");
+    expect(html).toContain("Structured output");
     expect(html).toContain('rel="stylesheet" href="/styles.css"');
     expect(html).toContain("Trace ID:");
     expect(html).toContain("trace-home-test");

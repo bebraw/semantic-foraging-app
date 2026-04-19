@@ -13,6 +13,7 @@ describe("worker", () => {
 
     const body = await response.text();
     expect(body).toContain("vibe-template Worker");
+    expect(body).toContain("No-model mode");
     expect(body).toContain("/api/health");
     expect(body).toContain("Trace ID:");
   });
@@ -87,10 +88,45 @@ describe("worker", () => {
       screen: expect.objectContaining({
         kind: "home",
         title: "vibe-template Worker",
+        runtime: {
+          mode: "no-model",
+          provider: null,
+          available: false,
+          supportsStructuredOutput: false,
+          supportsStreaming: false,
+          maxContextClass: "unknown",
+        },
         meta: {
           traceId: expect.any(String),
         },
       }),
+    });
+  });
+
+  it("returns the runtime capability through the generic app query route", async () => {
+    const response = await handleRequest(
+      new Request("http://example.com/api/app/query", {
+        method: "POST",
+        body: JSON.stringify({ type: "InspectModelRuntime" }),
+        headers: {
+          "content-type": "application/json",
+        },
+      }),
+    );
+
+    expect(response.status).toBe(200);
+    expect(response.headers.get("x-trace-id")).toBeTruthy();
+    await expect(response.json()).resolves.toEqual({
+      ok: true,
+      type: "InspectModelRuntime",
+      runtime: {
+        mode: "no-model",
+        provider: null,
+        available: false,
+        supportsStructuredOutput: false,
+        supportsStreaming: false,
+        maxContextClass: "unknown",
+      },
     });
   });
 

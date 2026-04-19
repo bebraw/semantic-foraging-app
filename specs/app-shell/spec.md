@@ -21,3 +21,4 @@ The app must not require an end-user API key for normal operation.
 4. The app shell may expose command-style or query-style JSON endpoints, including a generic app-command surface, but route handlers must still translate them into typed app messages before app logic runs.
 5. App-shell responses must include stable request-trace headers for debugging.
 6. The home screen model and shared page renderer may expose the active request trace ID in developer-facing HTML.
+7. The home screen model may expose the active model runtime tier and capability summary so contributors can see whether the app is running in no-model, local-model, or hosted-model mode.

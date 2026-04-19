@@ -22,6 +22,9 @@ const AppQuerySchema = z.discriminatedUnion("type", [
     type: z.literal("RunHealthCheck"),
   }),
   z.object({
+    type: z.literal("InspectModelRuntime"),
+  }),
+  z.object({
     type: z.literal("RenderHomeScreen"),
   }),
   AppExplanationQuerySchema,
@@ -45,7 +48,7 @@ export async function handleAppQueryRequest(request: Request, context: AppContex
     return createErrorResponse(
       createAppErrorResult(
         "validation_error",
-        'Request body must be JSON with type "RunHealthCheck", type "RenderHomeScreen", or type "RequestExplanation" plus title and at least one fact.',
+        'Request body must be JSON with type "RunHealthCheck", type "InspectModelRuntime", type "RenderHomeScreen", or type "RequestExplanation" plus title and at least one fact.',
         400,
       ),
     );
@@ -53,6 +56,10 @@ export async function handleAppQueryRequest(request: Request, context: AppContex
 
   if (parsed.data.type === "RunHealthCheck") {
     return createHealthQueryResponse(context);
+  }
+
+  if (parsed.data.type === "InspectModelRuntime") {
+    return createModelRuntimeQueryResponse(context);
   }
 
   if (parsed.data.type === "RenderHomeScreen") {
@@ -119,6 +126,24 @@ async function createHomeScreenQueryResponse(context: AppContext): Promise<Respo
     ok: true,
     type: "RenderHomeScreen",
     screen: result.screen,
+  });
+}
+
+async function createModelRuntimeQueryResponse(context: AppContext): Promise<Response> {
+  const result = await createAppBus(context).dispatch({ type: "InspectModelRuntime" });
+
+  if (result.kind === "error") {
+    return createErrorResponse(result);
+  }
+
+  if (result.kind !== "model-runtime") {
+    throw new Error("Expected a model runtime result");
+  }
+
+  return Response.json({
+    ok: true,
+    type: "InspectModelRuntime",
+    runtime: result.payload,
   });
 }
 

@@ -8,6 +8,7 @@ The app exposes a generic JSON query endpoint for dispatching typed app queries 
 
 - `POST /api/app/query` accepts JSON in one of these shapes:
   - `type: "RunHealthCheck"`
+  - `type: "InspectModelRuntime"`
   - `type: "RenderHomeScreen"`
   - `type: "RequestExplanation"` with `title: string` and `facts: string[]`
 - successful responses return JSON with:
@@ -16,9 +17,18 @@ The app exposes a generic JSON query endpoint for dispatching typed app queries 
 - `RunHealthCheck` responses additionally return:
   - `name: string`
   - `routes: string[]`
+- `InspectModelRuntime` responses additionally return:
+  - `runtime.mode`
+  - `runtime.provider`
+  - `runtime.available`
+  - `runtime.supportsStructuredOutput`
+  - `runtime.supportsStreaming`
+  - `runtime.maxContextClass`
 - `RenderHomeScreen` responses additionally return:
   - `screen.kind`
   - `screen.title`
+  - `screen.runtime.mode`
+  - `screen.runtime.provider`
   - `screen.routes`
   - `screen.meta.traceId`
 - `RequestExplanation` responses additionally return:

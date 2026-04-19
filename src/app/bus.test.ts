@@ -39,6 +39,24 @@ describe("createAppBus", () => {
     });
   });
 
+  it("returns the typed runtime capability payload for no-model mode", async () => {
+    const bus = createAppBus(createAppContext(exampleRoutes));
+
+    const result = await bus.dispatch({ type: "InspectModelRuntime" });
+
+    expect(result).toEqual({
+      kind: "model-runtime",
+      payload: {
+        mode: "no-model",
+        provider: null,
+        available: false,
+        supportsStructuredOutput: false,
+        supportsStreaming: false,
+        maxContextClass: "unknown",
+      },
+    });
+  });
+
   it("returns a deterministic intent result for command messages without a model provider", async () => {
     const bus = createAppBus(createAppContext(exampleRoutes));
 

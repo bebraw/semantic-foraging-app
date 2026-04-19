@@ -1,5 +1,6 @@
 import type { HealthPayload } from "../../api/health";
 import type { ClassifiedIntent } from "../agents/intent-agent";
+import type { RuntimeModelCapability } from "./model-runtime";
 import type { ConfidenceBand } from "../policies/confidence";
 import type { Provenance } from "../policies/provenance";
 import type { ScreenModel } from "./screen";
@@ -32,6 +33,11 @@ export type HealthCheckResult = {
   payload: HealthPayload;
 };
 
+export type ModelRuntimeResult = {
+  kind: "model-runtime";
+  payload: RuntimeModelCapability;
+};
+
 export type IntentResult = {
   kind: "intent";
   payload: {
@@ -53,7 +59,7 @@ export type ExplanationResult = {
   };
 };
 
-export type AppResult = ScreenResult | HealthCheckResult | IntentResult | ExplanationResult | AppErrorResult;
+export type AppResult = ScreenResult | HealthCheckResult | ModelRuntimeResult | IntentResult | ExplanationResult | AppErrorResult;
 
 export function createAppErrorResult(category: AppErrorCategory, message: string, status: number): AppErrorResult {
   return {

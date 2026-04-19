@@ -4,6 +4,7 @@ import type { AppContext } from "./context";
 import type { AppMessage } from "./message";
 import { continueIntentWorkflow } from "./use-cases/continue-intent-workflow";
 import { handleUserIntent } from "./use-cases/handle-user-intent";
+import { inspectModelRuntime } from "./use-cases/inspect-model-runtime";
 import { requestExplanation } from "./use-cases/request-explanation";
 import { renderScreen } from "./use-cases/render-screen";
 import { runHealthCheck } from "./use-cases/run-health-check";
@@ -21,6 +22,8 @@ export function createAppBus(context: AppContext): AppBus {
             return await renderScreen(context, message);
           case "RunHealthCheck":
             return await runHealthCheck(context, message);
+          case "InspectModelRuntime":
+            return await inspectModelRuntime(context, message);
           case "SubmitUserIntent":
             return await handleUserIntent(context, message);
           case "ClarifyUserIntent":

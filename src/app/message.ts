@@ -6,6 +6,10 @@ export type RunHealthCheckMessage = {
   type: "RunHealthCheck";
 };
 
+export type InspectModelRuntimeMessage = {
+  type: "InspectModelRuntime";
+};
+
 export type SubmitUserIntentMessage = {
   type: "SubmitUserIntent";
   rawInput: string;
@@ -26,6 +30,7 @@ export type RequestExplanationMessage = {
 export type AppMessage =
   | RenderHomeScreenMessage
   | RunHealthCheckMessage
+  | InspectModelRuntimeMessage
   | SubmitUserIntentMessage
   | ClarifyUserIntentMessage
   | RequestExplanationMessage;

@@ -28,6 +28,7 @@ The repo now implements the first application-layer slice from this document:
 - `POST /api/intent` now translates into a typed app command and dispatches through `src/app/bus.ts`.
 - `POST /api/intent/clarify` now continues a bounded clarification workflow through stored in-memory workflow state.
 - `POST /api/explanation` now translates into a typed app query and dispatches through `src/app/bus.ts`.
+- `POST /api/app/query` can now return a typed runtime-capability payload for no-model, local-model, and hosted-model tiers.
 - `src/app/use-cases/` now handles route-level queries plus bounded command and workflow flows.
 - `src/domain/agents/intent-workflow.ts` now defines the first serializable workflow-state contract and deterministic transition helper.
 - `src/infra/observability/trace.ts` now creates per-request traces and wraps model-provider calls with traced operations.
@@ -37,6 +38,7 @@ The repo now implements the first application-layer slice from this document:
 - workflow repository misses and storage failures now map to typed app error categories instead of route-local exception handling.
 - stored clarification workflow snapshots are now consumed on successful continuation instead of remaining reusable in memory.
 - `src/views/home.ts` now renders from a typed `HomeScreenModel` instead of route-local primitives.
+- the home screen now exposes the active runtime capability tier and provider summary from the same typed screen model returned by the app query surface.
 - `src/infra/llm/` now provides a typed model-provider boundary with deterministic fallback behavior plus a local OpenAI-compatible development path for Ollama- or LM Studio-style runtimes.
 
 The repo does not yet implement the full architecture described below. In particular:
@@ -209,6 +211,7 @@ Current implemented messages:
 
 - `RenderHomeScreen`
 - `RunHealthCheck`
+- `InspectModelRuntime`
 - `SubmitUserIntent`
 - `ClarifyUserIntent`
 - `RequestExplanation`
@@ -232,6 +235,7 @@ Current implemented outputs:
 
 - a typed `HomeScreenModel`
 - a stable health payload
+- a typed runtime-capability payload
 - a typed intent-classification payload
 - a serializable intent-workflow payload
 - a typed explanation payload

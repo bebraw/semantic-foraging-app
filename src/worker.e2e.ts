@@ -5,6 +5,7 @@ test("renders the worker home page", async ({ page }) => {
 
   await expect(page.getByRole("heading", { level: 1, name: "vibe-template Worker" })).toBeVisible();
   await expect(page.getByText("A minimal Cloudflare Worker baseline for experiments, tests, and local CI.")).toBeVisible();
+  await expect(page.getByText("Model runtime")).toBeVisible();
   await expect(page.getByRole("link", { name: "/api/health" })).toBeVisible();
   await expect(page.getByText("Trace ID:")).toBeVisible();
 });
@@ -100,6 +101,30 @@ test("returns the health payload through the generic app query endpoint", async 
     name: "vibe-template-worker",
     routes: ["/", "/api/health", "/api/app/command", "/api/app/query", "/api/intent", "/api/intent/clarify", "/api/explanation"],
   });
+});
+
+test("returns runtime capability through the generic app query endpoint", async ({ request }) => {
+  const response = await request.post("/api/app/query", {
+    data: {
+      type: "InspectModelRuntime",
+    },
+  });
+
+  expect(response.ok()).toBe(true);
+  expect(response.headers()["x-trace-id"]).toBeTruthy();
+  const payload = await response.json();
+
+  expect(payload).toMatchObject({
+    ok: true,
+    type: "InspectModelRuntime",
+    runtime: {
+      available: expect.any(Boolean),
+      supportsStructuredOutput: expect.any(Boolean),
+      supportsStreaming: expect.any(Boolean),
+    },
+  });
+  expect(["no-model", "local-model", "hosted-model"]).toContain(payload.runtime.mode);
+  expect(["small", "medium", "large", "unknown"]).toContain(payload.runtime.maxContextClass);
 });
 
 test("returns explanation results through the generic app query endpoint", async ({ request }) => {

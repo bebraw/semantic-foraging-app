@@ -12,6 +12,10 @@ export function renderHomePage(screen: HomeScreenModel): string {
         </li>`,
     )
     .join("");
+  const runtimeProvider = screen.runtime.provider ?? "none";
+  const runtimeAvailable = screen.runtime.available ? "available" : "fallback active";
+  const runtimeStructuredOutput = screen.runtime.supportsStructuredOutput ? "yes" : "no";
+  const runtimeStreaming = screen.runtime.supportsStreaming ? "yes" : "no";
 
   return renderPage({
     title: screen.title,
@@ -27,6 +31,35 @@ export function renderHomePage(screen: HomeScreenModel): string {
           <section class="rounded-[1rem] border border-app-line/70 bg-white/72 p-6 shadow-[0_16px_40px_-30px_rgba(30,26,22,0.3)]">
             <h2 class="mb-3 text-lg font-semibold tracking-[-0.02em]">${escapeHtml(screen.overviewTitle)}</h2>
             <p class="leading-7 text-app-text-soft">${escapeHtml(screen.overviewBody)}</p>
+          </section>
+          <section class="rounded-[1rem] border border-app-line/70 bg-white/72 p-6 shadow-[0_16px_40px_-30px_rgba(30,26,22,0.3)]">
+            <div class="flex flex-wrap items-center gap-3">
+              <h2 class="text-lg font-semibold tracking-[-0.02em]">${escapeHtml(screen.runtimeTitle)}</h2>
+              <span class="rounded-full bg-app-accent/10 px-3 py-1 text-sm font-semibold text-app-accent-strong">${escapeHtml(screen.runtimeModeLabel)}</span>
+            </div>
+            <p class="mt-3 leading-7 text-app-text-soft">${escapeHtml(screen.runtimeSummary)}</p>
+            <dl class="mt-5 grid gap-3 sm:grid-cols-2">
+              <div class="rounded-2xl border border-app-line/70 bg-app-canvas/55 px-4 py-3">
+                <dt class="text-xs font-semibold uppercase tracking-[0.18em] text-app-text-soft">Provider</dt>
+                <dd class="mt-1 font-medium">${escapeHtml(runtimeProvider)}</dd>
+              </div>
+              <div class="rounded-2xl border border-app-line/70 bg-app-canvas/55 px-4 py-3">
+                <dt class="text-xs font-semibold uppercase tracking-[0.18em] text-app-text-soft">Availability</dt>
+                <dd class="mt-1 font-medium">${escapeHtml(runtimeAvailable)}</dd>
+              </div>
+              <div class="rounded-2xl border border-app-line/70 bg-app-canvas/55 px-4 py-3">
+                <dt class="text-xs font-semibold uppercase tracking-[0.18em] text-app-text-soft">Structured output</dt>
+                <dd class="mt-1 font-medium">${escapeHtml(runtimeStructuredOutput)}</dd>
+              </div>
+              <div class="rounded-2xl border border-app-line/70 bg-app-canvas/55 px-4 py-3">
+                <dt class="text-xs font-semibold uppercase tracking-[0.18em] text-app-text-soft">Streaming</dt>
+                <dd class="mt-1 font-medium">${escapeHtml(runtimeStreaming)}</dd>
+              </div>
+              <div class="rounded-2xl border border-app-line/70 bg-app-canvas/55 px-4 py-3 sm:col-span-2">
+                <dt class="text-xs font-semibold uppercase tracking-[0.18em] text-app-text-soft">Context class</dt>
+                <dd class="mt-1 font-medium">${escapeHtml(screen.runtime.maxContextClass)}</dd>
+              </div>
+            </dl>
           </section>
           <section class="rounded-[1rem] border border-app-line/70 bg-white/72 p-6 shadow-[0_16px_40px_-30px_rgba(30,26,22,0.3)]">
             <h2 class="mb-3 text-lg font-semibold tracking-[-0.02em]">${escapeHtml(screen.routesTitle)}</h2>
