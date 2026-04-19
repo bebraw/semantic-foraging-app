@@ -38,7 +38,7 @@ The repo now implements the first application-layer slice from this document:
 - the home screen now includes a typed server-rendered map fragment built from deterministic candidate and recent-session geometry rather than a client-owned map state loop.
 - the map fragment now supports lightweight progressive enhancement that changes focused map details from server-rendered typed feature data without moving retrieval or ranking into the browser.
 - the map fragment now uses provider-backed geospatial contracts so Finnish basemap and observation data can flow through the same typed screen-model boundary.
-- when an NLS basemap is configured, the browser can project the typed map state onto real WMTS tiles while preserving the server-rendered fallback as the source of truth.
+- the browser now defaults to OpenStreetMap standard tiles for no-key interactive map previews, while NLS remains an opt-in Finnish topographic basemap.
 - `src/domain/agents/intent-workflow.ts` now defines the first serializable workflow-state contract and deterministic transition helper.
 - `src/domain/agents/ui-agent.ts` now owns the home/workbench screen model instead of leaving screen assembly inside the use case.
 - `src/infra/observability/trace.ts` now creates per-request traces and wraps model-provider calls with traced operations.

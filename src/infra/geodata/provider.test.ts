@@ -2,26 +2,42 @@ import { describe, expect, it, vi } from "vitest";
 import { createGeodataProvider } from "./provider";
 
 describe("createGeodataProvider", () => {
-  it("returns a disabled NLS basemap when no API key is configured", () => {
+  it("returns OpenStreetMap as the default interactive basemap", () => {
     const provider = createGeodataProvider();
 
     expect(provider.getBasemap()).toEqual(
       expect.objectContaining({
-        provider: "nls-wmts",
-        available: false,
+        provider: "osm-raster",
+        available: true,
+        tileTemplateUrl: "https://tile.openstreetmap.org/{z}/{x}/{y}.png",
       }),
     );
   });
 
-  it("builds a configured NLS tile template when an API key is present", () => {
+  it("builds a configured NLS tile template when that provider is selected and an API key is present", () => {
     const provider = createGeodataProvider({
+      MAP_BASEMAP_PROVIDER: "nls-wmts",
       NLS_API_KEY: "test-key",
     });
 
     expect(provider.getBasemap()).toEqual(
       expect.objectContaining({
+        provider: "nls-wmts",
         available: true,
         tileTemplateUrl: expect.stringContaining("api-key=test-key"),
+      }),
+    );
+  });
+
+  it("keeps the NLS basemap unavailable when selected without an API key", () => {
+    const provider = createGeodataProvider({
+      MAP_BASEMAP_PROVIDER: "nls-wmts",
+    });
+
+    expect(provider.getBasemap()).toEqual(
+      expect.objectContaining({
+        provider: "nls-wmts",
+        available: false,
       }),
     );
   });

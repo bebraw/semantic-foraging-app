@@ -19,7 +19,7 @@ describe("renderHomePage", () => {
     expect(html).toContain("Mapped leads");
     expect(html).toContain("Focused lead");
     expect(html).toContain("Geographic preview of current leads");
-    expect(html).toContain("National Land Survey topographic map");
+    expect(html).toContain("OpenStreetMap standard tiles");
     expect(html).toContain("FinBIF observations / finbif");
     expect(html).toContain("Autumn chanterelle cluster");
     expect(html).toContain("data-map-root");
@@ -34,6 +34,7 @@ describe("renderHomePage", () => {
     expect(html).toContain('rel="stylesheet" href="/styles.css"');
     expect(html).toContain("data-map-detail-label");
     expect(html).toContain("data-map-browser-frame");
+    expect(html).toContain("data-map-browser-attribution");
     expect(html).toContain("data-map-state=");
     expect(html).toContain("<script>");
     expect(html).toContain("Trace ID:");
@@ -245,14 +246,15 @@ function createHomeScreenModel(): HomeScreenModel {
       emptyState: "Run a completed foraging intent to project leads into a geographic preview.",
       legendTitle: "Mapped leads",
       basemap: {
-        provider: "nls-wmts",
-        label: "National Land Survey topographic map",
-        attribution: "Map data © National Land Survey of Finland CC BY 4.0",
-        available: false,
-        note: "The geographic fallback frame is active until a National Land Survey API key is configured.",
+        provider: "osm-raster",
+        label: "OpenStreetMap standard tiles",
+        attribution: "© OpenStreetMap contributors",
+        available: true,
+        note: "OpenStreetMap is the default interactive basemap.",
+        tileTemplateUrl: "https://tile.openstreetmap.org/{z}/{x}/{y}.png",
         minZoom: 0,
-        maxZoom: 16,
-        externalUrl: "https://www.maanmittauslaitos.fi/en/e-services/mapsite",
+        maxZoom: 19,
+        externalUrl: "https://www.openstreetmap.org",
       },
       viewport: {
         width: 640,

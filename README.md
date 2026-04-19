@@ -73,6 +73,8 @@ Local development in this repo targets macOS. Other platforms may need script an
 
 This app supports both local OpenAI-compatible model execution and Cloudflare-native model execution.
 
+The physical map preview defaults to OpenStreetMap standard tiles. Set `MAP_BASEMAP_PROVIDER=nls-wmts` together with `NLS_API_KEY` if you want the National Land Survey of Finland WMTS layer instead.
+
 ### Local path: Ollama or LM Studio
 
 Set:

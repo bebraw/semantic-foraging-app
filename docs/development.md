@@ -38,6 +38,11 @@ For local model-backed development, the shared model provider can target OpenAI-
 
 When `LOCAL_MODEL_BASE_URL` and `LOCAL_MODEL_NAME` are set, the provider resolver prefers that explicit local runtime over Workers AI or AI Gateway for the request.
 
+The map preview defaults to OpenStreetMap standard tiles with no extra setup. To switch the browser map to the National Land Survey of Finland WMTS layer, add these entries to `.dev.vars`:
+
+- `MAP_BASEMAP_PROVIDER=nls-wmts`
+- `NLS_API_KEY=...`
+
 If local CI fails with `No such image: ghcr.io/actions/actions-runner:latest`, pull that image manually and re-run the workflow.
 
 If local CI warns with `No such remote 'origin'`, add `GITHUB_REPO=owner/repo` to `.env.agent-ci` and rerun the workflow.

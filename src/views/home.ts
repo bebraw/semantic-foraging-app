@@ -247,8 +247,9 @@ export function renderHomePage(screen: HomeScreenModel): string {
                         <div class="absolute inset-0 hidden overflow-hidden rounded-[0.9rem] border border-app-line/60 bg-[#d9e5dc]" data-map-browser-frame aria-hidden="true">
                           <div class="absolute inset-0" data-map-tiles></div>
                           <svg class="absolute inset-0 h-full w-full" viewBox="0 0 ${screen.mapView.viewport.width} ${screen.mapView.viewport.height}" data-map-browser-overlay aria-hidden="true"></svg>
-                          <div class="pointer-events-none absolute inset-x-3 bottom-3 flex items-end justify-between gap-3">
+                          <div class="pointer-events-none absolute inset-x-3 bottom-3 flex flex-wrap items-end justify-between gap-3">
                             <p class="max-w-[18rem] rounded-full bg-white/88 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-app-text-soft shadow-[0_12px_24px_-20px_rgba(30,26,22,0.5)]" data-map-browser-source></p>
+                            <p class="rounded-full bg-white/88 px-3 py-1 text-[11px] font-semibold text-app-text-soft shadow-[0_12px_24px_-20px_rgba(30,26,22,0.5)]" data-map-browser-attribution></p>
                             <p class="rounded-full bg-white/88 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-app-text-soft shadow-[0_12px_24px_-20px_rgba(30,26,22,0.5)]" data-map-browser-zoom></p>
                           </div>
                         </div>
@@ -700,6 +701,7 @@ function renderMapEnhancementScript(): string {
     const tileLayer = root.querySelector("[data-map-tiles]");
     const browserOverlay = root.querySelector("[data-map-browser-overlay]");
     const browserSource = root.querySelector("[data-map-browser-source]");
+    const browserAttribution = root.querySelector("[data-map-browser-attribution]");
     const browserZoom = root.querySelector("[data-map-browser-zoom]");
     const zoomControls = root.querySelector("[data-map-zoom-controls]");
     const zoomOut = root.querySelector("[data-map-zoom-out]");
@@ -768,6 +770,10 @@ function renderMapEnhancementScript(): string {
         const overlayLabel = (state.overlays ?? []).find((overlay) => overlay.status === "ready")?.label ?? "Deterministic overlays";
 
         browserSource.textContent = \`\${state.basemap.label} + \${overlayLabel}\`;
+      }
+
+      if (browserAttribution) {
+        browserAttribution.textContent = state.basemap.attribution ?? "";
       }
 
       if (browserZoom) {

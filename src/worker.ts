@@ -128,6 +128,7 @@ export interface Env {
   AI_GATEWAY_PROVIDER_PATH?: string;
   AI_GATEWAY_MODEL?: string;
 
+  MAP_BASEMAP_PROVIDER?: string;
   NLS_API_KEY?: string;
   FINBIF_ACCESS_TOKEN?: string;
 }

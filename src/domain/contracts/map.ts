@@ -56,7 +56,7 @@ export type MapOverlayModel = {
 };
 
 export type MapBasemapModel = {
-  provider: "nls-wmts";
+  provider: "osm-raster" | "nls-wmts";
   label: string;
   attribution: string;
   available: boolean;

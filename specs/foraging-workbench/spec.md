@@ -41,7 +41,7 @@ The home page is a server-rendered semantic foraging workbench that lets contrib
 - The workbench must make the semantic-foraging intent taxonomy visible instead of collapsing back to generic search/create/explain labels.
 - Completed intent submissions must feed the same recent-session view shown on the workbench without requiring client-side state management.
 - The first map slice must remain useful as rendered HTML without requiring a browser-side map runtime.
-- The physical-map slice may enhance the browser surface with provider-backed basemap tiles and public geodata overlays, but the no-key fallback must still render a useful server-side map summary.
+- The physical-map slice may enhance the browser surface with provider-backed basemap tiles and public geodata overlays, with OpenStreetMap available as the default no-key basemap while server-rendered fallback content remains available when browser enhancement cannot run.
 - The explanation workbench must split multiline facts input into grounded fact strings before dispatching the typed explanation query.
 
 ## Regression Guardrails

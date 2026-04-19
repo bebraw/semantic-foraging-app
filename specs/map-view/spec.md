@@ -33,6 +33,7 @@ The home screen includes a typed map fragment that can project candidate leads a
 - Later interaction may progressively enhance the same server-rendered fragment, and when a basemap provider is configured the browser may render physical map tiles plus projected typed overlays from server-provided map state.
 - Candidate leads and recent sessions may degrade into a simplified physical fallback panel when basemap or overlay providers are unavailable.
 - Basemap provider configuration must be resolved on the server and exposed to the view through typed screen data.
+- OpenStreetMap standard tiles may act as the default no-key basemap as long as the rendered map keeps visible attribution and the browser enhancement stays limited to normal interactive viewing.
 - Real observation overlays must come through an explicit provider boundary rather than being hard-coded in the view.
 - Geometry generation and fallback behavior must remain deterministic enough for request-driven tests to validate the fragment reliably.
 - When map features exist, the rendered fragment may include a focused-detail panel plus lightweight browser behavior that updates that panel from typed data attributes already present in the markup.

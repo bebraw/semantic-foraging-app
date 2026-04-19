@@ -7,6 +7,7 @@ export type GeodataProvider = {
 };
 
 export type GeodataEnv = {
+  MAP_BASEMAP_PROVIDER?: string;
   NLS_API_KEY?: string;
   FINBIF_ACCESS_TOKEN?: string;
 };
@@ -35,30 +36,13 @@ const supportedSpeciesTaxa: Record<string, { taxonId: string; label: string }> =
 export function createGeodataProvider(env: GeodataEnv = {}, fetcher: FetchLike = fetch): GeodataProvider {
   return {
     getBasemap() {
-      if (!env.NLS_API_KEY) {
-        return {
-          provider: "nls-wmts",
-          label: "National Land Survey topographic map",
-          attribution: "Map data © National Land Survey of Finland CC BY 4.0",
-          available: false,
-          note: "Add NLS_API_KEY to enable National Land Survey WMTS tiles in the browser map.",
-          minZoom: 0,
-          maxZoom: 16,
-          externalUrl: "https://www.maanmittauslaitos.fi/en/e-services/mapsite",
-        };
+      const basemapProvider = resolveBasemapProvider(env);
+
+      if (basemapProvider === "nls-wmts") {
+        return createNlsBasemap(env.NLS_API_KEY);
       }
 
-      return {
-        provider: "nls-wmts",
-        label: "National Land Survey topographic map",
-        attribution: "Map data © National Land Survey of Finland CC BY 4.0",
-        available: true,
-        note: "NLS WMTS tiles are configured for browser enhancement.",
-        tileTemplateUrl: buildNlsTileTemplate(env.NLS_API_KEY),
-        minZoom: 0,
-        maxZoom: 16,
-        externalUrl: "https://www.maanmittauslaitos.fi/en/e-services/mapsite",
-      };
+      return createOsmBasemap();
     },
 
     async loadObservationOverlay(cues) {
@@ -119,6 +103,51 @@ export function createGeodataProvider(env: GeodataEnv = {}, fetcher: FetchLike =
         return createUnavailableOverlay("FinBIF overlay could not be loaded, so the map is showing lead geometry only.");
       }
     },
+  };
+}
+
+function resolveBasemapProvider(env: GeodataEnv): MapBasemapModel["provider"] {
+  return env.MAP_BASEMAP_PROVIDER === "nls-wmts" ? "nls-wmts" : "osm-raster";
+}
+
+function createOsmBasemap(): MapBasemapModel {
+  return {
+    provider: "osm-raster",
+    label: "OpenStreetMap standard tiles",
+    attribution: "© OpenStreetMap contributors",
+    available: true,
+    note: "OpenStreetMap is the default interactive basemap. Set MAP_BASEMAP_PROVIDER=nls-wmts with NLS_API_KEY when you want the Finnish topographic layer instead.",
+    tileTemplateUrl: "https://tile.openstreetmap.org/{z}/{x}/{y}.png",
+    minZoom: 0,
+    maxZoom: 19,
+    externalUrl: "https://www.openstreetmap.org",
+  };
+}
+
+function createNlsBasemap(apiKey?: string): MapBasemapModel {
+  if (!apiKey) {
+    return {
+      provider: "nls-wmts",
+      label: "National Land Survey topographic map",
+      attribution: "Map data © National Land Survey of Finland CC BY 4.0",
+      available: false,
+      note: "Add NLS_API_KEY to enable National Land Survey WMTS tiles when MAP_BASEMAP_PROVIDER=nls-wmts.",
+      minZoom: 0,
+      maxZoom: 16,
+      externalUrl: "https://www.maanmittauslaitos.fi/en/e-services/mapsite",
+    };
+  }
+
+  return {
+    provider: "nls-wmts",
+    label: "National Land Survey topographic map",
+    attribution: "Map data © National Land Survey of Finland CC BY 4.0",
+    available: true,
+    note: "NLS WMTS tiles are configured for browser enhancement.",
+    tileTemplateUrl: buildNlsTileTemplate(apiKey),
+    minZoom: 0,
+    maxZoom: 16,
+    externalUrl: "https://www.maanmittauslaitos.fi/en/e-services/mapsite",
   };
 }
 

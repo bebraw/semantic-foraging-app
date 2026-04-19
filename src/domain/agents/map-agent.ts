@@ -201,14 +201,15 @@ function determineZoom(bounds: GeoBounds): number {
 
 function createFallbackBasemap(): MapBasemapModel {
   return {
-    provider: "nls-wmts",
-    label: "National Land Survey topographic map",
-    attribution: "Map data © National Land Survey of Finland CC BY 4.0",
-    available: false,
-    note: "The geographic fallback frame is active until a National Land Survey API key is configured.",
+    provider: "osm-raster",
+    label: "OpenStreetMap standard tiles",
+    attribution: "© OpenStreetMap contributors",
+    available: true,
+    note: "OpenStreetMap is the default interactive basemap when no provider-backed map configuration is supplied.",
+    tileTemplateUrl: "https://tile.openstreetmap.org/{z}/{x}/{y}.png",
     minZoom: 0,
-    maxZoom: 16,
-    externalUrl: "https://www.maanmittauslaitos.fi/en/e-services/mapsite",
+    maxZoom: 19,
+    externalUrl: "https://www.openstreetmap.org",
   };
 }
 
