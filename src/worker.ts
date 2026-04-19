@@ -7,12 +7,13 @@ import { createGeodataProvider } from "./infra/geodata";
 import { resolveModelProvider } from "./infra/llm";
 import { consoleLogger, logTraceSummary, silentLogger } from "./infra/observability/logger";
 import { attachTraceHeaders, createRequestTrace } from "./infra/observability/trace";
-import { InMemoryRecentSessionRepository, InMemoryWorkflowRepository } from "./infra/storage/memory-store";
+import { InMemoryRecentSessionRepository, InMemorySavedArtifactRepository, InMemoryWorkflowRepository } from "./infra/storage/memory-store";
 import { renderNotFoundPage } from "./views/not-found";
 import { cssResponse, htmlResponse, javascriptResponse } from "./views/shared";
 
 const workflowRepository = new InMemoryWorkflowRepository();
 const recentSessionRepository = new InMemoryRecentSessionRepository();
+const savedArtifactRepository = new InMemorySavedArtifactRepository();
 
 export default {
   async fetch(request: Request, env: Env): Promise<Response> {
@@ -30,6 +31,7 @@ export async function handleRequest(request: Request, env: Env = {}): Promise<Re
     workflowRepository,
     recentSessionRepository,
     createGeodataProvider(env),
+    savedArtifactRepository,
   );
   let response: Response;
 

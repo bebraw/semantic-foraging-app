@@ -1,3 +1,5 @@
+import type { ForagingCandidateCard } from "../domain/contracts/foraging-knowledge";
+import type { ForagingIntent } from "../domain/agents/intent-agent";
 import type { ForagingWorkbenchState } from "../domain/contracts/app-state";
 
 export type RenderHomeScreenMessage = {
@@ -30,10 +32,17 @@ export type RequestExplanationMessage = {
   facts: string[];
 };
 
+export type SaveArtifactMessage = {
+  type: "SaveArtifact";
+  candidate: ForagingCandidateCard;
+  sourceIntent: Exclude<ForagingIntent, "clarify">;
+};
+
 export type AppMessage =
   | RenderHomeScreenMessage
   | RunHealthCheckMessage
   | InspectModelRuntimeMessage
   | SubmitUserIntentMessage
   | ClarifyUserIntentMessage
-  | RequestExplanationMessage;
+  | RequestExplanationMessage
+  | SaveArtifactMessage;

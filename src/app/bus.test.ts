@@ -16,7 +16,7 @@ describe("createAppBus", () => {
         kind: "home",
         title: "Foraging Workbench",
         healthPath: "/api/health",
-        workbenchTitle: "Manual flow rehearsal",
+        workbenchTitle: "Intent workbench",
         recentSessionsTitle: "Recent sessions",
         routes: exampleRoutes,
         meta: {
@@ -416,6 +416,113 @@ describe("createAppBus", () => {
           provider: null,
           reason: "no-model-provider",
         },
+      },
+    });
+  });
+
+  it("stores supported candidate cards as saved artifacts", async () => {
+    const bus = createAppBus(createAppContext(exampleRoutes));
+
+    const result = await bus.dispatch({
+      type: "SaveArtifact",
+      sourceIntent: "create-field-note",
+      candidate: {
+        id: "field-note-scaffold",
+        kind: "field-note",
+        title: "Field note scaffold",
+        summary: "A starter note seeded from the current request.",
+        statusLabel: "Draft note",
+        evidence: [
+          {
+            label: "Intent fit",
+            detail: "The request was classified as create-field-note.",
+          },
+        ],
+        spatialContext: {
+          species: ["chanterelle"],
+          habitat: ["spruce"],
+          region: ["helsinki"],
+          season: ["autumn"],
+        },
+      },
+    });
+
+    expect(result).toEqual({
+      kind: "saved-artifact",
+      payload: expect.objectContaining({
+        artifactId: expect.stringMatching(/^field-note-/),
+        sourceCardId: "field-note-scaffold",
+        kind: "field-note",
+        sourceIntent: "create-field-note",
+      }),
+    });
+  });
+
+  it("rejects unsupported candidate kinds in the save-artifact flow", async () => {
+    const bus = createAppBus(createAppContext(exampleRoutes));
+
+    const result = await bus.dispatch({
+      type: "SaveArtifact",
+      sourceIntent: "find-observations",
+      candidate: {
+        id: "observation-autumn-chanterelle-cluster",
+        kind: "observation",
+        title: "Autumn chanterelle cluster",
+        summary: "Observation lead.",
+        statusLabel: "Observation cluster",
+        evidence: [],
+        spatialContext: {
+          species: ["chanterelle"],
+          habitat: ["spruce"],
+          region: ["helsinki"],
+          season: ["autumn"],
+        },
+      },
+    });
+
+    expect(result).toEqual({
+      kind: "error",
+      error: {
+        category: "validation_error",
+        message: "This candidate cannot be saved as a durable artifact.",
+        status: 400,
+      },
+    });
+  });
+
+  it("returns a typed storage error when saved artifacts cannot be stored", async () => {
+    const bus = createAppBus(
+      createAppContext(exampleRoutes, null, createRequestTrace("unknown"), undefined, undefined, undefined, {
+        saveArtifact: vi.fn().mockRejectedValue(new Error("storage unavailable")),
+        listArtifacts: vi.fn().mockResolvedValue([]),
+      }),
+    );
+
+    const result = await bus.dispatch({
+      type: "SaveArtifact",
+      sourceIntent: "inspect-patch",
+      candidate: {
+        id: "patch-mossy-spruce-hollow",
+        kind: "patch",
+        title: "Mossy spruce hollow",
+        summary: "Patch lead.",
+        statusLabel: "Patch candidate",
+        evidence: [],
+        spatialContext: {
+          species: ["chanterelle"],
+          habitat: ["spruce", "wet"],
+          region: ["helsinki"],
+          season: ["autumn"],
+        },
+      },
+    });
+
+    expect(result).toEqual({
+      kind: "error",
+      error: {
+        category: "storage_failure",
+        message: "Saved artifact state could not be stored.",
+        status: 503,
       },
     });
   });

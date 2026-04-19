@@ -2,8 +2,12 @@ import type { AppRoute } from "../app-routes";
 import { createGeodataProvider, type GeodataProvider } from "../infra/geodata";
 import type { ModelProvider } from "../infra/llm/provider";
 import { createRequestTrace, observeModelProvider, type RequestTrace } from "../infra/observability/trace";
-import { InMemoryRecentSessionRepository, InMemoryWorkflowRepository } from "../infra/storage/memory-store";
-import type { RecentSessionRepository, WorkflowRepository } from "../infra/storage/repository";
+import {
+  InMemoryRecentSessionRepository,
+  InMemorySavedArtifactRepository,
+  InMemoryWorkflowRepository,
+} from "../infra/storage/memory-store";
+import type { RecentSessionRepository, SavedArtifactRepository, WorkflowRepository } from "../infra/storage/repository";
 
 export type AppContext = {
   appName: string;
@@ -13,6 +17,7 @@ export type AppContext = {
   trace: RequestTrace;
   workflowRepository: WorkflowRepository;
   recentSessionRepository: RecentSessionRepository;
+  savedArtifactRepository: SavedArtifactRepository;
 };
 
 export function createAppContext(
@@ -22,6 +27,7 @@ export function createAppContext(
   workflowRepository: WorkflowRepository = new InMemoryWorkflowRepository(),
   recentSessionRepository: RecentSessionRepository = new InMemoryRecentSessionRepository(),
   geodataProvider: GeodataProvider = createGeodataProvider(),
+  savedArtifactRepository: SavedArtifactRepository = new InMemorySavedArtifactRepository(),
 ): AppContext {
   return {
     appName: "vibe-template-worker",
@@ -31,5 +37,6 @@ export function createAppContext(
     trace,
     workflowRepository,
     recentSessionRepository,
+    savedArtifactRepository,
   };
 }

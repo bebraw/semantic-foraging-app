@@ -8,6 +8,7 @@ import { inspectModelRuntime } from "./use-cases/inspect-model-runtime";
 import { requestExplanation } from "./use-cases/request-explanation";
 import { renderScreen } from "./use-cases/render-screen";
 import { runHealthCheck } from "./use-cases/run-health-check";
+import { saveArtifact } from "./use-cases/save-artifact";
 
 export type AppBus = {
   dispatch(message: AppMessage): Promise<AppResult>;
@@ -30,6 +31,8 @@ export function createAppBus(context: AppContext): AppBus {
             return await continueIntentWorkflow(context, message);
           case "RequestExplanation":
             return await requestExplanation(context, message);
+          case "SaveArtifact":
+            return await saveArtifact(context, message);
         }
       });
     },

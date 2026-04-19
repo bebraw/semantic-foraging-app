@@ -1,6 +1,7 @@
+import type { StoredForagingArtifact } from "../../domain/contracts/artifact";
 import type { StoredIntentWorkflow } from "../../domain/contracts/workflow";
 import type { StoredForagingSession } from "../../domain/contracts/session";
-import type { RecentSessionRepository, WorkflowRepository } from "./repository";
+import type { RecentSessionRepository, SavedArtifactRepository, WorkflowRepository } from "./repository";
 
 export class InMemoryWorkflowRepository implements WorkflowRepository {
   private readonly intentWorkflows = new Map<string, StoredIntentWorkflow>();
@@ -31,5 +32,21 @@ export class InMemoryRecentSessionRepository implements RecentSessionRepository 
 
   async listRecentSessions(limit: number): Promise<StoredForagingSession[]> {
     return this.recentSessions.slice(0, limit);
+  }
+}
+
+export class InMemorySavedArtifactRepository implements SavedArtifactRepository {
+  private readonly artifacts: StoredForagingArtifact[] = [];
+
+  async saveArtifact(artifact: StoredForagingArtifact): Promise<void> {
+    this.artifacts.unshift(artifact);
+
+    if (this.artifacts.length > 24) {
+      this.artifacts.length = 24;
+    }
+  }
+
+  async listArtifacts(limit: number): Promise<StoredForagingArtifact[]> {
+    return this.artifacts.slice(0, limit);
   }
 }

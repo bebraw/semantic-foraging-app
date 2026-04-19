@@ -1,5 +1,6 @@
 import type { HealthPayload } from "../../api/health";
 import type { ClassifiedIntent } from "../agents/intent-agent";
+import type { StoredForagingArtifact } from "./artifact";
 import type { RuntimeModelCapability } from "./model-runtime";
 import type { ConfidenceBand } from "../policies/confidence";
 import type { Provenance } from "../policies/provenance";
@@ -59,7 +60,19 @@ export type ExplanationResult = {
   };
 };
 
-export type AppResult = ScreenResult | HealthCheckResult | ModelRuntimeResult | IntentResult | ExplanationResult | AppErrorResult;
+export type SavedArtifactResult = {
+  kind: "saved-artifact";
+  payload: StoredForagingArtifact;
+};
+
+export type AppResult =
+  | ScreenResult
+  | HealthCheckResult
+  | ModelRuntimeResult
+  | IntentResult
+  | ExplanationResult
+  | SavedArtifactResult
+  | AppErrorResult;
 
 export function createAppErrorResult(category: AppErrorCategory, message: string, status: number): AppErrorResult {
   return {
