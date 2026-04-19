@@ -136,11 +136,7 @@ function deriveOffsetPoint(seed: string, anchor: GeoPoint): GeoPoint {
 
   return {
     longitude: clamp(anchor.longitude + ((hash % 17) - 8) * 0.06, finlandBounds.west + 0.25, finlandBounds.east - 0.25),
-    latitude: clamp(
-      anchor.latitude + ((Math.floor(hash / 17) % 17) - 8) * 0.05,
-      finlandBounds.south + 0.25,
-      finlandBounds.north - 0.25,
-    ),
+    latitude: clamp(anchor.latitude + ((Math.floor(hash / 17) % 17) - 8) * 0.05, finlandBounds.south + 0.25, finlandBounds.north - 0.25),
   };
 }
 
