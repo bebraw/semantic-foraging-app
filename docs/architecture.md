@@ -37,6 +37,7 @@ The repo now implements the first application-layer slice from this document:
 - the `resume-session` retrieval path now prefers persisted recent sessions over the static catalog when recent-session state exists.
 - the home screen now includes a typed server-rendered map fragment built from deterministic candidate and recent-session geometry rather than a client-owned map state loop.
 - the map fragment now supports lightweight progressive enhancement that changes focused map details from server-rendered typed feature data without moving retrieval or ranking into the browser.
+- the next map slice will replace pseudo-coordinates with provider-backed geospatial contracts so Finnish basemap and observation data can flow through the same typed screen-model boundary.
 - `src/domain/agents/intent-workflow.ts` now defines the first serializable workflow-state contract and deterministic transition helper.
 - `src/domain/agents/ui-agent.ts` now owns the home/workbench screen model instead of leaving screen assembly inside the use case.
 - `src/infra/observability/trace.ts` now creates per-request traces and wraps model-provider calls with traced operations.
@@ -71,6 +72,7 @@ The repo does not yet implement the full architecture described below. In partic
 7. **Feature specs first.** Every lasting behavior belongs in `specs/`; every durable architecture decision belongs in an ADR.
 8. **Local-first determinism.** Non-model paths should remain testable and deterministic.
 9. **Progressive enhancement.** The app must remain useful with plain server-rendered views and minimal client JavaScript.
+10. **Server-owned geodata configuration.** External basemap and overlay providers may enrich the map, but provider selection, credentials, and fallback rules belong to the server-side app model.
 
 ---
 

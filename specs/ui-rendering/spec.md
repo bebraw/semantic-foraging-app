@@ -31,6 +31,7 @@ The app represents rendered UI as typed screen models between the app layer and 
 - Screen models may expose runtime capability details when that data helps contributors understand the current model tier without inspecting environment variables directly.
 - The home screen model may include typed manual-workbench fragments for semantic foraging flows such as intent rehearsal, clarification, and explanation requests.
 - The home screen model may include typed map fragments when spatial projection helps contributors inspect current retrieval state.
+- Typed map fragments may include provider-backed basemap and overlay configuration, but those details must still flow through the screen model instead of being hidden inside view-only code.
 - View-specific browser enhancement may attach to server-rendered screen fragments, but it must operate only on typed data already present in the rendered screen model.
 
 ## Regression Guardrails
@@ -39,3 +40,4 @@ The app represents rendered UI as typed screen models between the app layer and 
 - Rendering helpers must not reintroduce business logic into HTML assembly.
 - The no-model path must still support both HTML rendering and JSON screen-model queries.
 - Client-side enhancement must not become an alternate application-state or retrieval pipeline.
+- Screen rendering must preserve a meaningful physical-map fallback when external geodata providers are missing or disabled.
