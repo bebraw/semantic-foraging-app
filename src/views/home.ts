@@ -3,6 +3,15 @@ import { escapeHtml } from "./shared";
 import { renderPage } from "./render-page";
 
 export function renderHomePage(screen: HomeScreenModel): string {
+  const alertList = screen.alerts
+    .map(
+      (alert) =>
+        `<li class="rounded-[1rem] border px-4 py-3 ${alert.tone === "error" ? "border-rose-300 bg-rose-50 text-rose-950" : "border-sky-300 bg-sky-50 text-sky-950"}">
+          <p class="text-sm font-semibold uppercase tracking-[0.18em]">${escapeHtml(alert.title)}</p>
+          <p class="mt-2 leading-7">${escapeHtml(alert.body)}</p>
+        </li>`,
+    )
+    .join("");
   const routeList = screen.routes
     .map(
       (route) =>
@@ -16,6 +25,59 @@ export function renderHomePage(screen: HomeScreenModel): string {
   const runtimeAvailable = screen.runtime.available ? "available" : "fallback active";
   const runtimeStructuredOutput = screen.runtime.supportsStructuredOutput ? "yes" : "no";
   const runtimeStreaming = screen.runtime.supportsStreaming ? "yes" : "no";
+  const latestIntent = screen.intentWorkbench.latestSubmission;
+  const latestExplanation = screen.explanationWorkbench.latestSubmission;
+  const clarificationWorkflow = latestIntent?.workflow.state === "awaiting_clarification" ? latestIntent.workflow : null;
+  const latestIntentMarkup = latestIntent
+    ? `<section class="rounded-2xl border border-app-line/70 bg-app-canvas/55 p-4">
+        <h3 class="text-sm font-semibold uppercase tracking-[0.18em] text-app-text-soft">Latest intent result</h3>
+        <dl class="mt-3 grid gap-3 sm:grid-cols-2">
+          <div>
+            <dt class="text-xs font-semibold uppercase tracking-[0.16em] text-app-text-soft">Input</dt>
+            <dd class="mt-1 font-medium">${escapeHtml(latestIntent.input)}</dd>
+          </div>
+          <div>
+            <dt class="text-xs font-semibold uppercase tracking-[0.16em] text-app-text-soft">Intent</dt>
+            <dd class="mt-1 font-medium">${escapeHtml(latestIntent.classification.intent)}</dd>
+          </div>
+          <div>
+            <dt class="text-xs font-semibold uppercase tracking-[0.16em] text-app-text-soft">Confidence</dt>
+            <dd class="mt-1 font-medium">${escapeHtml(`${latestIntent.confidenceBand} (${latestIntent.classification.confidence.toFixed(2)})`)}</dd>
+          </div>
+          <div>
+            <dt class="text-xs font-semibold uppercase tracking-[0.16em] text-app-text-soft">Workflow</dt>
+            <dd class="mt-1 font-medium">${escapeHtml(latestIntent.workflow.state)}</dd>
+          </div>
+          <div class="sm:col-span-2">
+            <dt class="text-xs font-semibold uppercase tracking-[0.16em] text-app-text-soft">Provenance</dt>
+            <dd class="mt-1 font-medium">${escapeHtml(`${latestIntent.provenance.source} / ${latestIntent.provenance.reason ?? "n/a"}`)}</dd>
+          </div>
+        </dl>
+      </section>`
+    : "";
+  const clarificationMarkup = clarificationWorkflow
+    ? `<section class="rounded-2xl border border-amber-300 bg-amber-50/80 p-4">
+        <h3 class="text-sm font-semibold uppercase tracking-[0.18em] text-amber-950">Clarification needed</h3>
+        <p class="mt-2 leading-7 text-amber-950">${escapeHtml(clarificationWorkflow.question)}</p>
+        <p class="mt-2 text-sm text-amber-900">Allowed intents: ${clarificationWorkflow.options.map((option) => escapeHtml(option)).join(", ")}</p>
+        <form class="mt-4 grid gap-4" method="post" action="${escapeHtml(screen.intentWorkbench.clarificationActionPath)}">
+          <input type="hidden" name="${escapeHtml(screen.intentWorkbench.clarificationWorkflowIdName)}" value="${escapeHtml(clarificationWorkflow.workflowId)}">
+          <label class="grid gap-2">
+            <span class="text-sm font-semibold">${escapeHtml(screen.intentWorkbench.clarificationLabel)}</span>
+            <textarea name="${escapeHtml(screen.intentWorkbench.clarificationName)}" class="min-h-24 rounded-2xl border border-amber-300 bg-white px-4 py-3 leading-7 text-app-text" placeholder="${escapeHtml(screen.intentWorkbench.clarificationPlaceholder)}">${escapeHtml(screen.intentWorkbench.clarificationValue)}</textarea>
+          </label>
+          <button class="inline-flex w-fit items-center rounded-full bg-app-accent px-5 py-2 text-sm font-semibold text-white shadow-[0_16px_30px_-20px_rgba(160,90,42,0.85)]" type="submit">Continue workflow</button>
+        </form>
+      </section>`
+    : "";
+  const latestExplanationMarkup = latestExplanation
+    ? `<section class="rounded-2xl border border-app-line/70 bg-app-canvas/55 p-4">
+        <h3 class="text-sm font-semibold uppercase tracking-[0.18em] text-app-text-soft">Latest explanation</h3>
+        <p class="mt-3 font-medium">${escapeHtml(latestExplanation.title)}</p>
+        <p class="mt-3 leading-7 text-app-text-soft">${escapeHtml(latestExplanation.explanation)}</p>
+        <p class="mt-3 text-sm text-app-text-soft">Provenance: ${escapeHtml(`${latestExplanation.provenance.source} / ${latestExplanation.provenance.reason ?? "n/a"}`)}</p>
+      </section>`
+    : "";
 
   return renderPage({
     title: screen.title,
@@ -28,9 +90,49 @@ export function renderHomePage(screen: HomeScreenModel): string {
           <p class="mt-4 max-w-2xl text-lg leading-8 text-app-text-soft">${escapeHtml(screen.description)}</p>
         </section>
         <div class="grid gap-6 px-5 py-8 sm:px-8 sm:py-10">
+          ${screen.alerts.length > 0 ? `<ul class="grid gap-3">${alertList}</ul>` : ""}
           <section class="rounded-[1rem] border border-app-line/70 bg-white/72 p-6 shadow-[0_16px_40px_-30px_rgba(30,26,22,0.3)]">
             <h2 class="mb-3 text-lg font-semibold tracking-[-0.02em]">${escapeHtml(screen.overviewTitle)}</h2>
             <p class="leading-7 text-app-text-soft">${escapeHtml(screen.overviewBody)}</p>
+          </section>
+          <section class="rounded-[1rem] border border-app-line/70 bg-white/72 p-6 shadow-[0_16px_40px_-30px_rgba(30,26,22,0.3)]">
+            <h2 class="mb-3 text-lg font-semibold tracking-[-0.02em]">${escapeHtml(screen.workbenchTitle)}</h2>
+            <p class="leading-7 text-app-text-soft">${escapeHtml(screen.workbenchBody)}</p>
+            <div class="mt-6 grid gap-6 lg:grid-cols-2">
+              <section class="grid gap-4 rounded-[1rem] border border-app-line/70 bg-white/80 p-5">
+                <div>
+                  <h3 class="text-base font-semibold tracking-[-0.02em]">${escapeHtml(screen.intentWorkbench.title)}</h3>
+                  <p class="mt-2 leading-7 text-app-text-soft">${escapeHtml(screen.intentWorkbench.description)}</p>
+                </div>
+                <form class="grid gap-4" method="post" action="${escapeHtml(screen.intentWorkbench.actionPath)}">
+                  <label class="grid gap-2">
+                    <span class="text-sm font-semibold">${escapeHtml(screen.intentWorkbench.rawInputLabel)}</span>
+                    <textarea name="${escapeHtml(screen.intentWorkbench.rawInputName)}" class="min-h-28 rounded-2xl border border-app-line/70 bg-app-canvas/40 px-4 py-3 leading-7 text-app-text" placeholder="${escapeHtml(screen.intentWorkbench.rawInputPlaceholder)}">${escapeHtml(screen.intentWorkbench.rawInputValue)}</textarea>
+                  </label>
+                  <button class="inline-flex w-fit items-center rounded-full bg-app-accent px-5 py-2 text-sm font-semibold text-white shadow-[0_16px_30px_-20px_rgba(160,90,42,0.85)]" type="submit">${escapeHtml(screen.intentWorkbench.submitLabel)}</button>
+                </form>
+                ${latestIntentMarkup}
+                ${clarificationMarkup}
+              </section>
+              <section class="grid gap-4 rounded-[1rem] border border-app-line/70 bg-white/80 p-5">
+                <div>
+                  <h3 class="text-base font-semibold tracking-[-0.02em]">${escapeHtml(screen.explanationWorkbench.title)}</h3>
+                  <p class="mt-2 leading-7 text-app-text-soft">${escapeHtml(screen.explanationWorkbench.description)}</p>
+                </div>
+                <form class="grid gap-4" method="post" action="${escapeHtml(screen.explanationWorkbench.actionPath)}">
+                  <label class="grid gap-2">
+                    <span class="text-sm font-semibold">${escapeHtml(screen.explanationWorkbench.titleLabel)}</span>
+                    <input name="${escapeHtml(screen.explanationWorkbench.titleName)}" class="rounded-2xl border border-app-line/70 bg-app-canvas/40 px-4 py-3 text-app-text" placeholder="${escapeHtml(screen.explanationWorkbench.titlePlaceholder)}" value="${escapeHtml(screen.explanationWorkbench.titleValue)}">
+                  </label>
+                  <label class="grid gap-2">
+                    <span class="text-sm font-semibold">${escapeHtml(screen.explanationWorkbench.factsLabel)}</span>
+                    <textarea name="${escapeHtml(screen.explanationWorkbench.factsName)}" class="min-h-28 rounded-2xl border border-app-line/70 bg-app-canvas/40 px-4 py-3 leading-7 text-app-text" placeholder="${escapeHtml(screen.explanationWorkbench.factsPlaceholder)}">${escapeHtml(screen.explanationWorkbench.factsValue)}</textarea>
+                  </label>
+                  <button class="inline-flex w-fit items-center rounded-full bg-app-accent px-5 py-2 text-sm font-semibold text-white shadow-[0_16px_30px_-20px_rgba(160,90,42,0.85)]" type="submit">${escapeHtml(screen.explanationWorkbench.submitLabel)}</button>
+                </form>
+                ${latestExplanationMarkup}
+              </section>
+            </div>
           </section>
           <section class="rounded-[1rem] border border-app-line/70 bg-white/72 p-6 shadow-[0_16px_40px_-30px_rgba(30,26,22,0.3)]">
             <div class="flex flex-wrap items-center gap-3">

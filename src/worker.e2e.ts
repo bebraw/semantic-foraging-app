@@ -3,8 +3,8 @@ import { expect, test } from "@playwright/test";
 test("renders the worker home page", async ({ page }) => {
   await page.goto("/");
 
-  await expect(page.getByRole("heading", { level: 1, name: "vibe-template Worker" })).toBeVisible();
-  await expect(page.getByText("A minimal Cloudflare Worker baseline for experiments, tests, and local CI.")).toBeVisible();
+  await expect(page.getByRole("heading", { level: 1, name: "Foraging Workbench" })).toBeVisible();
+  await expect(page.getByText("Manual flow rehearsal")).toBeVisible();
   await expect(page.getByText("Model runtime")).toBeVisible();
   await expect(page.getByRole("link", { name: "/api/health" })).toBeVisible();
   await expect(page.getByText("Trace ID:")).toBeVisible();
@@ -12,11 +12,8 @@ test("renders the worker home page", async ({ page }) => {
 
 test("remains usable when no model provider is configured", async ({ page, request }) => {
   await page.goto("/");
-  await expect(
-    page.getByText(
-      "A concrete Worker entry point, a simple HTML page, a health endpoint, and testable flows that keep the template green from the start.",
-    ),
-  ).toBeVisible();
+  await expect(page.getByText("Intent rehearsal")).toBeVisible();
+  await expect(page.getByText("Explanation rehearsal")).toBeVisible();
 
   const response = await request.get("/api/health");
 
@@ -81,7 +78,7 @@ test("returns the typed home screen through the app query endpoint", async ({ re
     type: "RenderHomeScreen",
     screen: expect.objectContaining({
       kind: "home",
-      title: "vibe-template Worker",
+      title: "Foraging Workbench",
     }),
   });
 });
@@ -150,6 +147,47 @@ test("returns explanation results through the generic app query endpoint", async
       reason: "model-inference-failed",
     },
   });
+});
+
+test("supports the manual intent workbench flow", async ({ page }) => {
+  await page.goto("/");
+
+  await page.getByLabel("What do you want to do?").fill("Create a new field note");
+  await page.getByRole("button", { name: "Classify request" }).click();
+
+  const latestIntentResult = page.locator("section").filter({ hasText: "Latest intent result" }).first();
+
+  await expect(latestIntentResult).toBeVisible();
+  await expect(latestIntentResult.locator("dd").filter({ hasText: /^create$/ })).toBeVisible();
+});
+
+test("supports the manual clarification workbench flow", async ({ page }) => {
+  await page.goto("/");
+
+  await page.getByLabel("What do you want to do?").fill("Help");
+  await page.getByRole("button", { name: "Classify request" }).click();
+
+  await expect(page.getByText("Clarification needed")).toBeVisible();
+  await page.getByLabel("Clarification").fill("Search for similar observations");
+  await page.getByRole("button", { name: "Continue workflow" }).click();
+
+  const latestIntentResult = page.locator("section").filter({ hasText: "Latest intent result" }).first();
+
+  await expect(latestIntentResult).toBeVisible();
+  await expect(latestIntentResult.locator("dd").filter({ hasText: /^search$/ })).toBeVisible();
+});
+
+test("supports the manual explanation workbench flow", async ({ page }) => {
+  await page.goto("/");
+
+  await page.getByLabel("Decision or result title").fill("Suggested forage trail selected");
+  await page.getByLabel("Grounding facts").fill("Observation cluster overlaps the current region\nRecent notes mention wet spruce habitat");
+  await page.getByRole("button", { name: "Generate explanation" }).click();
+
+  const latestExplanation = page.locator("section").filter({ hasText: "Latest explanation" }).first();
+
+  await expect(latestExplanation).toBeVisible();
+  await expect(latestExplanation.locator("p").filter({ hasText: /^Suggested forage trail selected$/ })).toBeVisible();
 });
 
 test("classifies intent through the command endpoint without a model provider", async ({ request }) => {

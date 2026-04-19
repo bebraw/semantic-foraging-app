@@ -1,0 +1,43 @@
+# Feature: Foraging Workbench
+
+## Summary
+
+The home page is a server-rendered semantic foraging workbench that lets contributors exercise intent classification, clarification, and explanation flows manually through the browser.
+
+## Contract
+
+- `GET /` renders a typed `HomeScreenModel` for the foraging workbench.
+- The workbench must expose:
+  - a manual intent-rehearsal form that posts to `POST /actions/intent`
+  - a clarification form that posts to `POST /actions/intent/clarify` when the workflow is awaiting clarification
+  - a manual explanation-rehearsal form that posts to `POST /actions/explanation`
+  - the active runtime capability summary already exposed by the app shell
+- Successful intent submissions must render:
+  - the latest input
+  - classified intent
+  - confidence band
+  - provenance summary
+  - workflow state
+- Awaiting-clarification submissions must render:
+  - the follow-up question
+  - allowed options
+  - the `workflowId` needed to continue the workflow
+- Successful explanation submissions must render:
+  - the submitted title
+  - the explanation text
+  - provenance summary
+- Invalid form input or typed app errors must render back into the workbench as user-visible alerts instead of raw JSON.
+
+## Runtime Behavior
+
+- The workbench must stay server-rendered by default rather than depending on client-side state management.
+- HTML action routes must stay thin adapters over existing typed app messages and results.
+- The home screen model must be assembled by a dedicated UI agent module instead of being hand-built inside the route or view layer.
+- The intent clarification path must reuse the same stored workflow state used by the JSON clarification endpoint.
+- The explanation workbench must split multiline facts input into grounded fact strings before dispatching the typed explanation query.
+
+## Regression Guardrails
+
+- The workbench must remain usable in no-model mode.
+- The workbench must not fork business logic away from the existing command and query paths.
+- The view layer must continue rendering from typed screen models rather than route-local strings or ad hoc JSON parsing in the browser.

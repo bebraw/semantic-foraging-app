@@ -1,6 +1,6 @@
 # vibe-template
 
-`vibe-template` currently ships as a Cloudflare Worker application served with Wrangler, implemented in JavaScript/TypeScript, and centered on server-rendered HTML with a small JSON API stub.
+`vibe-template` currently ships as a Cloudflare Worker application served with Wrangler, implemented in JavaScript/TypeScript, and centered on a server-rendered semantic foraging workbench plus a small JSON API surface.
 
 This is a template for my vibecoding projects and it captures what I consider my best practices so I don't have to repeat them for each experiment.
 
@@ -23,7 +23,7 @@ Local development in this repo targets macOS. Other platforms may need script an
 - npm now comes from that pinned Node release instead of a separate repo version file.
 - Copy `.dev.vars.example` to `.dev.vars` before running projects that need local secrets.
 - Use repo-pinned CLI tools through `npx`, including `npx wrangler` for Cloudflare-based experiments.
-- Start the stub Worker with `npm run dev`, then open `http://127.0.0.1:8787`.
+- Start the local Worker with `npm run dev`, then open `http://127.0.0.1:8787`.
 - Rebuild the generated Tailwind stylesheet manually with `npm run build:css` when needed.
 
 ## Verification
@@ -39,7 +39,7 @@ Local development in this repo targets macOS. Other platforms may need script an
 
 ## Starter App
 
-- `GET /` serves a minimal HTML Worker stub.
+- `GET /` serves a server-rendered semantic foraging workbench for manual flow testing.
 - `GET /styles.css` serves the generated Tailwind stylesheet.
 - `GET /api/health` serves a JSON health response for smoke tests and tooling.
 - `POST /api/app/command` dispatches typed app commands through a generic JSON endpoint.
@@ -47,6 +47,9 @@ Local development in this repo targets macOS. Other platforms may need script an
 - `POST /api/intent` classifies a request into a bounded set of supported intents and can request clarification.
 - `POST /api/intent/clarify` continues the bounded clarification workflow using a stored `workflowId`.
 - `POST /api/explanation` returns grounded explanation text from a bounded query payload.
+- `POST /actions/intent` renders intent classification results back into the workbench.
+- `POST /actions/intent/clarify` continues the clarification workflow through the same server-rendered workbench.
+- `POST /actions/explanation` renders grounded explanation results back into the workbench.
 - App responses include lightweight `x-trace-id` and `x-trace-events` headers for debugging request flow.
 - Intent and explanation responses also report whether the final output came from deterministic fallback logic or model-backed inference.
 
@@ -56,7 +59,7 @@ Local development in this repo targets macOS. Other platforms may need script an
 - `src/app/` holds typed application messages, the app bus, and route-level use cases.
 - `src/api/` holds HTTP adapters for app queries and commands.
 - `src/domain/contracts/` holds typed app output models such as screens and result payloads.
-- `src/views/` holds HTML rendering modules for the starter UI.
+- `src/views/` holds HTML rendering modules for the foraging workbench UI.
 - Tests live next to the code they exercise under `src/`.
 
 ## Application Screenshot

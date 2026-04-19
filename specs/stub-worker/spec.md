@@ -11,7 +11,7 @@ This template needs a concrete runnable starting point so developers can clone i
 - **Entry points:** `wrangler dev` via `src/worker.ts`
 - **Source layout:** `src/worker.ts` routes requests, `src/api/` holds API handlers, and `src/views/` holds HTML rendering modules.
 - **Styling pipeline:** `src/tailwind-input.css` compiles to `.generated/styles.css`, which the Worker serves at `/styles.css`.
-- **Data models:** None yet. The stub is stateless.
+- **Data models:** The starter remains lightweight, but the root page now carries typed workbench state for manual semantic-foraging flow rehearsal.
 - **Dependencies:** Wrangler provides the Worker runtime; Playwright and Vitest verify the behavior.
 
 ### Anti-Patterns
@@ -26,14 +26,14 @@ This template needs a concrete runnable starting point so developers can clone i
 ### Definition of Done
 
 - [ ] The template starts locally through Wrangler without extra scaffolding.
-- [ ] The root route returns a visible HTML starter page for developers.
+- [ ] The root route returns a visible HTML semantic foraging workbench for developers.
 - [ ] The health route returns stable JSON for smoke tests and tooling.
 - [ ] The spec is updated in the same change set.
 - [ ] Automated tests cover the critical behavior.
 
 ### Regression Guardrails
 
-- `GET /` must keep returning HTML with a recognizable starter heading.
+- `GET /` must keep returning HTML with a recognizable semantic-foraging workbench heading.
 - `GET /styles.css` must keep returning the generated stylesheet.
 - `GET /api/health` must keep returning HTTP 200 JSON with `ok: true`.
 - Unknown routes must return HTTP 404.
@@ -49,7 +49,7 @@ This template needs a concrete runnable starting point so developers can clone i
 
 - Given: the Worker is running locally
 - When: the developer visits `/`
-- Then: they see a starter page that explains what the template provides
+- Then: they see a semantic foraging workbench page that supports manual flow rehearsal
 
 **Scenario: Tooling checks app health**
 

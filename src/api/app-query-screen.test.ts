@@ -43,7 +43,7 @@ describe("handleAppQueryRequest", () => {
       type: "RenderHomeScreen",
       screen: expect.objectContaining({
         kind: "home",
-        title: "vibe-template Worker",
+        title: "Foraging Workbench",
         runtime: {
           mode: "no-model",
           provider: null,

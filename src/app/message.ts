@@ -1,5 +1,8 @@
+import type { ForagingWorkbenchState } from "../domain/contracts/app-state";
+
 export type RenderHomeScreenMessage = {
   type: "RenderHomeScreen";
+  workbench?: ForagingWorkbenchState;
 };
 
 export type RunHealthCheckMessage = {

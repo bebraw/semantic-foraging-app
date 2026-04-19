@@ -2,6 +2,7 @@ import { createAppContext } from "./app/context";
 import { exampleRoutes } from "./app-routes";
 import { handleAppCommandRequest, handleIntentClarificationRequest, handleIntentCommandRequest } from "./api/app-command";
 import { handleAppQueryRequest, handleExplanationQueryRequest, handleHealthRequest, handleHomePageRequest } from "./api/app-query";
+import { handleExplanationActionRequest, handleIntentActionRequest, handleIntentClarificationActionRequest } from "./api/workbench";
 import { resolveModelProvider } from "./infra/llm";
 import { consoleLogger, logTraceSummary, silentLogger } from "./infra/observability/logger";
 import { attachTraceHeaders, createRequestTrace } from "./infra/observability/trace";
@@ -60,6 +61,21 @@ export async function handleRequest(request: Request, env: Env = {}): Promise<Re
 
   if (url.pathname === "/api/explanation" && request.method === "POST") {
     response = await handleExplanationQueryRequest(request, context);
+    return finalizeResponse(response, trace);
+  }
+
+  if (url.pathname === "/actions/intent" && request.method === "POST") {
+    response = await handleIntentActionRequest(request, context);
+    return finalizeResponse(response, trace);
+  }
+
+  if (url.pathname === "/actions/intent/clarify" && request.method === "POST") {
+    response = await handleIntentClarificationActionRequest(request, context);
+    return finalizeResponse(response, trace);
+  }
+
+  if (url.pathname === "/actions/explanation" && request.method === "POST") {
+    response = await handleExplanationActionRequest(request, context);
     return finalizeResponse(response, trace);
   }
 

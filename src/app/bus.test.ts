@@ -14,8 +14,9 @@ describe("createAppBus", () => {
       kind: "screen",
       screen: expect.objectContaining({
         kind: "home",
-        title: "vibe-template Worker",
+        title: "Foraging Workbench",
         healthPath: "/api/health",
+        workbenchTitle: "Manual flow rehearsal",
         routes: exampleRoutes,
         meta: {
           traceId: expect.any(String),

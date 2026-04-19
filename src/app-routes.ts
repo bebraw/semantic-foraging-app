@@ -4,7 +4,7 @@ export type AppRoute = {
 };
 
 export const exampleRoutes: AppRoute[] = [
-  { path: "/", purpose: "HTML stub app for developers" },
+  { path: "/", purpose: "HTML foraging workbench for manual flow testing" },
   { path: "/api/health", purpose: "JSON health endpoint for tooling and smoke tests" },
   { path: "/api/app/command", purpose: "JSON command endpoint for typed app commands" },
   { path: "/api/app/query", purpose: "JSON query endpoint for typed app queries" },

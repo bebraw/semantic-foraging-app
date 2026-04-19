@@ -1,10 +1,10 @@
-# Kay-Style Local-LLM App Architecture for `bebraw/vibe-template`
+# Kay-Style Local-LLM Architecture for `semantic-foraging-app`
 
 ## Goal
 
-Implement a lightweight, Cloudflare-Worker-native application architecture that uses many narrow, message-oriented modules instead of one monolithic orchestration loop.
+Implement a lightweight, Cloudflare-Worker-native semantic foraging application that uses many narrow, message-oriented modules instead of one monolithic orchestration loop.
 
-The architecture must fit the constraints of `bebraw/vibe-template` while using a **local model** that does **not require an external API key** for core functionality.
+The architecture must fit the constraints of this repo while using a **local model** that does **not require an external API key** for core functionality.
 
 The architecture must fit these constraints:
 
@@ -29,8 +29,10 @@ The repo now implements the first application-layer slice from this document:
 - `POST /api/intent/clarify` now continues a bounded clarification workflow through stored in-memory workflow state.
 - `POST /api/explanation` now translates into a typed app query and dispatches through `src/app/bus.ts`.
 - `POST /api/app/query` can now return a typed runtime-capability payload for no-model, local-model, and hosted-model tiers.
+- `POST /actions/intent`, `POST /actions/intent/clarify`, and `POST /actions/explanation` now render server-side foraging workbench flows through the same app bus.
 - `src/app/use-cases/` now handles route-level queries plus bounded command and workflow flows.
 - `src/domain/agents/intent-workflow.ts` now defines the first serializable workflow-state contract and deterministic transition helper.
+- `src/domain/agents/ui-agent.ts` now owns the home/workbench screen model instead of leaving screen assembly inside the use case.
 - `src/infra/observability/trace.ts` now creates per-request traces and wraps model-provider calls with traced operations.
 - intent and explanation outputs now expose explicit provenance metadata for model-backed versus deterministic paths.
 - `src/domain/contracts/` now defines typed screen and result models for those query flows.
@@ -39,6 +41,7 @@ The repo now implements the first application-layer slice from this document:
 - stored clarification workflow snapshots are now consumed on successful continuation instead of remaining reusable in memory.
 - `src/views/home.ts` now renders from a typed `HomeScreenModel` instead of route-local primitives.
 - the home screen now exposes the active runtime capability tier and provider summary from the same typed screen model returned by the app query surface.
+- the home page now behaves as a server-rendered semantic foraging workbench with manual intent, clarification, and explanation flows.
 - `src/infra/llm/` now provides a typed model-provider boundary with deterministic fallback behavior plus a local OpenAI-compatible development path for Ollama- or LM Studio-style runtimes.
 
 The repo does not yet implement the full architecture described below. In particular:
@@ -81,6 +84,20 @@ The core idea is:
 - the app layer dispatches those messages to modules
 - modules return outcomes or follow-up messages
 - views render the resulting state
+
+---
+
+## Foraging Product Spine
+
+The semantic foraging app should revolve around one concrete loop:
+
+1. a user frames a foraging task in natural language
+2. the app classifies the task and asks for clarification when needed
+3. the app gathers candidate observations, notes, or trails
+4. the app explains why a candidate was surfaced
+5. the user saves, refines, or continues the trail
+
+That loop should shape the roadmap more than generic template concerns.
 
 ---
 
@@ -149,6 +166,7 @@ src/
     app-command.ts
     app-query.ts
     health.ts
+    workbench.ts
   app/
     bus.ts
     context.ts
@@ -156,6 +174,7 @@ src/
     use-cases/
       continue-intent-workflow.ts
       handle-user-intent.ts
+      inspect-model-runtime.ts
       request-explanation.ts
       render-screen.ts
       run-health-check.ts
@@ -163,7 +182,10 @@ src/
     agents/
       intent-agent.ts
       intent-workflow.ts
+      ui-agent.ts
     contracts/
+      app-state.ts
+      model-runtime.ts
       result.ts
       screen.ts
       workflow.ts
@@ -850,13 +872,13 @@ Poor fits:
 
 Use Cloudflare Agents as an infrastructure capability beneath the app's message-oriented architecture, not as the architecture itself. ([developers.cloudflare.com](https://developers.cloudflare.com/agents/?utm_source=chatgpt.com))
 
-## First Specs To Add
+## Foraging Specs To Add
 
 Suggested spec folders:
 
 ```txt
-specs/app-shell/spec.md
-specs/intent-handling/spec.md
+specs/foraging-workbench/spec.md
+specs/intent-api/spec.md
 specs/workflow-engine/spec.md
 specs/model-integration/spec.md
 specs/ui-rendering/spec.md
@@ -864,11 +886,11 @@ specs/ui-rendering/spec.md
 
 Suggested order:
 
-1. app shell
-2. intent handling
+1. foraging workbench
+2. intent handling and clarification
 3. workflow engine
-4. screen model rendering
-5. explanation flow
+4. explanation flow
+5. retrieval and evidence ranking
 
 ---
 
@@ -881,29 +903,36 @@ Suggested order:
 - implement minimal bus
 - route `GET /` through the app layer
 
-### Phase 2 – rendering contract
+### Phase 2 – foraging workbench shell
 
-- create `ScreenModel`
-- update views to render from screen models
-- keep existing starter page behavior intact
+- add a UI agent that assembles the foraging workbench screen model
+- render manual intent, clarification, and explanation flows through HTML action routes
+- make the home page useful for rehearsing concrete foraging prompts such as species lookups, habitat searches, field-note creation, and result explanations
 
-### Phase 3 – deterministic workflow
+### Phase 3 – deterministic foraging workflow
 
-- add one concrete workflow end to end
-- include validation, state transition, screen render, and tests
+- expand beyond generic intent classification into foraging-specific task framing
+- include clarifications for ambiguous location, species, season, habitat, or artifact scope
+- support explicit intents such as `find-observations`, `create-field-note`, `inspect-patch`, `explain-suggestion`, and `resume-session`
+- keep workflow transitions explicit, bounded, and testable
 
-### Phase 4 – local model adapter
+### Phase 4 – retrieval and evidence contracts
 
-- add typed model client
-- support one bounded use case such as intent classification or explanation
-- integrate with Ollama, LM Studio, or a llama.cpp-compatible local endpoint
-- add fallback path for model failure or model unavailability
+- add knowledge-agent contracts for candidate observations, field notes, habitat patches, and trail fragments
+- define evidence summaries that the explanation flow can cite, including region overlap, species co-occurrence, recency, and habitat fit
+- keep ranking and validation deterministic even when model assistance is present
 
-### Phase 5 – observability and hardening
+### Phase 5 – local model assistance
 
-- add trace logging
-- improve error boundaries
-- add e2e coverage for degraded paths
+- use the local model for bounded interpretation, query rewriting, and explanation tasks
+- keep deterministic fallback behavior for offline or degraded runs
+- introduce model-assisted retrieval hints only where provenance remains explicit, for example synonym expansion, species-name normalization, or clarification wording
+
+### Phase 6 – sessions, persistence, and hardening
+
+- persist saved foraging trails, field notes, patch inspections, and recent sessions
+- extend traces with retrieval, evidence, and explanation summaries so a surfaced trail can be audited end to end
+- add e2e coverage for degraded paths and saved-session flows
 
 ---
 
@@ -937,4 +966,4 @@ A feature is done when:
 
 ## One-Sentence Summary
 
-Build a **server-first, Cloudflare-native, message-oriented app** where a local model helps interpret and explain, while deterministic TypeScript modules own workflow, truth, and rendering boundaries.
+Build a **server-first, Cloudflare-native, message-oriented semantic foraging app** where a local model helps interpret and explain, while deterministic TypeScript modules own workflow, retrieval truth, and rendering boundaries.

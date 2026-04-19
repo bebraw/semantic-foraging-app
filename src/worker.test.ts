@@ -5,15 +5,15 @@ import { ensureGeneratedStylesheet } from "./test-support";
 ensureGeneratedStylesheet();
 
 describe("worker", () => {
-  it("renders the stub home page", async () => {
+  it("renders the foraging workbench home page", async () => {
     const response = await handleRequest(new Request("http://example.com/"));
 
     expect(response.status).toBe(200);
     expect(response.headers.get("content-type")).toContain("text/html");
 
     const body = await response.text();
-    expect(body).toContain("vibe-template Worker");
-    expect(body).toContain("No-model mode");
+    expect(body).toContain("Foraging Workbench");
+    expect(body).toContain("Intent rehearsal");
     expect(body).toContain("/api/health");
     expect(body).toContain("Trace ID:");
   });
@@ -87,7 +87,7 @@ describe("worker", () => {
       type: "RenderHomeScreen",
       screen: expect.objectContaining({
         kind: "home",
-        title: "vibe-template Worker",
+        title: "Foraging Workbench",
         runtime: {
           mode: "no-model",
           provider: null,
@@ -289,6 +289,59 @@ describe("worker", () => {
         reason: "no-model-provider",
       },
     });
+  });
+
+  it("renders intent action results back into the home page", async () => {
+    const formData = new FormData();
+    formData.set("input", "Create a new field note");
+
+    const response = await handleRequest(
+      new Request("http://example.com/actions/intent", {
+        method: "POST",
+        body: formData,
+      }),
+    );
+
+    expect(response.status).toBe(200);
+    expect(response.headers.get("content-type")).toContain("text/html");
+    const body = await response.text();
+    expect(body).toContain("Latest intent result");
+    expect(body).toContain("create");
+  });
+
+  it("renders clarification prompts through the home page workflow action", async () => {
+    const formData = new FormData();
+    formData.set("input", "Help");
+
+    const response = await handleRequest(
+      new Request("http://example.com/actions/intent", {
+        method: "POST",
+        body: formData,
+      }),
+    );
+
+    expect(response.status).toBe(200);
+    const body = await response.text();
+    expect(body).toContain("Clarification needed");
+    expect(body).toContain('name="workflowId"');
+  });
+
+  it("renders explanation results through the home page action", async () => {
+    const formData = new FormData();
+    formData.set("title", "Suggested forage trail selected");
+    formData.set("facts", "Observation cluster overlaps the current region\nRecent notes mention wet spruce habitat");
+
+    const response = await handleRequest(
+      new Request("http://example.com/actions/explanation", {
+        method: "POST",
+        body: formData,
+      }),
+    );
+
+    expect(response.status).toBe(200);
+    const body = await response.text();
+    expect(body).toContain("Latest explanation");
+    expect(body).toContain("Suggested forage trail selected");
   });
 
   it("returns a not found page for unknown routes", async () => {
