@@ -53,6 +53,7 @@ If local CI warns with `No such remote 'origin'`, add `GITHUB_REPO=owner/repo` t
 - Run the quiet local workflow with `npm run ci:local:quiet`.
 - Run all relevant workflows with `npm run ci:local:all`.
 - Rebuild the generated stylesheet manually with `npm run build:css`.
+- Request a FinBIF API token email with `npm run finbif:request-token -- you@example.com`, then set `FINBIF_ACCESS_TOKEN` in `.dev.vars`.
 - Run the fast local gate with `npm run quality:gate:fast`.
 - Run the baseline quality gate with `npm run quality:gate`.
 - Run the shipped runtime dependency audit with `npm run security:audit`.

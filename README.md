@@ -22,6 +22,7 @@ Local development in this repo targets macOS. Other platforms may need script an
 - The exact project Node.js version is pinned in `package.json`, and CI reads that value directly.
 - npm now comes from that pinned Node release, with the accepted npm 11 range declared in `package.json`.
 - Copy `.dev.vars.example` to `.dev.vars` before running projects that need local secrets.
+- Request a FinBIF token email with `npm run finbif:request-token -- you@example.com`, then set `FINBIF_ACCESS_TOKEN` in `.dev.vars` if you want FinBIF map overlays.
 - Use repo-pinned CLI tools through `npx`, including `npx wrangler` for Cloudflare-based experiments.
 - Start the local Worker with `npm run dev`, then open `http://127.0.0.1:8787`.
 - Rebuild the generated Tailwind stylesheet manually with `npm run build:css` when needed.

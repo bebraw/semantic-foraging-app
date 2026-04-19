@@ -9,3 +9,7 @@ SESSION_SECRET=change-this-to-a-long-random-secret
 # LOCAL_MODEL_BASE_URL=http://127.0.0.1:11434/v1
 # LOCAL_MODEL_NAME=gpt-oss:20b
 # LOCAL_MODEL_API_KEY=ollama
+
+# Optional FinBIF API token for observation overlays.
+# Request one with: npm run finbif:request-token -- you@example.com
+# FINBIF_ACCESS_TOKEN=replace-with-token-from-email
