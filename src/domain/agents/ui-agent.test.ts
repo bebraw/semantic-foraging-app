@@ -24,6 +24,7 @@ describe("ui-agent", () => {
         factsText: "",
       },
       recentSessions: [],
+      savedArtifacts: [],
     });
   });
 
@@ -51,6 +52,7 @@ describe("ui-agent", () => {
           title: "Foraging map",
         }),
         retrievalTitle: "Candidate leads",
+        savedArtifactsTitle: "Saved artifacts",
         recentSessionsTitle: "Recent sessions",
         intentWorkbench: expect.objectContaining({
           actionPath: "/actions/intent",
@@ -58,6 +60,9 @@ describe("ui-agent", () => {
         }),
         explanationWorkbench: expect.objectContaining({
           actionPath: "/actions/explanation",
+        }),
+        artifactWorkbench: expect.objectContaining({
+          saveActionPath: "/actions/artifact/save",
         }),
         meta: {
           traceId: "trace-ui-agent",
@@ -319,6 +324,50 @@ describe("ui-agent", () => {
     });
 
     expect(screen.recentSessions).toEqual([expect.objectContaining({ sessionId: "session-1" })]);
+  });
+
+  it("preserves saved artifacts in the home screen model", () => {
+    const screen = createHomeScreenModel({
+      routes: exampleRoutes,
+      runtime: {
+        mode: "no-model",
+        provider: null,
+        available: false,
+        supportsStructuredOutput: false,
+        supportsStreaming: false,
+        maxContextClass: "unknown",
+      },
+      traceId: "trace-artifacts",
+      workbench: {
+        ...createInitialForagingWorkbenchState(),
+        savedArtifacts: [
+          {
+            artifactId: "trail-1",
+            sourceCardId: "trail-card-1",
+            kind: "trail",
+            title: "Saved trail",
+            summary: "Saved trail summary",
+            sourceIntent: "explain-suggestion",
+            cues: {
+              species: ["chanterelle"],
+              habitat: ["spruce"],
+              region: ["helsinki"],
+              season: ["autumn"],
+            },
+            evidence: [],
+            spatialContext: {
+              species: ["chanterelle"],
+              habitat: ["spruce"],
+              region: ["helsinki"],
+              season: ["autumn"],
+            },
+            savedAt: "2026-04-19T12:00:00.000Z",
+          },
+        ],
+      },
+    });
+
+    expect(screen.savedArtifacts).toEqual([expect.objectContaining({ artifactId: "trail-1" })]);
   });
 
   it("describes hosted and unavailable runtime tiers in the screen summary", () => {

@@ -11,6 +11,7 @@ The home page is a server-rendered semantic foraging workbench that lets contrib
   - a manual intent-rehearsal form that posts to `POST /actions/intent`
   - a clarification form that posts to `POST /actions/intent/clarify` when the workflow is awaiting clarification
   - a manual explanation-rehearsal form that posts to `POST /actions/explanation`
+  - save-artifact forms for supported candidate cards that post to `POST /actions/artifact/save`
 - Successful intent submissions must render:
   - the latest input
   - classified intent
@@ -28,6 +29,7 @@ The home page is a server-rendered semantic foraging workbench that lets contrib
   - the explanation text
   - provenance summary
 - The workbench may render a server-first map fragment when current leads or recent sessions have mappable spatial context.
+- The workbench must render a saved-artifacts section showing persisted field notes, trails, and patch inspections when available.
 - The workbench must render a recent-sessions section showing persisted recent-session snapshots when available.
 - Invalid form input or typed app errors must render back into the workbench as user-visible alerts instead of raw JSON.
 
@@ -41,6 +43,7 @@ The home page is a server-rendered semantic foraging workbench that lets contrib
 - The intent clarification path must reuse the same stored workflow state used by the JSON clarification endpoint.
 - The workbench must make the semantic-foraging intent taxonomy visible instead of collapsing back to generic search/create/explain labels.
 - Completed intent submissions must feed the same recent-session view shown on the workbench without requiring client-side state management.
+- Supported candidate cards may save durable artifacts through the same app bus instead of bypassing it with view-local storage logic.
 - The first map slice must remain useful as rendered HTML without requiring a browser-side map runtime.
 - The physical-map slice may enhance the browser surface with provider-backed basemap tiles and public geodata overlays, with OpenStreetMap available as the default no-key basemap while server-rendered fallback content remains available when browser enhancement cannot run.
 - The map panel may request current location by default when the browser map is available, and it may keep an explicit current-location control as a retry path without sending live coordinates back through the app bus.

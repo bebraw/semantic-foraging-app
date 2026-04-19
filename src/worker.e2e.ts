@@ -4,12 +4,10 @@ test("renders the worker home page", async ({ page }) => {
   await page.goto("/");
 
   await expect(page.getByRole("heading", { level: 1, name: "Foraging Workbench" })).toBeVisible();
-  await expect(page.getByText("Manual flow rehearsal")).toBeVisible();
+  await expect(page.getByText("Intent workbench")).toBeVisible();
   await expect(page.getByText("Foraging map")).toBeVisible();
   await expect(page.getByText("Candidate leads")).toBeVisible();
-  await expect(page.getByText("Model runtime")).toBeVisible();
-  await expect(page.getByRole("link", { name: "/api/health" })).toBeVisible();
-  await expect(page.getByText("Trace ID:")).toBeVisible();
+  await expect(page.getByText("Saved artifacts")).toBeVisible();
 });
 
 test("remains usable when no model provider is configured", async ({ page, request }) => {

@@ -1,4 +1,5 @@
 import type { ClassifiedIntent } from "../agents/intent-agent";
+import type { StoredForagingArtifact } from "./artifact";
 import type { ConfidenceBand } from "../policies/confidence";
 import type { Provenance } from "../policies/provenance";
 import type { StoredForagingSession } from "./session";
@@ -42,4 +43,5 @@ export type ForagingWorkbenchState = {
   intent: IntentWorkbenchState;
   explanation: ExplanationWorkbenchState;
   recentSessions: StoredForagingSession[];
+  savedArtifacts: StoredForagingArtifact[];
 };

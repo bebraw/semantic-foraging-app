@@ -1,3 +1,4 @@
+import { z } from "zod";
 import { createAppBus } from "../app/bus";
 import type { AppContext } from "../app/context";
 import type { AppErrorResult } from "../domain/contracts/result";
@@ -12,6 +13,59 @@ import {
 } from "../domain/agents/ui-agent";
 import { renderHomePage } from "../views/home";
 import { htmlResponse } from "../views/shared";
+
+const CuesSchema = z.object({
+  species: z.array(z.string()),
+  habitat: z.array(z.string()),
+  region: z.array(z.string()),
+  season: z.array(z.string()),
+});
+const MissingContextSchema = z.enum(["artifact_scope", "species", "habitat", "region", "season"]);
+
+const CandidateSchema = z.object({
+  id: z.string().trim().min(1),
+  kind: z.enum(["observation", "field-note", "patch", "trail", "session"]),
+  title: z.string().trim().min(1),
+  summary: z.string().trim().min(1),
+  statusLabel: z.string().trim().min(1),
+  evidence: z.array(
+    z.object({
+      label: z.string(),
+      detail: z.string(),
+    }),
+  ),
+  spatialContext: CuesSchema,
+});
+
+const ProvenanceSchema = z.discriminatedUnion("source", [
+  z.object({
+    source: z.literal("deterministic-fallback"),
+    provider: z.null(),
+    reason: z.enum(["no-model-provider", "provider-unavailable", "model-inference-failed", "model-schema-failed"]),
+  }),
+  z.object({
+    source: z.literal("model"),
+    provider: z.string().min(1),
+    reason: z.literal("structured-inference"),
+  }),
+]);
+
+const CompletedIntentSubmissionSchema = z.object({
+  input: z.string().trim().min(1),
+  classification: z.object({
+    intent: z.enum(["find-observations", "create-field-note", "inspect-patch", "explain-suggestion", "resume-session"]),
+    confidence: z.number(),
+    needsClarification: z.boolean(),
+    cues: CuesSchema,
+    missing: z.array(MissingContextSchema),
+  }),
+  confidenceBand: z.enum(["low", "medium", "high"]),
+  provenance: ProvenanceSchema,
+  workflow: z.object({
+    name: z.literal("intent-classification"),
+    state: z.literal("completed"),
+  }),
+});
 
 export async function handleIntentActionRequest(request: Request, context: AppContext): Promise<Response> {
   const formData = await request.formData();
@@ -124,6 +178,57 @@ export async function handleExplanationActionRequest(request: Request, context: 
   return await renderWorkbenchResponse(context, state);
 }
 
+export async function handleArtifactSaveActionRequest(request: Request, context: AppContext): Promise<Response> {
+  const formData = await request.formData();
+  const candidateField = readRequiredField(formData, "candidate");
+  const sourceIntent = readRequiredField(formData, "sourceIntent");
+  const intentSubmissionField = readRequiredField(formData, "intentSubmission");
+  const parsedCandidate = parseJsonField(candidateField.value, CandidateSchema);
+  const parsedSubmission = parseJsonField(intentSubmissionField.value, CompletedIntentSubmissionSchema);
+  let state = createInitialForagingWorkbenchState();
+
+  if (parsedSubmission) {
+    state = withIntentSubmission(state, parsedSubmission);
+  }
+
+  if (
+    !candidateField.ok ||
+    !sourceIntent.ok ||
+    !intentSubmissionField.ok ||
+    !parsedCandidate ||
+    !parsedSubmission ||
+    sourceIntent.value !== parsedSubmission.classification.intent
+  ) {
+    return await renderWorkbenchResponse(
+      context,
+      withWorkbenchAlert(
+        state,
+        createWorkbenchAlert("Artifact save failed", "Provide a supported candidate and completed intent state before saving."),
+      ),
+      400,
+    );
+  }
+
+  const result = await createAppBus(context).dispatch({
+    type: "SaveArtifact",
+    candidate: parsedCandidate,
+    sourceIntent: parsedSubmission.classification.intent,
+  });
+
+  if (result.kind === "error") {
+    return await renderWorkbenchErrorResponse(context, state, result, "Artifact save failed");
+  }
+
+  if (result.kind !== "saved-artifact") {
+    throw new Error("Expected a saved-artifact result");
+  }
+
+  return await renderWorkbenchResponse(
+    context,
+    withWorkbenchAlert(state, createWorkbenchAlert("Artifact saved", `Saved ${result.payload.title} as ${result.payload.kind}.`, "info")),
+  );
+}
+
 async function renderWorkbenchErrorResponse(
   context: AppContext,
   state: ReturnType<typeof createInitialForagingWorkbenchState>,
@@ -176,4 +281,15 @@ function splitFacts(factsText: string): string[] {
     .split("\n")
     .map((fact) => fact.trim())
     .filter(Boolean);
+}
+
+function parseJsonField<T extends z.ZodTypeAny>(value: string, schema: T): z.infer<T> | null {
+  try {
+    const parsed = value ? JSON.parse(value) : null;
+    const result = schema.safeParse(parsed);
+
+    return result.success ? result.data : null;
+  } catch {
+    return null;
+  }
 }

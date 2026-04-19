@@ -3,7 +3,12 @@ import { exampleRoutes } from "../app-routes";
 import { createAppContext } from "../app/context";
 import { createRequestTrace } from "../infra/observability/trace";
 import type { WorkflowRepository } from "../infra/storage/repository";
-import { handleExplanationActionRequest, handleIntentActionRequest, handleIntentClarificationActionRequest } from "./workbench";
+import {
+  handleArtifactSaveActionRequest,
+  handleExplanationActionRequest,
+  handleIntentActionRequest,
+  handleIntentClarificationActionRequest,
+} from "./workbench";
 
 describe("workbench actions", () => {
   it("renders an intent result back into the workbench page", async () => {
@@ -133,6 +138,75 @@ describe("workbench actions", () => {
     const body = await response.text();
     expect(body).toContain("Latest explanation");
     expect(body).toContain("Suggested forage trail selected");
+  });
+
+  it("saves a supported candidate artifact through the server-rendered workbench", async () => {
+    const formData = new FormData();
+    formData.set(
+      "candidate",
+      JSON.stringify({
+        id: "field-note-scaffold",
+        kind: "field-note",
+        title: "Field note scaffold",
+        summary: "A starter note seeded from the current request.",
+        statusLabel: "Draft note",
+        evidence: [
+          {
+            label: "Intent fit",
+            detail: "The request was classified as create-field-note.",
+          },
+        ],
+        spatialContext: {
+          species: ["chanterelle"],
+          habitat: ["spruce"],
+          region: ["helsinki"],
+          season: ["autumn"],
+        },
+      }),
+    );
+    formData.set("sourceIntent", "create-field-note");
+    formData.set(
+      "intentSubmission",
+      JSON.stringify({
+        input: "Create a new field note",
+        classification: {
+          intent: "create-field-note",
+          confidence: 0.74,
+          needsClarification: false,
+          cues: {
+            species: ["chanterelle"],
+            habitat: ["spruce"],
+            region: ["helsinki"],
+            season: ["autumn"],
+          },
+          missing: [],
+        },
+        confidenceBand: "medium",
+        provenance: {
+          source: "deterministic-fallback",
+          provider: null,
+          reason: "no-model-provider",
+        },
+        workflow: {
+          name: "intent-classification",
+          state: "completed",
+        },
+      }),
+    );
+
+    const response = await handleArtifactSaveActionRequest(
+      new Request("http://example.com/actions/artifact/save", {
+        method: "POST",
+        body: formData,
+      }),
+      createAppContext(exampleRoutes),
+    );
+
+    expect(response.status).toBe(200);
+    const body = await response.text();
+    expect(body).toContain("Artifact saved");
+    expect(body).toContain("Saved artifacts");
+    expect(body).toContain("Field note scaffold");
   });
 
   it("renders a validation alert when the intent form is empty", async () => {

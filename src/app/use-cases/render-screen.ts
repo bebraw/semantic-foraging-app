@@ -37,6 +37,28 @@ export async function renderScreen(context: AppContext, message: RenderHomeScree
         });
       }
 
+      try {
+        workbench = {
+          ...workbench,
+          savedArtifacts: await context.savedArtifactRepository.listArtifacts(6),
+        };
+      } catch {
+        workbench = withWorkbenchAlert(
+          workbench,
+          createWorkbenchAlert(
+            "Saved artifacts unavailable",
+            "Saved artifacts could not be loaded, so the workbench is showing an empty artifact list.",
+            "info",
+          ),
+        );
+
+        context.trace.addEvent({
+          module: "app.use-cases.render-screen",
+          messageType: message.type,
+          notes: ["saved-artifacts:list-failed"],
+        });
+      }
+
       context.trace.addEvent({
         module: "app.use-cases.render-screen",
         messageType: message.type,

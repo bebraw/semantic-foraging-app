@@ -14,6 +14,7 @@ describe("renderHomePage", () => {
     expect(html).toContain("Suggested forage trail selected");
     expect(html).toContain("Detected cues");
     expect(html).toContain("Candidate leads");
+    expect(html).toContain("Saved artifacts");
     expect(html).toContain("Foraging map");
     expect(html).toContain("Mapped leads");
     expect(html).toContain("Focused lead");
@@ -28,6 +29,7 @@ describe("renderHomePage", () => {
     expect(html).toContain('data-map-feature="candidate-observation-autumn-chanterelle-cluster"');
     expect(html).toContain("Species overlap");
     expect(html).toContain("Recent sessions");
+    expect(html).toContain("Saved chanterelle trail");
     expect(html).toContain("Find chanterelles");
     expect(html).toContain("Saved 2026-04-19 12:00");
     expect(html).toContain("Clarification focus");
@@ -64,6 +66,64 @@ describe("renderHomePage", () => {
     expect(html).toContain('data-map-zoom-out aria-label="Zoom out"');
     expect(html).toContain("data-map-leaflet");
     expect(html).toContain("data-map-fallback");
+  });
+
+  it("renders save controls for supported candidate cards from completed intents", () => {
+    const screen = createHomeScreenModel();
+
+    screen.intentWorkbench.latestSubmission = {
+      input: "Create a field note about chanterelles",
+      classification: {
+        intent: "create-field-note",
+        confidence: 0.74,
+        needsClarification: false,
+        cues: {
+          species: ["chanterelle"],
+          habitat: ["spruce"],
+          region: ["helsinki"],
+          season: ["autumn"],
+        },
+        missing: [],
+      },
+      confidenceBand: "medium",
+      provenance: {
+        source: "deterministic-fallback",
+        provider: null,
+        reason: "no-model-provider",
+      },
+      workflow: {
+        name: "intent-classification",
+        state: "completed",
+      },
+    };
+    screen.candidateCards = [
+      {
+        id: "field-note-scaffold",
+        kind: "field-note",
+        title: "Field note scaffold",
+        summary: "A starter note seeded from the current request.",
+        statusLabel: "Draft note",
+        evidence: [
+          {
+            label: "Intent fit",
+            detail: "The request was classified as create-field-note.",
+          },
+        ],
+        spatialContext: {
+          species: ["chanterelle"],
+          habitat: ["spruce"],
+          region: ["helsinki"],
+          season: ["autumn"],
+        },
+      },
+    ];
+
+    const html = renderHomePage(screen);
+
+    expect(html).toContain("Save field note");
+    expect(html).toContain('action="/actions/artifact/save"');
+    expect(html).toContain('name="candidate"');
+    expect(html).toContain('name="intentSubmission"');
   });
 
   it("renders area and trail map geometries plus unparsed saved timestamps", () => {
@@ -245,6 +305,9 @@ function createHomeScreenModel(): HomeScreenModel {
         },
       },
     },
+    artifactWorkbench: {
+      saveActionPath: "/actions/artifact/save",
+    },
     mapView: {
       title: "Foraging map",
       description:
@@ -358,6 +421,38 @@ function createHomeScreenModel(): HomeScreenModel {
           region: ["helsinki"],
           season: ["autumn"],
         },
+      },
+    ],
+    savedArtifactsTitle: "Saved artifacts",
+    savedArtifactsBody: "Durable field notes, trails, and patch inspections stay here once saved.",
+    savedArtifactsEmptyState: "Save a field note, trail, or patch inspection to keep it in the workbench.",
+    savedArtifacts: [
+      {
+        artifactId: "trail-1",
+        sourceCardId: "trail-north-ridge-wet-spruce-loop",
+        kind: "trail",
+        title: "Saved chanterelle trail",
+        summary: "A saved trail connecting damp spruce pockets and recent chanterelle signals.",
+        sourceIntent: "explain-suggestion",
+        cues: {
+          species: ["chanterelle"],
+          habitat: ["spruce", "wet"],
+          region: ["helsinki"],
+          season: ["autumn"],
+        },
+        evidence: [
+          {
+            label: "Intent fit",
+            detail: "Ranked for explain-suggestion.",
+          },
+        ],
+        spatialContext: {
+          species: ["chanterelle"],
+          habitat: ["spruce", "wet"],
+          region: ["helsinki"],
+          season: ["autumn"],
+        },
+        savedAt: "2026-04-19T12:30:00.000Z",
       },
     ],
     recentSessionsTitle: "Recent sessions",

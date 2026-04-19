@@ -14,11 +14,11 @@ describe("worker", () => {
     const body = await response.text();
     expect(body).toContain("Foraging Workbench");
     expect(body).toContain("Intent rehearsal");
+    expect(body).toContain("Intent workbench");
     expect(body).toContain("Foraging map");
     expect(body).toContain("Candidate leads");
+    expect(body).toContain("Saved artifacts");
     expect(body).toContain("Recent sessions");
-    expect(body).toContain("/api/health");
-    expect(body).toContain("Trace ID:");
   });
 
   it("returns a JSON health response", async () => {

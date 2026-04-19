@@ -32,6 +32,7 @@ export function createInitialForagingWorkbenchState(): ForagingWorkbenchState {
       factsText: "",
     },
     recentSessions: [],
+    savedArtifacts: [],
   };
 }
 
@@ -157,11 +158,18 @@ export function createHomeScreenModel(input: CreateHomeScreenInput): HomeScreenM
       submitLabel: "Generate explanation",
       latestSubmission: input.workbench.explanation.latestSubmission,
     },
+    artifactWorkbench: {
+      saveActionPath: "/actions/artifact/save",
+    },
     mapView,
     retrievalTitle: "Candidate leads",
     retrievalBody: "",
     retrievalEmptyState: "Run a completed intent to surface grounded candidate cards and evidence notes.",
     candidateCards,
+    savedArtifactsTitle: "Saved artifacts",
+    savedArtifactsBody: "",
+    savedArtifactsEmptyState: "Save a field note, trail, or patch inspection to keep it in the workbench.",
+    savedArtifacts: input.workbench.savedArtifacts,
     recentSessionsTitle: "Recent sessions",
     recentSessionsBody: "",
     recentSessionsEmptyState: "Complete a foraging intent to start building a recent-session trail.",

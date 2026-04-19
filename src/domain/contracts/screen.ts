@@ -1,5 +1,6 @@
 import type { AppRoute } from "../../app-routes";
 import type { ForagingWorkbenchState, WorkbenchAlert } from "./app-state";
+import type { StoredForagingArtifact } from "./artifact";
 import type { ForagingCandidateCard } from "./foraging-knowledge";
 import type { MapViewModel } from "./map";
 import type { RuntimeModelCapability } from "./model-runtime";
@@ -45,6 +46,10 @@ export type ExplanationWorkbenchModel = {
   latestSubmission?: ForagingWorkbenchState["explanation"]["latestSubmission"];
 };
 
+export type ArtifactWorkbenchModel = {
+  saveActionPath: string;
+};
+
 export type HomeScreenModel = {
   kind: "home";
   eyebrow: string;
@@ -61,11 +66,16 @@ export type HomeScreenModel = {
   workbenchBody: string;
   intentWorkbench: IntentWorkbenchModel;
   explanationWorkbench: ExplanationWorkbenchModel;
+  artifactWorkbench: ArtifactWorkbenchModel;
   mapView: MapViewModel;
   retrievalTitle: string;
   retrievalBody: string;
   retrievalEmptyState: string;
   candidateCards: ForagingCandidateCard[];
+  savedArtifactsTitle: string;
+  savedArtifactsBody: string;
+  savedArtifactsEmptyState: string;
+  savedArtifacts: StoredForagingArtifact[];
   recentSessionsTitle: string;
   recentSessionsBody: string;
   recentSessionsEmptyState: string;

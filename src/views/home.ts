@@ -14,6 +14,7 @@ export function renderHomePage(screen: HomeScreenModel): string {
     .join("");
   const latestIntent = screen.intentWorkbench.latestSubmission;
   const latestExplanation = screen.explanationWorkbench.latestSubmission;
+  const completedIntent = latestIntent?.workflow.state === "completed" ? latestIntent : null;
   const clarificationWorkflow = latestIntent?.workflow.state === "awaiting_clarification" ? latestIntent.workflow : null;
   const initialMapFeature = screen.mapView.features[0] ?? null;
   const overlay = screen.mapView.overlays[0];
@@ -82,6 +83,23 @@ export function renderHomePage(screen: HomeScreenModel): string {
         </li>`,
     )
     .join("");
+  const savedArtifactMarkup = screen.savedArtifacts
+    .map(
+      (artifact) =>
+        `<li class="grid gap-3 border-b border-app-line/80 py-4 last:border-b-0 last:pb-0 first:pt-0">
+          <div class="flex flex-wrap items-center gap-3">
+            <p class="rounded-full bg-app-accent-ghost px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-app-accent-strong">${escapeHtml(artifact.kind)}</p>
+            <p class="text-[11px] font-semibold uppercase tracking-[0.18em] text-app-text-soft">${escapeHtml(artifact.sourceIntent)}</p>
+            <p class="text-sm text-app-text-soft">${escapeHtml(formatSavedAtLabel(artifact.savedAt))}</p>
+          </div>
+          <div>
+            <h3 class="text-lg font-semibold tracking-[-0.02em]">${escapeHtml(artifact.title)}</h3>
+            <p class="mt-2 leading-7 text-app-text-soft">${escapeHtml(artifact.summary)}</p>
+          </div>
+          <p class="text-sm text-app-text-soft">Detected cues: ${escapeHtml(formatCueSummary(artifact.cues))}</p>
+        </li>`,
+    )
+    .join("");
   const candidateMarkup = screen.candidateCards
     .map(
       (card) =>
@@ -105,6 +123,7 @@ export function renderHomePage(screen: HomeScreenModel): string {
               )
               .join("")}
           </dl>
+          ${renderArtifactSaveForm(card, completedIntent, screen.artifactWorkbench.saveActionPath)}
         </li>`,
     )
     .join("");
@@ -317,6 +336,15 @@ export function renderHomePage(screen: HomeScreenModel): string {
             }
           </section>
           <section class="border-t border-app-line pt-6">
+            <h2 class="mb-3 text-lg font-semibold tracking-[-0.02em]">${escapeHtml(screen.savedArtifactsTitle)}</h2>
+            ${screen.savedArtifactsBody ? `<p class="leading-7 text-app-text-soft">${escapeHtml(screen.savedArtifactsBody)}</p>` : ""}
+            ${
+              screen.savedArtifacts.length > 0
+                ? `<ul class="${screen.savedArtifactsBody ? "mt-4" : ""}">${savedArtifactMarkup}</ul>`
+                : `<p class="${screen.savedArtifactsBody ? "mt-4 " : ""}rounded-xl border border-dashed border-app-line px-4 py-4 leading-7 text-app-text-soft">${escapeHtml(screen.savedArtifactsEmptyState)}</p>`
+            }
+          </section>
+          <section class="border-t border-app-line pt-6">
             <h2 class="mb-3 text-lg font-semibold tracking-[-0.02em]">${escapeHtml(screen.recentSessionsTitle)}</h2>
             ${screen.recentSessionsBody ? `<p class="leading-7 text-app-text-soft">${escapeHtml(screen.recentSessionsBody)}</p>` : ""}
             ${
@@ -463,6 +491,41 @@ function formatMapDetailMeta(feature: HomeScreenModel["mapView"]["features"][num
   }
 
   return `${feature.kind} / ${feature.sourceSection}`;
+}
+
+function renderArtifactSaveForm(
+  card: HomeScreenModel["candidateCards"][number],
+  completedIntent: HomeScreenModel["intentWorkbench"]["latestSubmission"] | null,
+  actionPath: string,
+): string {
+  if (!completedIntent || !supportsArtifactSave(card.kind)) {
+    return "";
+  }
+
+  return `<form class="flex flex-wrap items-center gap-3" method="post" action="${escapeHtml(actionPath)}">
+    <input type="hidden" name="candidate" value="${escapeHtml(JSON.stringify(card))}">
+    <input type="hidden" name="sourceIntent" value="${escapeHtml(completedIntent.classification.intent)}">
+    <input type="hidden" name="intentSubmission" value="${escapeHtml(JSON.stringify(completedIntent))}">
+    <button class="inline-flex w-fit items-center rounded-lg bg-app-ink px-4 py-2 text-xs font-semibold uppercase tracking-[0.16em] text-app-ink-text" type="submit">${escapeHtml(getArtifactSaveLabel(card.kind))}</button>
+  </form>`;
+}
+
+function supportsArtifactSave(kind: HomeScreenModel["candidateCards"][number]["kind"]): boolean {
+  return kind === "field-note" || kind === "trail" || kind === "patch";
+}
+
+function getArtifactSaveLabel(kind: HomeScreenModel["candidateCards"][number]["kind"]): string {
+  switch (kind) {
+    case "field-note":
+      return "Save field note";
+    case "trail":
+      return "Save trail";
+    case "patch":
+      return "Save inspection";
+    case "observation":
+    case "session":
+      return "Save artifact";
+  }
 }
 
 function serializeMapClientState(mapView: HomeScreenModel["mapView"]): string {

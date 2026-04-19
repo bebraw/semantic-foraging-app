@@ -25,13 +25,14 @@ The semantic-foraging workbench can turn promising leads into lightweight saved 
 ## Runtime Behavior
 
 - Saved artifacts must be assembled through typed app and domain contracts rather than route-local form parsing.
-- The first implementation may save artifacts only from surfaced candidate cards instead of supporting freeform artifact authoring.
+- The first implementation saves artifacts only from surfaced candidate cards instead of supporting freeform artifact authoring.
 - The initial save path should support candidate kinds that map cleanly into durable artifacts:
   - `field-note` candidates save as `field-note`
   - `trail` candidates save as `trail`
   - `patch` candidates save as `patch-inspection`
+- The workbench must expose a server-rendered save action that posts the current candidate payload and completed intent state to `POST /actions/artifact/save`.
 - Saved artifacts must remain serializable so they can move through the storage boundary without view-specific data massaging.
-- The home screen may render a bounded saved-artifacts section alongside transient candidate cards and recent sessions.
+- The home screen must render a bounded saved-artifacts section alongside transient candidate cards and recent sessions.
 
 ## Regression Guardrails
 

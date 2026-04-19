@@ -2,7 +2,12 @@ import { createAppContext } from "./app/context";
 import { exampleRoutes } from "./app-routes";
 import { handleAppCommandRequest, handleIntentClarificationRequest, handleIntentCommandRequest } from "./api/app-command";
 import { handleAppQueryRequest, handleExplanationQueryRequest, handleHealthRequest, handleHomePageRequest } from "./api/app-query";
-import { handleExplanationActionRequest, handleIntentActionRequest, handleIntentClarificationActionRequest } from "./api/workbench";
+import {
+  handleArtifactSaveActionRequest,
+  handleExplanationActionRequest,
+  handleIntentActionRequest,
+  handleIntentClarificationActionRequest,
+} from "./api/workbench";
 import { createGeodataProvider } from "./infra/geodata";
 import { resolveModelProvider } from "./infra/llm";
 import { consoleLogger, logTraceSummary, silentLogger } from "./infra/observability/logger";
@@ -97,6 +102,11 @@ export async function handleRequest(request: Request, env: Env = {}): Promise<Re
 
   if (url.pathname === "/actions/explanation" && request.method === "POST") {
     response = await handleExplanationActionRequest(request, context);
+    return finalizeResponse(response, trace);
+  }
+
+  if (url.pathname === "/actions/artifact/save" && request.method === "POST") {
+    response = await handleArtifactSaveActionRequest(request, context);
     return finalizeResponse(response, trace);
   }
 

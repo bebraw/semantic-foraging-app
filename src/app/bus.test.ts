@@ -396,6 +396,47 @@ describe("createAppBus", () => {
     });
   });
 
+  it("loads saved artifacts into the home screen model", async () => {
+    const bus = createAppBus(
+      createAppContext(exampleRoutes, null, createRequestTrace("unknown"), undefined, undefined, undefined, {
+        saveArtifact: vi.fn(),
+        listArtifacts: vi.fn().mockResolvedValue([
+          {
+            artifactId: "trail-1",
+            sourceCardId: "trail-card-1",
+            kind: "trail",
+            title: "Saved trail",
+            summary: "Saved trail summary",
+            sourceIntent: "explain-suggestion",
+            cues: {
+              species: ["chanterelle"],
+              habitat: [],
+              region: [],
+              season: [],
+            },
+            evidence: [],
+            spatialContext: {
+              species: ["chanterelle"],
+              habitat: [],
+              region: [],
+              season: [],
+            },
+            savedAt: "2026-04-19T12:00:00.000Z",
+          },
+        ]),
+      }),
+    );
+
+    const result = await bus.dispatch({ type: "RenderHomeScreen" });
+
+    expect(result).toEqual({
+      kind: "screen",
+      screen: expect.objectContaining({
+        savedArtifacts: [expect.objectContaining({ artifactId: "trail-1" })],
+      }),
+    });
+  });
+
   it("returns a deterministic explanation result for query messages without a model provider", async () => {
     const bus = createAppBus(createAppContext(exampleRoutes));
 
