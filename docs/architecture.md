@@ -19,48 +19,25 @@ The architecture must fit these constraints:
 
 ## Current Status
 
-The repo now implements the first application-layer slice from this document:
+The repo now has a concrete server-first semantic-foraging workbench rather than only a starter architecture slice.
 
-- `src/worker.ts` still owns top-level HTTP routing.
-- `GET /` and `GET /api/health` now translate into typed app messages and dispatch through `src/app/bus.ts`.
-- `POST /api/app/command` now exposes a generic typed command surface over the same app bus.
-- `POST /api/app/query` now accepts typed query messages for health checks, screen rendering, and explanation requests through the same app-layer query flow.
-- `POST /api/intent` now translates into a typed app command and dispatches through `src/app/bus.ts`.
-- `POST /api/intent/clarify` now continues a bounded clarification workflow through stored in-memory workflow state.
-- `POST /api/explanation` now translates into a typed app query and dispatches through `src/app/bus.ts`.
-- `POST /api/app/query` can now return a typed runtime-capability payload for no-model, local-model, and hosted-model tiers.
-- `POST /actions/intent`, `POST /actions/intent/clarify`, and `POST /actions/explanation` now render server-side foraging workbench flows through the same app bus.
-- `src/app/use-cases/` now handles route-level queries plus bounded command and workflow flows.
-- `src/domain/agents/intent-agent.ts` now classifies into bounded semantic-foraging intents and extracts deterministic species, habitat, region, and season cues.
-- `src/domain/agents/knowledge-agent.ts` now surfaces deterministic candidate observations, patches, trails, sessions, and field-note scaffolds with explicit evidence notes.
-- completed intent flows now persist lightweight recent-session snapshots through the storage boundary, and the workbench renders those snapshots as recent sessions.
-- the `resume-session` retrieval path now prefers persisted recent sessions over the static catalog when recent-session state exists.
-- the home screen now includes a typed server-rendered map fragment built from deterministic candidate and recent-session geometry rather than a client-owned map state loop.
-- the map fragment now supports lightweight progressive enhancement that changes focused map details from server-rendered typed feature data without moving retrieval or ranking into the browser.
-- the map fragment now uses provider-backed geospatial contracts so Finnish basemap and observation data can flow through the same typed screen-model boundary.
-- the browser now defaults to OpenStreetMap standard tiles for no-key interactive map previews, while NLS remains an opt-in Finnish topographic basemap.
-- the browser map can now ask for current location on explicit user action and re-center locally without sending live coordinates through the Worker.
-- the browser map runtime now uses Leaflet as a pinned local client library while the Worker remains the source of truth for map data and configuration.
-- `src/domain/agents/intent-workflow.ts` now defines the first serializable workflow-state contract and deterministic transition helper.
-- `src/domain/agents/ui-agent.ts` now owns the home/workbench screen model instead of leaving screen assembly inside the use case.
-- `src/infra/observability/trace.ts` now creates per-request traces and wraps model-provider calls with traced operations.
-- intent and explanation outputs now expose explicit provenance metadata for model-backed versus deterministic paths.
-- `src/domain/contracts/` now defines typed screen and result models for those query flows.
-- typed app error results now carry explicit categories that HTTP adapters translate into stable JSON error payloads.
-- workflow repository misses and storage failures now map to typed app error categories instead of route-local exception handling.
-- stored clarification workflow snapshots are now consumed on successful continuation instead of remaining reusable in memory.
-- `src/views/home.ts` now renders from a typed `HomeScreenModel` instead of route-local primitives.
-- the home screen now exposes the active runtime capability tier and provider summary from the same typed screen model returned by the app query surface.
-- the home page now behaves as a server-rendered semantic foraging workbench with manual intent, clarification, and explanation flows.
-- the view layer now allows minimal browser-side enhancement for typed fragments such as the map panel while keeping the server-rendered screen model as the source of truth.
-- `src/infra/llm/` now provides a typed model-provider boundary with deterministic fallback behavior plus a local OpenAI-compatible development path for Ollama- or LM Studio-style runtimes.
+What exists today:
 
-The repo does not yet implement the full architecture described below. In particular:
+- `src/worker.ts` routes both HTML workbench actions and JSON API endpoints through the same app layer.
+- `src/app/bus.ts` dispatches typed messages for screen rendering, health checks, runtime inspection, intent submission, clarification continuation, and explanation requests.
+- `src/domain/agents/intent-agent.ts` and `src/domain/agents/intent-workflow.ts` handle bounded intent classification plus one explicit clarification workflow.
+- `src/domain/agents/knowledge-agent.ts` surfaces deterministic candidate observations, patches, trails, sessions, and field-note scaffolds with explicit evidence.
+- `src/domain/agents/ui-agent.ts` assembles the typed home/workbench screen model that `src/views/home.ts` renders.
+- `src/infra/storage/` persists clarification workflow snapshots and lightweight recent sessions in process-local memory behind repository interfaces.
+- `src/domain/agents/map-agent.ts`, `src/infra/geodata/`, and the home view provide a provider-backed geographic map with OSM as the default basemap, optional NLS topographic tiles, FinBIF overlays, and a thin Leaflet enhancement layer.
+- `src/infra/llm/` provides deterministic fallback behavior plus an OpenAI-compatible local model path.
+- `src/infra/observability/trace.ts` adds lightweight per-request tracing and model-call observation.
 
-- workflow state is still limited to one client-roundtripped clarification flow
-- workflow state now has a repository boundary with an in-memory implementation
-- observability is currently limited to lightweight per-request tracing
-- the local-model path currently assumes an OpenAI-compatible chat-completions endpoint instead of shipping runtime-specific local adapters
+What is still intentionally unfinished:
+
+- workflow state is still limited to the clarification flow rather than broader multi-step foraging work
+- observability is still request-scoped and lightweight
+- the local-model path still assumes an OpenAI-compatible endpoint instead of runtime-specific local adapters
 
 ---
 
@@ -113,64 +90,7 @@ That loop should shape the roadmap more than generic template concerns.
 
 ---
 
-## Target Folder Layout
-
-```txt
-src/
-  api/
-    health.ts
-    app-command.ts
-    app-query.ts
-  app/
-    bus.ts
-    message.ts
-    context.ts
-    use-cases/
-      handle-user-intent.ts
-      render-screen.ts
-      submit-action.ts
-  domain/
-    agents/
-      intent-agent.ts
-      ui-agent.ts
-      knowledge-agent.ts
-      workflow-agent.ts
-      explanation-agent.ts
-    contracts/
-      app-state.ts
-      screen.ts
-      action.ts
-      result.ts
-    policies/
-      confidence.ts
-      provenance.ts
-  infra/
-    llm/
-      provider.ts
-      providers/
-        ollama.ts
-        lmstudio.ts
-        openai-compatible.ts
-      prompts/
-      schemas/
-      runtime-capability.ts
-    storage/
-      repository.ts
-      memory-store.ts
-    observability/
-      logger.ts
-      trace.ts
-    config/
-      env.ts
-  views/
-    layouts/
-    pages/
-    fragments/
-    render-page.ts
-  worker.ts
-```
-
-Current implemented subset:
+## Current Repo Shape
 
 ```txt
 src/
@@ -192,18 +112,24 @@ src/
       run-health-check.ts
   domain/
     agents/
+      map-agent.ts
       knowledge-agent.ts
       intent-agent.ts
       intent-workflow.ts
+      session-agent.ts
       ui-agent.ts
     contracts/
       app-state.ts
       foraging-knowledge.ts
+      map.ts
       model-runtime.ts
       result.ts
       screen.ts
+      session.ts
       workflow.ts
   infra/
+    geodata/
+      provider.ts
     llm/
       provider.ts
       providers/
@@ -224,7 +150,7 @@ src/
   worker.ts
 ```
 
-This extends the existing `src/api`, `src/views`, and `src/worker.ts` structure instead of replacing it.
+This is the architecture to orient on when reading the repo today. Future slices should extend this structure incrementally instead of chasing an idealized folder tree up front.
 
 ---
 
@@ -250,7 +176,6 @@ Current implemented messages:
 - `InspectModelRuntime`
 - `SubmitUserIntent`
 - `ClarifyUserIntent`
-- `RequestExplanation`
 - `RequestExplanation`
 
 ### 3. App bus dispatches the message
@@ -304,8 +229,8 @@ Guidelines:
 
 Current implementation note:
 
-- the bus currently handles route-level queries and one bounded command
-- multi-step dispatch and workflow state are not implemented yet
+- the bus currently handles the full workbench request surface for screen rendering, health/runtime queries, intent submission, clarification continuation, and explanation requests
+- workflow handling exists, but only for one bounded clarification path
 
 Example message categories:
 
@@ -898,55 +823,26 @@ specs/model-integration/spec.md
 specs/ui-rendering/spec.md
 ```
 
-Suggested order:
+## Remaining Roadmap
 
-1. foraging workbench
-2. intent handling and clarification
-3. workflow engine
-4. explanation flow
-5. retrieval and evidence ranking
+The broad foundations are already in place. The next slices that still matter are:
 
----
-
-## Recommended Implementation Order
-
-### Phase 1 – foundation
-
-- add `src/app/`, `src/domain/`, and `src/infra/` folders
-- introduce typed message and result contracts
-- implement minimal bus
-- route `GET /` through the app layer
-
-### Phase 2 – foraging workbench shell
-
-- add a UI agent that assembles the foraging workbench screen model
-- render manual intent, clarification, and explanation flows through HTML action routes
-- make the home page useful for rehearsing concrete foraging prompts such as species lookups, habitat searches, field-note creation, and result explanations
-
-### Phase 3 – deterministic foraging workflow
-
-- expand beyond generic intent classification into foraging-specific task framing
-- include clarifications for ambiguous location, species, season, habitat, or artifact scope
-- support explicit intents such as `find-observations`, `create-field-note`, `inspect-patch`, `explain-suggestion`, and `resume-session`
-- keep workflow transitions explicit, bounded, and testable
-
-### Phase 4 – retrieval and evidence contracts
-
-- add knowledge-agent contracts for candidate observations, field notes, habitat patches, and trail fragments
-- define evidence summaries that the explanation flow can cite, including region overlap, species co-occurrence, recency, and habitat fit
-- keep ranking and validation deterministic even when model assistance is present
-
-### Phase 5 – local model assistance
+### 1. Local model assistance
 
 - use the local model for bounded interpretation, query rewriting, and explanation tasks
 - keep deterministic fallback behavior for offline or degraded runs
 - introduce model-assisted retrieval hints only where provenance remains explicit, for example synonym expansion, species-name normalization, or clarification wording
 
-### Phase 6 – sessions, persistence, and hardening
+### 2. Durable foraging artifacts
 
-- persist saved foraging trails, field notes, patch inspections, and recent sessions
+- persist saved foraging trails, field notes, and patch inspections through the storage boundary
+- let the user save, refine, or continue a trail instead of only inspecting transient candidates and recent sessions
+
+### 3. Hardening and richer workflows
+
 - extend traces with retrieval, evidence, and explanation summaries so a surfaced trail can be audited end to end
 - add e2e coverage for degraded paths and saved-session flows
+- expand beyond the single clarification workflow into broader multi-step foraging tasks where the extra state is justified
 
 ---
 
