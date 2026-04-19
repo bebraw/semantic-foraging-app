@@ -218,6 +218,31 @@ test("progressively enhances the map detail panel without changing the server-re
   await expect(detailEvidence).toContainText("Ranked for find-observations.");
 });
 
+test("asks for current location and re-orients the map in the browser only", async ({ page, context }) => {
+  await context.grantPermissions(["geolocation"]);
+  await context.setGeolocation({
+    latitude: 60.1699,
+    longitude: 24.9384,
+  });
+
+  await page.goto("/");
+
+  await page.getByLabel("What do you want to do?").fill("Find chanterelles near wet spruce in Helsinki");
+  await page.getByRole("button", { name: "Classify request" }).click();
+
+  const mapSection = page.locator("section").filter({ hasText: "Foraging map" }).first();
+  const mapRoot = mapSection.locator("[data-map-root]");
+  const locationStatus = mapSection.locator("[data-map-location-status]");
+
+  await mapSection.getByRole("button", { name: "Use current location" }).click();
+
+  await expect(mapRoot).toHaveAttribute("data-map-location", "active");
+  await expect(locationStatus).toContainText("Using current location to orient the map.");
+  await expect(locationStatus).toContainText("60.1699°N");
+  await expect(locationStatus).toContainText("24.9384°E");
+  await expect(mapSection.locator("[data-map-location-marker]")).toHaveCount(1);
+});
+
 test("uses persisted recent sessions in the manual resume flow", async ({ page }) => {
   await page.goto("/");
 

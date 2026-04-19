@@ -37,6 +37,17 @@ export function buildMapViewModel(
       "This map projects current leads into a real geographic frame so the workbench can connect foraging cues with public Finnish map and occurrence data.",
     emptyState: "Run a completed foraging intent to project leads into a geographic preview.",
     legendTitle: "Mapped leads",
+    locationControl: {
+      title: "Current location",
+      actionLabel: "Use current location",
+      idleLabel: "Ask the browser for your current location to re-center the map around where you are now.",
+      loadingLabel: "Requesting current location from the browser...",
+      activeLabel: "Using current location to orient the map.",
+      deniedLabel: "Location access was denied, so the map stayed on the current foraging context.",
+      unsupportedLabel: "This browser does not expose geolocation, so the map cannot use your current position.",
+      errorLabel: "The map could not read your current location.",
+      privacyNote: "Location stays in the browser only. The app does not submit or persist live coordinates.",
+    },
     basemap: geodata?.basemap ?? createFallbackBasemap(),
     viewport: {
       width: 640,

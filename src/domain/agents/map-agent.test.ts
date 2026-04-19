@@ -78,6 +78,9 @@ describe("buildMapViewModel", () => {
     expect(mapView).toEqual(
       expect.objectContaining({
         title: "Foraging map",
+        locationControl: expect.objectContaining({
+          actionLabel: "Use current location",
+        }),
         basemap: expect.objectContaining({
           provider: "nls-wmts",
           available: true,

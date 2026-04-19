@@ -44,9 +44,18 @@
 }
 
 @layer components {
+  [data-map-root][data-map-location="loading"] [data-map-locate] {
+    opacity: 0.72;
+    cursor: progress;
+  }
+
   [data-map-browser-frame][data-map-mode="browser"] [data-map-tiles] img {
     user-select: none;
     -webkit-user-drag: none;
+  }
+
+  [data-map-root][data-map-browser="true"] [data-map-location-marker] {
+    filter: drop-shadow(0 10px 16px rgb(30 99 236 / 0.22));
   }
 
   [data-map-root][data-map-browser="true"] [data-browser-feature-id] {

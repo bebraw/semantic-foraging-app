@@ -76,11 +76,24 @@ export type MapViewport = {
   zoom: number;
 };
 
+export type MapLocationControl = {
+  title: string;
+  actionLabel: string;
+  idleLabel: string;
+  loadingLabel: string;
+  activeLabel: string;
+  deniedLabel: string;
+  unsupportedLabel: string;
+  errorLabel: string;
+  privacyNote: string;
+};
+
 export type MapViewModel = {
   title: string;
   description: string;
   emptyState: string;
   legendTitle: string;
+  locationControl: MapLocationControl;
   basemap: MapBasemapModel;
   viewport: MapViewport;
   features: MapFeature[];

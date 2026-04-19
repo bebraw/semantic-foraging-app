@@ -271,6 +271,22 @@ export function renderHomePage(screen: HomeScreenModel): string {
                         <p class="mt-2 text-sm leading-6 text-app-text-soft">${escapeHtml(screen.mapView.basemap.note)}</p>
                         <p class="mt-3 text-xs uppercase tracking-[0.16em] text-app-text-soft">Bounds: ${escapeHtml(formatBoundsLabel(screen.mapView.viewport.bounds))}</p>
                       </section>
+                      <section class="rounded-[1rem] border border-app-line/70 bg-white/80 p-4 shadow-[0_12px_30px_-26px_rgba(30,26,22,0.32)]">
+                        <div class="flex flex-wrap items-center justify-between gap-3">
+                          <p class="text-xs font-semibold uppercase tracking-[0.18em] text-app-text-soft">${escapeHtml(
+                            screen.mapView.locationControl.title,
+                          )}</p>
+                          <button class="inline-flex items-center rounded-full bg-app-accent px-4 py-2 text-xs font-semibold uppercase tracking-[0.16em] text-white shadow-[0_16px_30px_-20px_rgba(160,90,42,0.85)]" type="button" data-map-locate>
+                            ${escapeHtml(screen.mapView.locationControl.actionLabel)}
+                          </button>
+                        </div>
+                        <p class="mt-3 text-sm leading-6 text-app-text-soft" role="status" aria-live="polite" data-map-location-status>${escapeHtml(
+                          screen.mapView.locationControl.idleLabel,
+                        )}</p>
+                        <p class="mt-3 text-xs leading-5 text-app-text-soft" data-map-location-privacy>${escapeHtml(
+                          screen.mapView.locationControl.privacyNote,
+                        )}</p>
+                      </section>
                       ${overlayStatusMarkup}
                       <section class="rounded-[1rem] border border-app-line/70 bg-white/80 p-4 shadow-[0_12px_30px_-26px_rgba(30,26,22,0.32)]">
                         <p class="text-xs font-semibold uppercase tracking-[0.18em] text-app-text-soft">Focused lead</p>
@@ -489,6 +505,7 @@ function serializeMapClientState(mapView: HomeScreenModel["mapView"]): string {
     viewport: mapView.viewport,
     features: mapView.features,
     overlays: mapView.overlays,
+    locationControl: mapView.locationControl,
   });
 }
 
@@ -537,6 +554,10 @@ function renderMapEnhancementScript(): string {
     template.replaceAll("{z}", String(zoom)).replaceAll("{x}", String(x)).replaceAll("{y}", String(y));
   const collectOverlayPoints = (overlays) =>
     overlays.flatMap((overlay) => (overlay.status === "ready" ? overlay.points : []));
+  const formatCoordinate = (value, positiveSuffix, negativeSuffix) =>
+    \`\${Math.abs(value).toFixed(4)}°\${value >= 0 ? positiveSuffix : negativeSuffix}\`;
+  const formatLocationMessage = (control, point) =>
+    \`\${control.activeLabel} \${formatCoordinate(point.latitude, "N", "S")}, \${formatCoordinate(point.longitude, "E", "W")}\`;
   const renderTiles = (container, template, center, zoom, width, height) => {
     const centerWorld = projectWorldPoint(center, zoom);
     const topLeft = {
@@ -575,7 +596,7 @@ function renderMapEnhancementScript(): string {
       }
     }
   };
-  const renderBrowserOverlay = (layer, features, overlayPoints, projector, activeId, width, height) => {
+  const renderBrowserOverlay = (layer, features, overlayPoints, projector, activeId, width, height, currentLocation) => {
     layer.textContent = "";
     layer.setAttribute("viewBox", \`0 0 \${width} \${height}\`);
 
@@ -589,6 +610,45 @@ function renderMapEnhancementScript(): string {
       });
 
       layer.appendChild(node);
+    }
+
+    if (currentLocation) {
+      const markerPosition = projector(currentLocation.point);
+      const accuracyRadius = Math.max(
+        18,
+        Math.min(Math.max(currentLocation.accuracyMeters ?? 0, 0) / 18, Math.min(width, height) / 4),
+      );
+
+      layer.appendChild(
+        setAttributes(createSvgNode("circle"), {
+          cx: markerPosition.x,
+          cy: markerPosition.y,
+          r: accuracyRadius,
+          fill: "rgba(30,99,236,0.12)",
+          stroke: "rgba(30,99,236,0.28)",
+          "stroke-width": 1.5,
+          "data-map-location-ring": "true",
+        }),
+      );
+      layer.appendChild(
+        setAttributes(createSvgNode("circle"), {
+          cx: markerPosition.x,
+          cy: markerPosition.y,
+          r: 10,
+          fill: "rgba(255,255,255,0.94)",
+          stroke: "rgba(30,99,236,0.9)",
+          "stroke-width": 3,
+          "data-map-location-marker": "true",
+        }),
+      );
+      layer.appendChild(
+        setAttributes(createSvgNode("circle"), {
+          cx: markerPosition.x,
+          cy: markerPosition.y,
+          r: 4,
+          fill: "rgba(30,99,236,1)",
+        }),
+      );
     }
 
     for (const feature of features) {
@@ -703,6 +763,8 @@ function renderMapEnhancementScript(): string {
     const browserSource = root.querySelector("[data-map-browser-source]");
     const browserAttribution = root.querySelector("[data-map-browser-attribution]");
     const browserZoom = root.querySelector("[data-map-browser-zoom]");
+    const locateButton = root.querySelector("[data-map-locate]");
+    const locationStatus = root.querySelector("[data-map-location-status]");
     const zoomControls = root.querySelector("[data-map-zoom-controls]");
     const zoomOut = root.querySelector("[data-map-zoom-out]");
     const zoomIn = root.querySelector("[data-map-zoom-in]");
@@ -710,7 +772,29 @@ function renderMapEnhancementScript(): string {
     const rawState = root.getAttribute("data-map-state");
     const state = rawState ? JSON.parse(rawState) : null;
     let activeZoom = null;
+    let activeCenter = state?.viewport?.center ?? null;
     let browserReady = false;
+    let currentLocation = null;
+    const control = state?.locationControl ?? {
+      idleLabel: "",
+      loadingLabel: "",
+      activeLabel: "",
+      deniedLabel: "",
+      unsupportedLabel: "",
+      errorLabel: "",
+    };
+    const setLocationState = (nextState, message) => {
+      root.setAttribute("data-map-location", nextState);
+
+      if (locationStatus) {
+        locationStatus.textContent = message;
+      }
+
+      if (locateButton) {
+        locateButton.disabled = nextState === "loading";
+        locateButton.setAttribute("aria-busy", nextState === "loading" ? "true" : "false");
+      }
+    };
     const renderBrowserMap = (activeId) => {
       if (
         !state ||
@@ -734,15 +818,20 @@ function renderMapEnhancementScript(): string {
         activeZoom = clamp(Math.round(state.viewport.zoom ?? minZoom), minZoom, maxZoom);
       }
 
-      renderTiles(tileLayer, state.basemap.tileTemplateUrl, state.viewport.center, activeZoom, frameWidth, frameHeight);
+      if (!activeCenter) {
+        activeCenter = state.viewport.center;
+      }
+
+      renderTiles(tileLayer, state.basemap.tileTemplateUrl, activeCenter, activeZoom, frameWidth, frameHeight);
       renderBrowserOverlay(
         browserOverlay,
         state.features,
         collectOverlayPoints(state.overlays ?? []),
-        createProjector(state.viewport.center, activeZoom, frameWidth, frameHeight),
+        createProjector(activeCenter, activeZoom, frameWidth, frameHeight),
         activeId,
         frameWidth,
         frameHeight,
+        currentLocation,
       );
 
       browserFrame.removeAttribute("hidden");
@@ -844,11 +933,60 @@ function renderMapEnhancementScript(): string {
       node.addEventListener("click", () => activate(node.getAttribute("data-map-item")));
     }
 
+    if (locateButton) {
+      locateButton.addEventListener("click", () => {
+        if (!state?.basemap?.available || !state?.basemap?.tileTemplateUrl) {
+          setLocationState("error", control.errorLabel);
+          return;
+        }
+
+        if (!navigator.geolocation) {
+          setLocationState("unsupported", control.unsupportedLabel);
+          return;
+        }
+
+        setLocationState("loading", control.loadingLabel);
+        navigator.geolocation.getCurrentPosition(
+          (position) => {
+            currentLocation = {
+              point: {
+                longitude: position.coords.longitude,
+                latitude: position.coords.latitude,
+              },
+              accuracyMeters: position.coords.accuracy,
+            };
+            activeCenter = currentLocation.point;
+            activeZoom = clamp(
+              Math.max(activeZoom ?? Math.round(state.viewport.zoom ?? state.basemap.minZoom ?? 0), 12),
+              state.basemap.minZoom ?? 0,
+              state.basemap.maxZoom ?? 19,
+            );
+            setLocationState("active", formatLocationMessage(control, currentLocation.point));
+            renderBrowserMap(root.getAttribute("data-map-active-id"));
+          },
+          (error) => {
+            if (error.code === error.PERMISSION_DENIED) {
+              setLocationState("denied", control.deniedLabel);
+              return;
+            }
+
+            setLocationState("error", control.errorLabel);
+          },
+          {
+            enableHighAccuracy: true,
+            maximumAge: 300000,
+            timeout: 10000,
+          },
+        );
+      });
+    }
+
     const initialId =
       root.getAttribute("data-map-active-id") ??
       itemNodes[0]?.getAttribute("data-map-item") ??
       featureNodes[0]?.getAttribute("data-map-feature");
 
+    setLocationState("idle", control.idleLabel);
     activate(initialId);
   }
 })();
