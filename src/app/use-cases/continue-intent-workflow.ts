@@ -48,6 +48,7 @@ export async function continueIntentWorkflow(
     notes: [
       `workflow-id:${message.workflowId}`,
       `intent:${result.classification.intent}`,
+      `missing:${result.classification.missing.join("|") || "none"}`,
       `confidence:${result.classification.confidence.toFixed(2)}`,
       `confidence-band:${result.confidenceBand}`,
       `provenance:${result.provenance.source}`,

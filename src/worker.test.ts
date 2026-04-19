@@ -52,11 +52,18 @@ describe("worker", () => {
       ok: true,
       input: "Explain why this happened",
       classification: {
-        intent: "explain",
-        confidence: 0.72,
+        intent: "explain-suggestion",
+        confidence: 0.82,
         needsClarification: false,
+        cues: {
+          species: [],
+          habitat: [],
+          region: [],
+          season: [],
+        },
+        missing: [],
       },
-      confidenceBand: "medium",
+      confidenceBand: "high",
       provenance: {
         source: "deterministic-fallback",
         provider: null,
@@ -199,11 +206,18 @@ describe("worker", () => {
       ok: true,
       input: "Explain why this happened",
       classification: {
-        intent: "explain",
-        confidence: 0.72,
+        intent: "explain-suggestion",
+        confidence: 0.82,
         needsClarification: false,
+        cues: {
+          species: [],
+          habitat: [],
+          region: [],
+          season: [],
+        },
+        missing: [],
       },
-      confidenceBand: "medium",
+      confidenceBand: "high",
       provenance: {
         source: "deterministic-fallback",
         provider: null,
@@ -246,9 +260,16 @@ describe("worker", () => {
       ok: true,
       input: "Help",
       classification: {
-        intent: "search",
-        confidence: 0.61,
+        intent: "find-observations",
+        confidence: 0.69,
         needsClarification: false,
+        cues: {
+          species: [],
+          habitat: [],
+          region: [],
+          season: [],
+        },
+        missing: ["species", "habitat", "region"],
       },
       confidenceBand: "medium",
       provenance: {
@@ -306,7 +327,7 @@ describe("worker", () => {
     expect(response.headers.get("content-type")).toContain("text/html");
     const body = await response.text();
     expect(body).toContain("Latest intent result");
-    expect(body).toContain("create");
+    expect(body).toContain("create-field-note");
   });
 
   it("renders clarification prompts through the home page workflow action", async () => {

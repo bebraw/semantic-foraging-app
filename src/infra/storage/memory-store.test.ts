@@ -9,16 +9,18 @@ describe("InMemoryWorkflowRepository", () => {
       workflowId: "workflow-123",
       rawInput: "Help",
       state: "awaiting_clarification",
-      question: 'What do you want to do with "Help": search, create, or explain?',
-      options: ["search", "create", "explain"],
+      question:
+        'What kind of foraging task does "Help" describe: find observations, create a field note, inspect a patch, explain a suggestion, or resume a session?',
+      options: ["find-observations", "create-field-note", "inspect-patch", "explain-suggestion", "resume-session"],
     });
 
     await expect(repository.getIntentWorkflow("workflow-123")).resolves.toEqual({
       workflowId: "workflow-123",
       rawInput: "Help",
       state: "awaiting_clarification",
-      question: 'What do you want to do with "Help": search, create, or explain?',
-      options: ["search", "create", "explain"],
+      question:
+        'What kind of foraging task does "Help" describe: find observations, create a field note, inspect a patch, explain a suggestion, or resume a session?',
+      options: ["find-observations", "create-field-note", "inspect-patch", "explain-suggestion", "resume-session"],
     });
   });
 
@@ -35,8 +37,9 @@ describe("InMemoryWorkflowRepository", () => {
       workflowId: "workflow-123",
       rawInput: "Help",
       state: "awaiting_clarification",
-      question: 'What do you want to do with "Help": search, create, or explain?',
-      options: ["search", "create", "explain"],
+      question:
+        'What kind of foraging task does "Help" describe: find observations, create a field note, inspect a patch, explain a suggestion, or resume a session?',
+      options: ["find-observations", "create-field-note", "inspect-patch", "explain-suggestion", "resume-session"],
     });
 
     await repository.deleteIntentWorkflow("workflow-123");

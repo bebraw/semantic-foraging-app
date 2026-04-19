@@ -22,7 +22,8 @@ describe("workbench actions", () => {
     const body = await response.text();
     expect(body).toContain("Foraging Workbench");
     expect(body).toContain("Latest intent result");
-    expect(body).toContain("create");
+    expect(body).toContain("create-field-note");
+    expect(body).toContain("Detected cues");
   });
 
   it("renders a clarification prompt back into the workbench page", async () => {
@@ -77,7 +78,7 @@ describe("workbench actions", () => {
     expect(response.status).toBe(200);
     const body = await response.text();
     expect(body).toContain("Latest intent result");
-    expect(body).toContain("search");
+    expect(body).toContain("find-observations");
     expect(body).not.toContain("Clarification needed");
   });
 

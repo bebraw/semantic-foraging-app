@@ -109,11 +109,11 @@ export function createHomeScreenModel(input: CreateHomeScreenInput): HomeScreenM
     alerts: input.workbench.alerts,
     workbenchTitle: "Manual flow rehearsal",
     workbenchBody:
-      "Use these forms to simulate a real semantic foraging session: describe what you want to do, continue any clarification the workflow asks for, and inspect explanation output grounded in explicit evidence.",
+      "Use these forms to rehearse bounded foraging tasks: classify whether you want to find observations, create a field note, inspect a patch, explain a suggestion, or resume a saved session, then inspect the cues and clarification gaps the app detected.",
     intentWorkbench: {
       title: "Intent rehearsal",
       description:
-        "Try natural-language requests a forager might make, such as finding past observations, creating a field note, or asking why a result was suggested.",
+        "Try natural-language requests a forager might make, such as finding chanterelle observations, creating a field note, inspecting a mossy patch, or resuming a previous trail.",
       actionPath: "/actions/intent",
       rawInputName: "input",
       rawInputLabel: "What do you want to do?",

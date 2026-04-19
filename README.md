@@ -44,7 +44,7 @@ Local development in this repo targets macOS. Other platforms may need script an
 - `GET /api/health` serves a JSON health response for smoke tests and tooling.
 - `POST /api/app/command` dispatches typed app commands through a generic JSON endpoint.
 - `POST /api/app/query` returns a typed screen model for bounded app-query requests.
-- `POST /api/intent` classifies a request into a bounded set of supported intents and can request clarification.
+- `POST /api/intent` classifies a request into bounded semantic-foraging intents, extracts grounded cues, and can request clarification.
 - `POST /api/intent/clarify` continues the bounded clarification workflow using a stored `workflowId`.
 - `POST /api/explanation` returns grounded explanation text from a bounded query payload.
 - `POST /actions/intent` renders intent classification results back into the workbench.

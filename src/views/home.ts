@@ -52,6 +52,14 @@ export function renderHomePage(screen: HomeScreenModel): string {
             <dt class="text-xs font-semibold uppercase tracking-[0.16em] text-app-text-soft">Provenance</dt>
             <dd class="mt-1 font-medium">${escapeHtml(`${latestIntent.provenance.source} / ${latestIntent.provenance.reason ?? "n/a"}`)}</dd>
           </div>
+          <div class="sm:col-span-2">
+            <dt class="text-xs font-semibold uppercase tracking-[0.16em] text-app-text-soft">Detected cues</dt>
+            <dd class="mt-1 font-medium">${escapeHtml(formatCueSummary(latestIntent.classification.cues))}</dd>
+          </div>
+          <div class="sm:col-span-2">
+            <dt class="text-xs font-semibold uppercase tracking-[0.16em] text-app-text-soft">Clarification focus</dt>
+            <dd class="mt-1 font-medium">${escapeHtml(formatMissingSummary(latestIntent.classification.missing))}</dd>
+          </div>
         </dl>
       </section>`
     : "";
@@ -176,4 +184,27 @@ export function renderHomePage(screen: HomeScreenModel): string {
       </article>
     </main>`,
   });
+}
+
+function formatCueSummary(cues: { species: string[]; habitat: string[]; region: string[]; season: string[] }): string {
+  const segments = [
+    formatCueGroup("species", cues.species),
+    formatCueGroup("habitat", cues.habitat),
+    formatCueGroup("region", cues.region),
+    formatCueGroup("season", cues.season),
+  ].filter(Boolean);
+
+  return segments.join(" | ") || "No grounded cues detected yet.";
+}
+
+function formatCueGroup(label: string, values: string[]): string {
+  if (values.length === 0) {
+    return "";
+  }
+
+  return `${label}: ${values.join(", ")}`;
+}
+
+function formatMissingSummary(missing: string[]): string {
+  return missing.length > 0 ? missing.join(", ") : "No clarification needed.";
 }

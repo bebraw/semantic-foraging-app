@@ -27,6 +27,7 @@ export async function handleUserIntent(context: AppContext, message: SubmitUserI
     messageType: message.type,
     notes: [
       `intent:${result.classification.intent}`,
+      `missing:${result.classification.missing.join("|") || "none"}`,
       `confidence:${result.classification.confidence.toFixed(2)}`,
       `confidence-band:${result.confidenceBand}`,
       `provenance:${result.provenance.source}`,

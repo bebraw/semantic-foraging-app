@@ -47,9 +47,16 @@ test("dispatches typed commands through the generic app-command endpoint", async
     ok: true,
     input: "Create a new note",
     classification: {
-      intent: "create",
-      confidence: 0.66,
+      intent: "create-field-note",
+      confidence: 0.74,
       needsClarification: false,
+      cues: {
+        species: [],
+        habitat: [],
+        region: [],
+        season: [],
+      },
+      missing: ["species", "region"],
     },
     confidenceBand: "medium",
     provenance: {
@@ -158,7 +165,8 @@ test("supports the manual intent workbench flow", async ({ page }) => {
   const latestIntentResult = page.locator("section").filter({ hasText: "Latest intent result" }).first();
 
   await expect(latestIntentResult).toBeVisible();
-  await expect(latestIntentResult.locator("dd").filter({ hasText: /^create$/ })).toBeVisible();
+  await expect(latestIntentResult.locator("dd").filter({ hasText: /^create-field-note$/ })).toBeVisible();
+  await expect(latestIntentResult.getByText("species, region")).toBeVisible();
 });
 
 test("supports the manual clarification workbench flow", async ({ page }) => {
@@ -174,7 +182,7 @@ test("supports the manual clarification workbench flow", async ({ page }) => {
   const latestIntentResult = page.locator("section").filter({ hasText: "Latest intent result" }).first();
 
   await expect(latestIntentResult).toBeVisible();
-  await expect(latestIntentResult.locator("dd").filter({ hasText: /^search$/ })).toBeVisible();
+  await expect(latestIntentResult.locator("dd").filter({ hasText: /^find-observations$/ })).toBeVisible();
 });
 
 test("supports the manual explanation workbench flow", async ({ page }) => {
@@ -202,9 +210,16 @@ test("classifies intent through the command endpoint without a model provider", 
     ok: true,
     input: "Create a new note",
     classification: {
-      intent: "create",
-      confidence: 0.66,
+      intent: "create-field-note",
+      confidence: 0.74,
       needsClarification: false,
+      cues: {
+        species: [],
+        habitat: [],
+        region: [],
+        season: [],
+      },
+      missing: ["species", "region"],
     },
     confidenceBand: "medium",
     provenance: {
@@ -239,9 +254,16 @@ test("continues an intent workflow through the clarification endpoint without a 
     ok: true,
     input: "Help",
     classification: {
-      intent: "search",
-      confidence: 0.61,
+      intent: "find-observations",
+      confidence: 0.69,
       needsClarification: false,
+      cues: {
+        species: [],
+        habitat: [],
+        region: [],
+        season: [],
+      },
+      missing: ["species", "habitat", "region"],
     },
     confidenceBand: "medium",
     provenance: {

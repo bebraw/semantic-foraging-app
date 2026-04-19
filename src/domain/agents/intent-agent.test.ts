@@ -17,11 +17,18 @@ describe("classifyIntent", () => {
   it("uses deterministic explain fallback when no provider is configured", async () => {
     await expect(classifyIntent(null, "Explain why this happened")).resolves.toEqual({
       classification: {
-        intent: "explain",
-        confidence: 0.72,
+        intent: "explain-suggestion",
+        confidence: 0.82,
         needsClarification: false,
+        cues: {
+          species: [],
+          habitat: [],
+          region: [],
+          season: [],
+        },
+        missing: [],
       },
-      confidenceBand: "medium",
+      confidenceBand: "high",
       provenance: {
         source: "deterministic-fallback",
         provider: null,
@@ -37,9 +44,16 @@ describe("classifyIntent", () => {
 
     await expect(classifyIntent(provider, "Create a new note")).resolves.toEqual({
       classification: {
-        intent: "create",
-        confidence: 0.66,
+        intent: "create-field-note",
+        confidence: 0.74,
         needsClarification: false,
+        cues: {
+          species: [],
+          habitat: [],
+          region: [],
+          season: [],
+        },
+        missing: ["species", "region"],
       },
       confidenceBand: "medium",
       provenance: {
@@ -53,17 +67,31 @@ describe("classifyIntent", () => {
   it("uses deterministic fallback when structured model output fails schema validation", async () => {
     const provider = createProvider({
       completeJson: vi.fn().mockResolvedValue({
-        intent: "search",
+        intent: "find-observations",
         confidence: 2,
         needsClarification: false,
+        cues: {
+          species: [],
+          habitat: [],
+          region: [],
+          season: [],
+        },
+        missing: [],
       }),
     });
 
     await expect(classifyIntent(provider, "Find similar items")).resolves.toEqual({
       classification: {
-        intent: "search",
-        confidence: 0.61,
+        intent: "find-observations",
+        confidence: 0.69,
         needsClarification: false,
+        cues: {
+          species: [],
+          habitat: [],
+          region: [],
+          season: [],
+        },
+        missing: ["species", "habitat", "region"],
       },
       confidenceBand: "medium",
       provenance: {
@@ -81,9 +109,16 @@ describe("classifyIntent", () => {
 
     await expect(classifyIntent(provider, "Find similar items")).resolves.toEqual({
       classification: {
-        intent: "search",
-        confidence: 0.61,
+        intent: "find-observations",
+        confidence: 0.69,
         needsClarification: false,
+        cues: {
+          species: [],
+          habitat: [],
+          region: [],
+          season: [],
+        },
+        missing: ["species", "habitat", "region"],
       },
       confidenceBand: "medium",
       provenance: {
@@ -101,9 +136,16 @@ describe("classifyIntent", () => {
 
     await expect(classifyIntent(provider, "Find similar items")).resolves.toEqual({
       classification: {
-        intent: "search",
-        confidence: 0.61,
+        intent: "find-observations",
+        confidence: 0.69,
         needsClarification: false,
+        cues: {
+          species: [],
+          habitat: [],
+          region: [],
+          season: [],
+        },
+        missing: ["species", "habitat", "region"],
       },
       confidenceBand: "medium",
       provenance: {
@@ -120,6 +162,13 @@ describe("classifyIntent", () => {
         intent: "clarify",
         confidence: 0.31,
         needsClarification: true,
+        cues: {
+          species: [],
+          habitat: [],
+          region: [],
+          season: [],
+        },
+        missing: ["artifact_scope"],
       },
       confidenceBand: "low",
       provenance: {
@@ -136,6 +185,13 @@ describe("classifyIntent", () => {
         intent: "clarify",
         confidence: 0.87,
         needsClarification: true,
+        cues: {
+          species: ["chanterelle"],
+          habitat: ["spruce"],
+          region: ["helsinki"],
+          season: ["autumn"],
+        },
+        missing: ["artifact_scope"],
       }),
     });
 
@@ -144,6 +200,13 @@ describe("classifyIntent", () => {
         intent: "clarify",
         confidence: 0.87,
         needsClarification: true,
+        cues: {
+          species: ["chanterelle"],
+          habitat: ["spruce"],
+          region: ["helsinki"],
+          season: ["autumn"],
+        },
+        missing: ["artifact_scope"],
       },
       confidenceBand: "high",
       provenance: {

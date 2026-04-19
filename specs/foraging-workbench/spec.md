@@ -17,6 +17,8 @@ The home page is a server-rendered semantic foraging workbench that lets contrib
   - classified intent
   - confidence band
   - provenance summary
+  - detected species, habitat, region, and season cues
+  - any missing context the classifier identified
   - workflow state
 - Awaiting-clarification submissions must render:
   - the follow-up question
@@ -34,6 +36,7 @@ The home page is a server-rendered semantic foraging workbench that lets contrib
 - HTML action routes must stay thin adapters over existing typed app messages and results.
 - The home screen model must be assembled by a dedicated UI agent module instead of being hand-built inside the route or view layer.
 - The intent clarification path must reuse the same stored workflow state used by the JSON clarification endpoint.
+- The workbench must make the semantic-foraging intent taxonomy visible instead of collapsing back to generic search/create/explain labels.
 - The explanation workbench must split multiline facts input into grounded fact strings before dispatching the typed explanation query.
 
 ## Regression Guardrails

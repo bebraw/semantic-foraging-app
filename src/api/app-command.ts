@@ -90,6 +90,13 @@ function createIntentResponse(payload: {
     intent: string;
     confidence: number;
     needsClarification: boolean;
+    cues: {
+      species: string[];
+      habitat: string[];
+      region: string[];
+      season: string[];
+    };
+    missing: string[];
   };
   confidenceBand: string;
   provenance: {

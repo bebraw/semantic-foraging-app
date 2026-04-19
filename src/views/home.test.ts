@@ -34,11 +34,11 @@ describe("renderHomePage", () => {
       ],
       workbenchTitle: "Manual flow rehearsal",
       workbenchBody:
-        "Use these forms to simulate a real semantic foraging session: describe what you want to do, continue any clarification the workflow asks for, and inspect explanation output grounded in explicit evidence.",
+        "Use these forms to rehearse bounded foraging tasks: classify whether you want to find observations, create a field note, inspect a patch, explain a suggestion, or resume a saved session, then inspect the cues and clarification gaps the app detected.",
       intentWorkbench: {
         title: "Intent rehearsal",
         description:
-          "Try natural-language requests a forager might make, such as finding past observations, creating a field note, or asking why a result was suggested.",
+          "Try natural-language requests a forager might make, such as finding chanterelle observations, creating a field note, inspecting a mossy patch, or resuming a previous trail.",
         actionPath: "/actions/intent",
         rawInputName: "input",
         rawInputLabel: "What do you want to do?",
@@ -51,6 +51,13 @@ describe("renderHomePage", () => {
             intent: "clarify",
             confidence: 0.31,
             needsClarification: true,
+            cues: {
+              species: [],
+              habitat: [],
+              region: [],
+              season: [],
+            },
+            missing: ["artifact_scope"],
           },
           confidenceBand: "low",
           provenance: {
@@ -62,8 +69,9 @@ describe("renderHomePage", () => {
             name: "intent-classification",
             state: "awaiting_clarification",
             workflowId: "workflow-123",
-            question: 'What do you want to do with "Help": search, create, or explain?',
-            options: ["search", "create", "explain"],
+            question:
+              'What kind of foraging task does "Help" describe: find observations, create a field note, inspect a patch, explain a suggestion, or resume a session?',
+            options: ["find-observations", "create-field-note", "inspect-patch", "explain-suggestion", "resume-session"],
           },
         },
         clarificationActionPath: "/actions/intent/clarify",
@@ -116,6 +124,8 @@ describe("renderHomePage", () => {
     expect(html).toContain("Suggested forage trail selected");
     expect(html).toContain("No-model mode");
     expect(html).toContain("species, habitat, region, and season cues");
+    expect(html).toContain("Clarification focus");
+    expect(html).toContain("artifact_scope");
     expect(html).toContain('rel="stylesheet" href="/styles.css"');
     expect(html).toContain("Trace ID:");
     expect(html).toContain("trace-home-test");

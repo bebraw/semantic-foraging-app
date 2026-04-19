@@ -21,11 +21,18 @@ describe("handleIntentCommandRequest", () => {
       ok: true,
       input: "Explain why this happened",
       classification: {
-        intent: "explain",
-        confidence: 0.72,
+        intent: "explain-suggestion",
+        confidence: 0.82,
         needsClarification: false,
+        cues: {
+          species: [],
+          habitat: [],
+          region: [],
+          season: [],
+        },
+        missing: [],
       },
-      confidenceBand: "medium",
+      confidenceBand: "high",
       provenance: {
         source: "deterministic-fallback",
         provider: null,
@@ -58,6 +65,13 @@ describe("handleIntentCommandRequest", () => {
         intent: "clarify",
         confidence: 0.31,
         needsClarification: true,
+        cues: {
+          species: [],
+          habitat: [],
+          region: [],
+          season: [],
+        },
+        missing: ["artifact_scope"],
       },
       confidenceBand: "low",
       provenance: {
@@ -69,8 +83,9 @@ describe("handleIntentCommandRequest", () => {
         name: "intent-classification",
         state: "awaiting_clarification",
         workflowId: expect.any(String),
-        question: 'What do you want to do with "Help": search, create, or explain?',
-        options: ["search", "create", "explain"],
+        question:
+          'What kind of foraging task does "Help" describe: find observations, create a field note, inspect a patch, explain a suggestion, or resume a session?',
+        options: ["find-observations", "create-field-note", "inspect-patch", "explain-suggestion", "resume-session"],
       },
     });
   });
@@ -141,11 +156,18 @@ describe("handleAppCommandRequest", () => {
       ok: true,
       input: "Explain why this happened",
       classification: {
-        intent: "explain",
-        confidence: 0.72,
+        intent: "explain-suggestion",
+        confidence: 0.82,
         needsClarification: false,
+        cues: {
+          species: [],
+          habitat: [],
+          region: [],
+          season: [],
+        },
+        missing: [],
       },
-      confidenceBand: "medium",
+      confidenceBand: "high",
       provenance: {
         source: "deterministic-fallback",
         provider: null,
@@ -192,9 +214,16 @@ describe("handleAppCommandRequest", () => {
       ok: true,
       input: "Help",
       classification: {
-        intent: "search",
-        confidence: 0.61,
+        intent: "find-observations",
+        confidence: 0.69,
         needsClarification: false,
+        cues: {
+          species: [],
+          habitat: [],
+          region: [],
+          season: [],
+        },
+        missing: ["species", "habitat", "region"],
       },
       confidenceBand: "medium",
       provenance: {
@@ -265,9 +294,16 @@ describe("handleIntentClarificationRequest", () => {
       ok: true,
       input: "Help",
       classification: {
-        intent: "search",
-        confidence: 0.61,
+        intent: "find-observations",
+        confidence: 0.69,
         needsClarification: false,
+        cues: {
+          species: [],
+          habitat: [],
+          region: [],
+          season: [],
+        },
+        missing: ["species", "habitat", "region"],
       },
       confidenceBand: "medium",
       provenance: {
@@ -411,8 +447,9 @@ describe("handleIntentClarificationRequest", () => {
           workflowId: "workflow-123",
           rawInput: "Help",
           state: "awaiting_clarification",
-          question: 'What do you want to do with "Help": search, create, or explain?',
-          options: ["search", "create", "explain"],
+          question:
+            'What kind of foraging task does "Help" describe: find observations, create a field note, inspect a patch, explain a suggestion, or resume a session?',
+          options: ["find-observations", "create-field-note", "inspect-patch", "explain-suggestion", "resume-session"],
         }),
         deleteIntentWorkflow: vi.fn().mockRejectedValue(new Error("storage unavailable")),
       }),

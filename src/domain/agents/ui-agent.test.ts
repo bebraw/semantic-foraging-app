@@ -69,6 +69,13 @@ describe("ui-agent", () => {
           intent: "clarify",
           confidence: 0.31,
           needsClarification: true,
+          cues: {
+            species: [],
+            habitat: [],
+            region: [],
+            season: [],
+          },
+          missing: ["artifact_scope"],
         },
         confidenceBand: "low",
         provenance: {
@@ -80,8 +87,9 @@ describe("ui-agent", () => {
           name: "intent-classification",
           state: "awaiting_clarification",
           workflowId: "workflow-123",
-          question: 'What do you want to do with "Help": search, create, or explain?',
-          options: ["search", "create", "explain"],
+          question:
+            'What kind of foraging task does "Help" describe: find observations, create a field note, inspect a patch, explain a suggestion, or resume a session?',
+          options: ["find-observations", "create-field-note", "inspect-patch", "explain-suggestion", "resume-session"],
         },
       },
       "Search for similar observations",

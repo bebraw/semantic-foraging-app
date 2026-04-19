@@ -24,12 +24,13 @@ The first concrete workflow is intent clarification:
   - `awaiting_clarification`
 - `awaiting_clarification` responses must include:
   - a stable follow-up question
-  - a bounded list of allowed intent options
+  - a bounded list of allowed intent options or missing-context focus areas
 
 ## Runtime Behavior
 
 - Workflow transitions must remain deterministic and testable.
 - The model may assist with intent classification, but it must not bypass workflow state rules.
+- Clarification prompts may target either the missing task type or missing search context such as species, habitat, region, or season.
 - The clarification continuation must load the original input from stored workflow state before incorporating the follow-up clarification text.
 - The clarification continuation must consume the stored workflow snapshot so the same `workflowId` cannot be reused after success.
 - Unsupported or invalid workflow inputs must fail with stable validation errors rather than partial state mutation.

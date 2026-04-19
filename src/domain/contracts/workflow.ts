@@ -8,7 +8,7 @@ export type IntentWorkflow =
       state: "awaiting_clarification";
       workflowId: string;
       question: string;
-      options: ["search", "create", "explain"];
+      options: string[];
     };
 
 export type StoredIntentWorkflow = {
@@ -16,5 +16,5 @@ export type StoredIntentWorkflow = {
   rawInput: string;
   state: "awaiting_clarification";
   question: string;
-  options: ["search", "create", "explain"];
+  options: string[];
 };

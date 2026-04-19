@@ -5,9 +5,16 @@ describe("createIntentWorkflow", () => {
   it("returns a completed workflow when classification is resolved", () => {
     expect(
       createIntentWorkflow("Create a new note", {
-        intent: "create",
-        confidence: 0.66,
+        intent: "create-field-note",
+        confidence: 0.74,
         needsClarification: false,
+        cues: {
+          species: [],
+          habitat: [],
+          region: [],
+          season: [],
+        },
+        missing: ["species", "region"],
       }),
     ).toEqual({
       name: "intent-classification",
@@ -21,13 +28,21 @@ describe("createIntentWorkflow", () => {
         intent: "clarify",
         confidence: 0.31,
         needsClarification: true,
+        cues: {
+          species: [],
+          habitat: [],
+          region: [],
+          season: [],
+        },
+        missing: ["artifact_scope"],
       }),
     ).toEqual({
       name: "intent-classification",
       state: "awaiting_clarification",
       workflowId: expect.any(String),
-      question: 'What do you want to do with "Help": search, create, or explain?',
-      options: ["search", "create", "explain"],
+      question:
+        'What kind of foraging task does "Help" describe: find observations, create a field note, inspect a patch, explain a suggestion, or resume a session?',
+      options: ["find-observations", "create-field-note", "inspect-patch", "explain-suggestion", "resume-session"],
     });
   });
 
@@ -39,6 +54,13 @@ describe("createIntentWorkflow", () => {
           intent: "clarify",
           confidence: 0.31,
           needsClarification: true,
+          cues: {
+            species: [],
+            habitat: [],
+            region: [],
+            season: [],
+          },
+          missing: ["artifact_scope"],
         },
         "workflow-123",
       ),
@@ -46,8 +68,9 @@ describe("createIntentWorkflow", () => {
       name: "intent-classification",
       state: "awaiting_clarification",
       workflowId: "workflow-123",
-      question: 'What do you want to do with "Help": search, create, or explain?',
-      options: ["search", "create", "explain"],
+      question:
+        'What kind of foraging task does "Help" describe: find observations, create a field note, inspect a patch, explain a suggestion, or resume a session?',
+      options: ["find-observations", "create-field-note", "inspect-patch", "explain-suggestion", "resume-session"],
     });
   });
 });
@@ -65,15 +88,17 @@ describe("createStoredIntentWorkflow", () => {
         name: "intent-classification",
         state: "awaiting_clarification",
         workflowId: "workflow-123",
-        question: 'What do you want to do with "Help": search, create, or explain?',
-        options: ["search", "create", "explain"],
+        question:
+          'What kind of foraging task does "Help" describe: find observations, create a field note, inspect a patch, explain a suggestion, or resume a session?',
+        options: ["find-observations", "create-field-note", "inspect-patch", "explain-suggestion", "resume-session"],
       }),
     ).toEqual({
       workflowId: "workflow-123",
       rawInput: "Help",
       state: "awaiting_clarification",
-      question: 'What do you want to do with "Help": search, create, or explain?',
-      options: ["search", "create", "explain"],
+      question:
+        'What kind of foraging task does "Help" describe: find observations, create a field note, inspect a patch, explain a suggestion, or resume a session?',
+      options: ["find-observations", "create-field-note", "inspect-patch", "explain-suggestion", "resume-session"],
     });
   });
 });

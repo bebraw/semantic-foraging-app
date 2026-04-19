@@ -13,8 +13,8 @@ export function createIntentWorkflow(rawInput: string, classification: Classifie
     name: "intent-classification",
     state: "awaiting_clarification",
     workflowId: workflowId ?? createWorkflowId(),
-    question: `What do you want to do with "${rawInput}": search, create, or explain?`,
-    options: ["search", "create", "explain"],
+    question: createClarificationQuestion(rawInput, classification),
+    options: createClarificationOptions(classification),
   };
 }
 
@@ -41,4 +41,20 @@ function createWorkflowId(): string {
   }
 
   return `workflow-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`;
+}
+
+function createClarificationQuestion(rawInput: string, classification: ClassifiedIntent): string {
+  if (classification.missing.includes("artifact_scope") || classification.intent === "clarify") {
+    return `What kind of foraging task does "${rawInput}" describe: find observations, create a field note, inspect a patch, explain a suggestion, or resume a session?`;
+  }
+
+  return `What extra context should narrow "${rawInput}"? Add details about ${classification.missing.join(", ")}.`;
+}
+
+function createClarificationOptions(classification: ClassifiedIntent): string[] {
+  if (classification.missing.includes("artifact_scope") || classification.intent === "clarify") {
+    return ["find-observations", "create-field-note", "inspect-patch", "explain-suggestion", "resume-session"];
+  }
+
+  return classification.missing;
 }
