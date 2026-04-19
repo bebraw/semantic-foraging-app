@@ -3,6 +3,7 @@ import { exampleRoutes } from "./app-routes";
 import { handleAppCommandRequest, handleIntentClarificationRequest, handleIntentCommandRequest } from "./api/app-command";
 import { handleAppQueryRequest, handleExplanationQueryRequest, handleHealthRequest, handleHomePageRequest } from "./api/app-query";
 import { handleExplanationActionRequest, handleIntentActionRequest, handleIntentClarificationActionRequest } from "./api/workbench";
+import { createGeodataProvider } from "./infra/geodata";
 import { resolveModelProvider } from "./infra/llm";
 import { consoleLogger, logTraceSummary, silentLogger } from "./infra/observability/logger";
 import { attachTraceHeaders, createRequestTrace } from "./infra/observability/trace";
@@ -22,7 +23,14 @@ export default {
 export async function handleRequest(request: Request, env: Env = {}): Promise<Response> {
   const url = new URL(request.url);
   const trace = createRequestTrace(url.pathname);
-  const context = createAppContext(exampleRoutes, resolveModelProvider(env), trace, workflowRepository, recentSessionRepository);
+  const context = createAppContext(
+    exampleRoutes,
+    resolveModelProvider(env),
+    trace,
+    workflowRepository,
+    recentSessionRepository,
+    createGeodataProvider(env),
+  );
   let response: Response;
 
   if (url.pathname === "/styles.css") {
@@ -119,4 +127,7 @@ export interface Env {
   AI_GATEWAY_TOKEN?: string;
   AI_GATEWAY_PROVIDER_PATH?: string;
   AI_GATEWAY_MODEL?: string;
+
+  NLS_API_KEY?: string;
+  FINBIF_ACCESS_TOKEN?: string;
 }

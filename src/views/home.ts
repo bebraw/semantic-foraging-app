@@ -29,11 +29,24 @@ export function renderHomePage(screen: HomeScreenModel): string {
   const latestExplanation = screen.explanationWorkbench.latestSubmission;
   const clarificationWorkflow = latestIntent?.workflow.state === "awaiting_clarification" ? latestIntent.workflow : null;
   const initialMapFeature = screen.mapView.features[0] ?? null;
+  const overlay = screen.mapView.overlays[0];
   const mapMarkup = screen.mapView.features
     .map((feature) =>
-      renderMapFeature(feature, screen.mapView.viewport.width, screen.mapView.viewport.height, feature.id === initialMapFeature?.id),
+      renderMapFeature(
+        feature,
+        screen.mapView.viewport.width,
+        screen.mapView.viewport.height,
+        screen.mapView.viewport.bounds,
+        feature.id === initialMapFeature?.id,
+      ),
     )
     .join("");
+  const overlayMarkup =
+    overlay?.status === "ready"
+      ? overlay.points
+          .map((point) => renderOverlayPoint(point, screen.mapView.viewport.width, screen.mapView.viewport.height, screen.mapView.viewport.bounds))
+          .join("")
+      : "";
   const mapLegendMarkup = screen.mapView.features
     .map(
       (feature) =>
@@ -57,6 +70,12 @@ export function renderHomePage(screen: HomeScreenModel): string {
         </li>`,
     )
     .join("");
+  const overlayStatusMarkup = overlay
+    ? `<section class="rounded-[1rem] border border-app-line/70 bg-app-canvas/45 px-4 py-3">
+        <p class="text-xs font-semibold uppercase tracking-[0.18em] text-app-text-soft">${escapeHtml(overlay.label)} / ${escapeHtml(overlay.provider)}</p>
+        <p class="mt-2 text-sm leading-6 text-app-text-soft">${escapeHtml(overlay.note)}</p>
+      </section>`
+    : "";
   const recentSessionMarkup = screen.recentSessions
     .map(
       (session) =>
@@ -223,29 +242,21 @@ export function renderHomePage(screen: HomeScreenModel): string {
                     <figure class="overflow-hidden rounded-[1rem] border border-app-line/70 bg-[linear-gradient(180deg,rgba(11,110,79,0.09),rgba(255,255,255,0.6)),linear-gradient(135deg,rgba(255,255,255,0.75),rgba(245,239,230,0.95))] p-4">
                       <svg viewBox="0 0 ${screen.mapView.viewport.width} ${screen.mapView.viewport.height}" class="h-auto w-full rounded-[0.9rem] border border-app-line/60 bg-[linear-gradient(180deg,rgba(255,255,255,0.88),rgba(244,236,226,0.96))]" role="img" aria-label="${escapeHtml(screen.mapView.viewport.frameLabel)}">
                         <rect x="18" y="22" width="604" height="316" rx="26" fill="rgba(255,255,255,0.42)" stroke="rgba(30,26,22,0.08)"/>
-                        <path d="M92 276C152 228 202 206 252 180C326 142 382 136 458 102C515 76 548 66 590 54" fill="none" stroke="rgba(11,110,79,0.15)" stroke-width="18" stroke-linecap="round"/>
-                        <path d="M112 112C168 130 218 156 266 148C324 138 348 110 412 100C486 88 522 112 560 156" fill="none" stroke="rgba(30,26,22,0.08)" stroke-width="24" stroke-linecap="round"/>
-                        <g stroke="rgba(30,26,22,0.08)" stroke-dasharray="4 8">
-                          <line x1="140" y1="40" x2="140" y2="320"/>
-                          <line x1="280" y1="40" x2="280" y2="320"/>
-                          <line x1="420" y1="40" x2="420" y2="320"/>
-                          <line x1="560" y1="40" x2="560" y2="320"/>
-                          <line x1="40" y1="110" x2="600" y2="110"/>
-                          <line x1="40" y1="190" x2="600" y2="190"/>
-                          <line x1="40" y1="270" x2="600" y2="270"/>
-                        </g>
-                        <g fill="rgba(30,26,22,0.45)" font-size="12">
-                          <text x="72" y="84">West ridges</text>
-                          <text x="452" y="92">Southern damp stands</text>
-                          <text x="300" y="304">Observation basin</text>
-                        </g>
+                        ${renderMapGraticule(screen.mapView.viewport.width, screen.mapView.viewport.height, screen.mapView.viewport.bounds)}
+                        ${overlayMarkup}
                         ${mapMarkup}
                       </svg>
                     </figure>
                     <div class="grid gap-3">
+                      <section class="rounded-[1rem] border border-app-line/70 bg-app-canvas/45 px-4 py-3">
+                        <p class="text-xs font-semibold uppercase tracking-[0.18em] text-app-text-soft">${escapeHtml(screen.mapView.basemap.label)}</p>
+                        <p class="mt-2 text-sm leading-6 text-app-text-soft">${escapeHtml(screen.mapView.basemap.note)}</p>
+                        <p class="mt-3 text-xs uppercase tracking-[0.16em] text-app-text-soft">Bounds: ${escapeHtml(formatBoundsLabel(screen.mapView.viewport.bounds))}</p>
+                      </section>
+                      ${overlayStatusMarkup}
                       <section class="rounded-[1rem] border border-app-line/70 bg-white/80 p-4 shadow-[0_12px_30px_-26px_rgba(30,26,22,0.32)]">
                         <p class="text-xs font-semibold uppercase tracking-[0.18em] text-app-text-soft">Focused lead</p>
-                        <p class="mt-2 text-xs font-semibold uppercase tracking-[0.18em] text-app-accent" data-map-detail-meta>${escapeHtml(`${initialMapFeature?.kind ?? ""} / ${initialMapFeature?.sourceSection ?? ""}`)}</p>
+                        <p class="mt-2 text-xs font-semibold uppercase tracking-[0.18em] text-app-accent" data-map-detail-meta>${escapeHtml(formatMapDetailMeta(initialMapFeature))}</p>
                         <h3 class="mt-3 text-lg font-semibold tracking-[-0.02em]" data-map-detail-label>${escapeHtml(initialMapFeature?.label ?? "")}</h3>
                         <p class="mt-3 leading-7 text-app-text-soft" data-map-detail-summary>${escapeHtml(initialMapFeature?.summary ?? "")}</p>
                         <p class="mt-3 text-sm leading-6 text-app-text-soft" data-map-detail-evidence>${escapeHtml(initialMapFeature?.evidenceSummary ?? "")}</p>
@@ -356,6 +367,7 @@ function renderMapFeature(
   feature: HomeScreenModel["mapView"]["features"][number],
   width: number,
   height: number,
+  bounds: HomeScreenModel["mapView"]["viewport"]["bounds"],
   isActive: boolean,
 ): string {
   const tone = feature.sourceSection === "recent-sessions" ? "#0b6e4f" : "#1e1a16";
@@ -363,8 +375,8 @@ function renderMapFeature(
 
   switch (feature.geometry.kind) {
     case "point": {
-      const x = percentToFrame(feature.geometry.point.x, width);
-      const y = percentToFrame(feature.geometry.point.y, height);
+      const x = longitudeToFrame(feature.geometry.point.longitude, bounds, width);
+      const y = latitudeToFrame(feature.geometry.point.latitude, bounds, height);
 
       return `<g ${sharedAttributes}>
         <circle data-map-marker-ring cx="${x}" cy="${y}" r="14" fill="white" fill-opacity="0.82" stroke="${tone}" stroke-width="2"/>
@@ -373,23 +385,26 @@ function renderMapFeature(
       </g>`;
     }
     case "area": {
-      const x = percentToFrame(feature.geometry.center.x, width);
-      const y = percentToFrame(feature.geometry.center.y, height);
+      const ring = feature.geometry.ring
+        .map((point) => `${longitudeToFrame(point.longitude, bounds, width)} ${latitudeToFrame(point.latitude, bounds, height)}`)
+        .join(" L ");
+      const x = longitudeToFrame(feature.geometry.center.longitude, bounds, width);
+      const y = latitudeToFrame(feature.geometry.center.latitude, bounds, height);
 
       return `<g ${sharedAttributes}>
-        <circle data-map-marker-ring cx="${x}" cy="${y}" r="${feature.geometry.radius}" fill="rgba(11,110,79,0.12)" stroke="${tone}" stroke-width="2"/>
+        <path data-map-marker-ring d="M ${ring}" fill="rgba(11,110,79,0.12)" stroke="${tone}" stroke-width="2"/>
         <circle data-map-marker-core cx="${x}" cy="${y}" r="5" fill="${tone}"/>
         <text x="${x + 22}" y="${y - 14}" fill="rgba(30,26,22,0.8)" font-size="12">${escapeHtml(feature.label)}</text>
       </g>`;
     }
     case "trail": {
       const [first, second, third] = feature.geometry.points;
-      const firstX = percentToFrame(first.x, width);
-      const firstY = percentToFrame(first.y, height);
-      const secondX = percentToFrame(second.x, width);
-      const secondY = percentToFrame(second.y, height);
-      const thirdX = percentToFrame(third.x, width);
-      const thirdY = percentToFrame(third.y, height);
+      const firstX = longitudeToFrame(first.longitude, bounds, width);
+      const firstY = latitudeToFrame(first.latitude, bounds, height);
+      const secondX = longitudeToFrame(second.longitude, bounds, width);
+      const secondY = latitudeToFrame(second.latitude, bounds, height);
+      const thirdX = longitudeToFrame(third.longitude, bounds, width);
+      const thirdY = latitudeToFrame(third.latitude, bounds, height);
 
       return `<g ${sharedAttributes}>
         <path data-map-marker-path d="M ${firstX} ${firstY} Q ${secondX} ${secondY} ${thirdX} ${thirdY}" fill="none" stroke="${tone}" stroke-width="4" stroke-linecap="round"/>
@@ -398,6 +413,60 @@ function renderMapFeature(
       </g>`;
     }
   }
+}
+
+function renderOverlayPoint(
+  point: HomeScreenModel["mapView"]["overlays"][number]["points"][number],
+  width: number,
+  height: number,
+  bounds: HomeScreenModel["mapView"]["viewport"]["bounds"],
+): string {
+  const x = longitudeToFrame(point.point.longitude, bounds, width);
+  const y = latitudeToFrame(point.point.latitude, bounds, height);
+
+  return `<g opacity="0.55">
+    <circle cx="${x}" cy="${y}" r="4" fill="rgba(160,90,42,0.75)"/>
+  </g>`;
+}
+
+function renderMapGraticule(
+  width: number,
+  height: number,
+  bounds: HomeScreenModel["mapView"]["viewport"]["bounds"],
+): string {
+  const longitudeStep = Math.max(1, Math.round((bounds.east - bounds.west) / 4));
+  const latitudeStep = Math.max(1, Math.round((bounds.north - bounds.south) / 4));
+  const longitudeLines: string[] = [];
+  const latitudeLines: string[] = [];
+
+  for (let longitude = Math.ceil(bounds.west); longitude < bounds.east; longitude += longitudeStep) {
+    const x = longitudeToFrame(longitude, bounds, width);
+    longitudeLines.push(`<line x1="${x}" y1="32" x2="${x}" y2="${height - 24}" />`);
+    longitudeLines.push(`<text x="${x + 6}" y="48">${escapeHtml(`${longitude}°E`)}</text>`);
+  }
+
+  for (let latitude = Math.ceil(bounds.south); latitude < bounds.north; latitude += latitudeStep) {
+    const y = latitudeToFrame(latitude, bounds, height);
+    latitudeLines.push(`<line x1="36" y1="${y}" x2="${width - 32}" y2="${y}" />`);
+    latitudeLines.push(`<text x="44" y="${y - 6}">${escapeHtml(`${latitude}°N`)}</text>`);
+  }
+
+  return `<g stroke="rgba(30,26,22,0.08)" stroke-dasharray="4 8" fill="rgba(30,26,22,0.45)" font-size="12">
+    ${longitudeLines.join("")}
+    ${latitudeLines.join("")}
+  </g>`;
+}
+
+function formatBoundsLabel(bounds: HomeScreenModel["mapView"]["viewport"]["bounds"]): string {
+  return `${bounds.west.toFixed(2)}°E to ${bounds.east.toFixed(2)}°E / ${bounds.south.toFixed(2)}°N to ${bounds.north.toFixed(2)}°N`;
+}
+
+function formatMapDetailMeta(feature: HomeScreenModel["mapView"]["features"][number] | null): string {
+  if (!feature) {
+    return "";
+  }
+
+  return `${feature.kind} / ${feature.sourceSection}`;
 }
 
 function renderMapEnhancementScript(): string {
@@ -472,6 +541,18 @@ function renderMapEnhancementScript(): string {
 `.trim();
 }
 
-function percentToFrame(percent: number, frameSize: number): number {
-  return (percent / 100) * frameSize;
+function longitudeToFrame(
+  longitude: number,
+  bounds: HomeScreenModel["mapView"]["viewport"]["bounds"],
+  frameWidth: number,
+): number {
+  return ((longitude - bounds.west) / (bounds.east - bounds.west)) * frameWidth;
+}
+
+function latitudeToFrame(
+  latitude: number,
+  bounds: HomeScreenModel["mapView"]["viewport"]["bounds"],
+  frameHeight: number,
+): number {
+  return ((bounds.north - latitude) / (bounds.north - bounds.south)) * frameHeight;
 }

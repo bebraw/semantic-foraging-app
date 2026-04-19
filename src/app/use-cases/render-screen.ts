@@ -43,6 +43,16 @@ export async function renderScreen(context: AppContext, message: RenderHomeScree
         notes: ["screen:home", `runtime-mode:${runtime.mode}`, `runtime-provider:${runtime.provider ?? "none"}`],
       });
 
+      const basemap = context.geodataProvider.getBasemap();
+      const overlay = await context.geodataProvider.loadObservationOverlay(
+        workbench.intent.latestSubmission?.classification.cues ?? {
+          species: [],
+          habitat: [],
+          region: [],
+          season: [],
+        },
+      );
+
       return {
         kind: "screen",
         screen: createHomeScreenModel({
@@ -50,6 +60,8 @@ export async function renderScreen(context: AppContext, message: RenderHomeScree
           runtime,
           traceId: context.trace.id,
           workbench,
+          basemap,
+          overlay,
         }),
       };
   }

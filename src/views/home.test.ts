@@ -18,7 +18,9 @@ describe("renderHomePage", () => {
     expect(html).toContain("Foraging map");
     expect(html).toContain("Mapped leads");
     expect(html).toContain("Focused lead");
-    expect(html).toContain("Deterministic terrain frame");
+    expect(html).toContain("Geographic preview of current leads");
+    expect(html).toContain("National Land Survey topographic map");
+    expect(html).toContain("FinBIF observations / finbif");
     expect(html).toContain("Autumn chanterelle cluster");
     expect(html).toContain("data-map-root");
     expect(html).toContain('data-map-item="candidate-observation-autumn-chanterelle-cluster"');
@@ -47,13 +49,20 @@ describe("renderHomePage", () => {
         summary: "A compact patch with repeated chanterelle and trumpet signals in wet mossy spruce cover.",
         evidenceSummary: "Ranked for inspect-patch.",
         sourceSection: "candidate-leads",
+        coordinateSource: "region-anchor",
         geometry: {
           kind: "area",
           center: {
-            x: 62,
-            y: 58,
+            longitude: 24.98,
+            latitude: 60.21,
           },
-          radius: 18,
+          ring: [
+            { longitude: 24.9, latitude: 60.24 },
+            { longitude: 25.04, latitude: 60.24 },
+            { longitude: 25.02, latitude: 60.12 },
+            { longitude: 24.88, latitude: 60.12 },
+            { longitude: 24.9, latitude: 60.24 },
+          ],
         },
       },
       {
@@ -63,12 +72,13 @@ describe("renderHomePage", () => {
         summary: "A trail fragment linking a mossy ridge, older notes, and a recent wet-spruce observation pocket.",
         evidenceSummary: "Ranked for inspect-patch.",
         sourceSection: "candidate-leads",
+        coordinateSource: "region-anchor",
         geometry: {
           kind: "trail",
           points: [
-            { x: 28, y: 44 },
-            { x: 36, y: 38 },
-            { x: 46, y: 30 },
+            { longitude: 24.7, latitude: 60.3 },
+            { longitude: 24.95, latitude: 60.22 },
+            { longitude: 25.18, latitude: 60.1 },
           ],
         },
       },
@@ -87,6 +97,7 @@ describe("renderHomePage", () => {
     expect(html).toContain("data-map-marker-path");
     expect(html).toContain('data-map-feature="candidate-trail-north-ridge-wet-spruce-loop"');
     expect(html).toContain("unparsed-session-stamp");
+    expect(html).toContain("25°E");
   });
 
   it("falls back to the empty map state without loading enhancement scripts", () => {
@@ -96,7 +107,7 @@ describe("renderHomePage", () => {
 
     const html = renderHomePage(screen);
 
-    expect(html).toContain("Run a completed foraging intent to project leads into the map frame.");
+    expect(html).toContain("Run a completed foraging intent to project leads into a geographic preview.");
     expect(html).not.toContain("data-map-root");
     expect(html).not.toContain("Focused lead");
     expect(html).not.toContain("<script>");
@@ -209,13 +220,34 @@ function createHomeScreenModel(): HomeScreenModel {
     mapView: {
       title: "Foraging map",
       description:
-        "This typed map fragment projects current leads and saved sessions into a shared terrain frame so spatial cues are visible before adding a heavier client-side map stack.",
-      emptyState: "Run a completed foraging intent to project leads into the map frame.",
+        "This map projects current leads into a real geographic frame so the workbench can connect foraging cues with public Finnish map and occurrence data.",
+      emptyState: "Run a completed foraging intent to project leads into a geographic preview.",
       legendTitle: "Mapped leads",
+      basemap: {
+        provider: "nls-wmts",
+        label: "National Land Survey topographic map",
+        attribution: "Map data © National Land Survey of Finland CC BY 4.0",
+        available: false,
+        note: "The geographic fallback frame is active until a National Land Survey API key is configured.",
+        minZoom: 0,
+        maxZoom: 16,
+        externalUrl: "https://www.maanmittauslaitos.fi/en/e-services/mapsite",
+      },
       viewport: {
         width: 640,
         height: 360,
-        frameLabel: "Deterministic terrain frame",
+        frameLabel: "Geographic preview of current leads",
+        center: {
+          longitude: 24.96,
+          latitude: 60.18,
+        },
+        bounds: {
+          west: 24.4,
+          south: 59.9,
+          east: 25.4,
+          north: 60.5,
+        },
+        zoom: 10,
       },
       features: [
         {
@@ -225,13 +257,37 @@ function createHomeScreenModel(): HomeScreenModel {
           summary: "Three nearby observation notes align on damp spruce cover and recent chanterelle sightings.",
           evidenceSummary: "Ranked for find-observations.",
           sourceSection: "candidate-leads",
+          coordinateSource: "region-anchor",
           geometry: {
             kind: "point",
             point: {
-              x: 70,
-              y: 60,
+              longitude: 24.94,
+              latitude: 60.18,
             },
+            accuracyMeters: 1500,
           },
+        },
+      ],
+      overlays: [
+        {
+          id: "finbif-occurrences",
+          label: "FinBIF observations",
+          provider: "finbif",
+          attribution: "Observation data © Finnish Biodiversity Information Facility",
+          status: "ready",
+          note: "Loaded 1 public Cantharellus cibarius occurrence from FinBIF.",
+          points: [
+            {
+              id: "obs-1",
+              label: "Cantharellus cibarius",
+              summary: "Observed 2025-09-01.",
+              recordedAt: "2025-09-01",
+              point: {
+                longitude: 24.93,
+                latitude: 60.2,
+              },
+            },
+          ],
         },
       ],
     },

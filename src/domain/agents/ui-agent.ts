@@ -9,12 +9,15 @@ import { buildMapViewModel } from "./map-agent";
 import { buildForagingCandidateCards } from "./knowledge-agent";
 import type { RuntimeModelCapability } from "../contracts/model-runtime";
 import type { HomeScreenModel } from "../contracts/screen";
+import type { MapBasemapModel, MapOverlayModel } from "../contracts/map";
 
 export type CreateHomeScreenInput = {
   routes: AppRoute[];
   runtime: RuntimeModelCapability;
   traceId: string;
   workbench: ForagingWorkbenchState;
+  basemap?: MapBasemapModel;
+  overlay?: MapOverlayModel;
 };
 
 export function createInitialForagingWorkbenchState(): ForagingWorkbenchState {
@@ -97,7 +100,16 @@ export function withExplanationSubmission(state: ForagingWorkbenchState, submiss
 
 export function createHomeScreenModel(input: CreateHomeScreenInput): HomeScreenModel {
   const candidateCards = buildForagingCandidateCards(input.workbench.intent.latestSubmission, input.workbench.recentSessions);
-  const mapView = buildMapViewModel(candidateCards, input.workbench.recentSessions);
+  const mapView = buildMapViewModel(
+    candidateCards,
+    input.workbench.recentSessions,
+    input.basemap && input.overlay
+      ? {
+          basemap: input.basemap,
+          overlay: input.overlay,
+        }
+      : undefined,
+  );
 
   return {
     kind: "home",
