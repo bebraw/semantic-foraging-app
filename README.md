@@ -65,7 +65,22 @@ Local development in this repo targets macOS. Other platforms may need script an
 
 ## Model setup
 
-This app supports Cloudflare-native model execution.
+This app supports both local OpenAI-compatible model execution and Cloudflare-native model execution.
+
+### Local path: Ollama or LM Studio
+
+Set:
+
+- `LOCAL_MODEL_BASE_URL`
+- `LOCAL_MODEL_NAME`
+- optional `LOCAL_MODEL_API_KEY`
+
+Examples:
+
+- Ollama: `LOCAL_MODEL_BASE_URL=http://127.0.0.1:11434/v1`
+- LM Studio: `LOCAL_MODEL_BASE_URL=http://127.0.0.1:1234/v1`
+
+When local model vars are present, the provider resolver prefers that local OpenAI-compatible path over Workers AI or AI Gateway so local development can opt in explicitly.
 
 ### Default path: Workers AI
 

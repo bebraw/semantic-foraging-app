@@ -29,6 +29,15 @@ This template is set up for the local Agent CI runner from `agent-ci.dev`.
 
 The repo pins CLI tooling in `devDependencies`, including Wrangler for Cloudflare-based experiments. Prefer invoking those tools through `npx` or repo scripts so the project version is used instead of a global install.
 
+For local model-backed development, the shared model provider can target OpenAI-compatible runtimes such as Ollama or LM Studio through `.dev.vars`:
+
+- `LOCAL_MODEL_BASE_URL=http://127.0.0.1:11434/v1` with a local Ollama model name
+- `LOCAL_MODEL_BASE_URL=http://127.0.0.1:1234/v1` with a loaded LM Studio model identifier
+- `LOCAL_MODEL_NAME=...`
+- optional `LOCAL_MODEL_API_KEY=...`
+
+When `LOCAL_MODEL_BASE_URL` and `LOCAL_MODEL_NAME` are set, the provider resolver prefers that explicit local runtime over Workers AI or AI Gateway for the request.
+
 If local CI fails with `No such image: ghcr.io/actions/actions-runner:latest`, pull that image manually and re-run the workflow.
 
 If local CI warns with `No such remote 'origin'`, add `GITHUB_REPO=owner/repo` to `.env.agent-ci` and rerun the workflow.

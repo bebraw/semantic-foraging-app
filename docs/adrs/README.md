@@ -33,6 +33,7 @@ Skip an ADR for small, reversible, or purely tactical choices.
 | [ADR-015](./ADR-015-adopt-an-app-bus-for-route-queries.md)              | Accepted   | Route home and health requests through a small app bus with typed app-level results.           |
 | [ADR-016](./ADR-016-add-lightweight-request-tracing.md)                 | Accepted   | Add lightweight per-request traces and response trace headers for app-layer debugging.         |
 | [ADR-017](./ADR-017-add-a-workflow-repository-boundary.md)              | Accepted   | Add a workflow repository boundary with an in-memory implementation for stored workflow state. |
+| [ADR-018](./ADR-018-add-a-local-openai-compatible-model-path.md)        | Accepted   | Add a local OpenAI-compatible provider path for Ollama- or LM Studio-style development flows.  |
 
 ## Creating A New ADR
 

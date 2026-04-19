@@ -12,6 +12,11 @@
     "WORKERS_AI_MODEL": "@cf/meta/llama-3.3-8b-instruct",
   },
 
+  // Optional local OpenAI-compatible model vars belong in `.dev.vars`, for example:
+  // LOCAL_MODEL_BASE_URL=http://127.0.0.1:11434/v1
+  // LOCAL_MODEL_NAME=gpt-oss:20b
+  // LOCAL_MODEL_API_KEY=ollama
+  //
   // Optional AI Gateway vars:
   // "vars": {
   //   "AI_GATEWAY_ACCOUNT_ID": "your-account-id",

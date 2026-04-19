@@ -37,14 +37,14 @@ The repo now implements the first application-layer slice from this document:
 - workflow repository misses and storage failures now map to typed app error categories instead of route-local exception handling.
 - stored clarification workflow snapshots are now consumed on successful continuation instead of remaining reusable in memory.
 - `src/views/home.ts` now renders from a typed `HomeScreenModel` instead of route-local primitives.
-- `src/infra/llm/` already provides a typed model-provider boundary with deterministic fallback behavior.
+- `src/infra/llm/` now provides a typed model-provider boundary with deterministic fallback behavior plus a local OpenAI-compatible development path for Ollama- or LM Studio-style runtimes.
 
 The repo does not yet implement the full architecture described below. In particular:
 
 - workflow state is still limited to one client-roundtripped clarification flow
 - workflow state now has a repository boundary with an in-memory implementation
 - observability is currently limited to lightweight per-request tracing
-- the model layer is currently Cloudflare-native, not a local inference adapter stack
+- the local-model path currently assumes an OpenAI-compatible chat-completions endpoint instead of shipping runtime-specific local adapters
 
 ---
 
@@ -169,6 +169,7 @@ src/
     llm/
       provider.ts
       providers/
+        openai-compatible.ts
         cloudflare-workers-ai.ts
         cloudflare-ai-gateway.ts
       runtime-capability.ts

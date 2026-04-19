@@ -91,6 +91,10 @@ export interface Env {
     run(model: string, input: Record<string, unknown>): Promise<unknown>;
   };
 
+  LOCAL_MODEL_BASE_URL?: string;
+  LOCAL_MODEL_API_KEY?: string;
+  LOCAL_MODEL_NAME?: string;
+
   WORKERS_AI_MODEL?: string;
 
   AI_GATEWAY_ACCOUNT_ID?: string;

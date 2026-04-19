@@ -10,6 +10,7 @@ Add a typed model integration layer to the application.
 
 The model layer must:
 
+- support a local OpenAI-compatible inference provider for development
 - support Cloudflare Workers AI as the default managed inference provider
 - support Cloudflare AI Gateway in front of Workers AI
 - hide provider details behind a shared `ModelProvider` contract
@@ -61,7 +62,13 @@ The default production provider must be:
 - Workers AI for inference
 - AI Gateway for control and observability
 
-### FR-3 Safe fallback
+### FR-3 Local development path
+
+The app must support a local OpenAI-compatible chat-completions endpoint for development use cases such as Ollama or LM Studio.
+
+If local provider configuration is present, the resolver may prefer that path over managed Cloudflare providers so contributors can opt into local inference explicitly.
+
+### FR-4 Safe fallback
 
 If the model is unavailable, its availability check fails, or it returns invalid output:
 
@@ -69,12 +76,12 @@ If the model is unavailable, its availability check fails, or it returns invalid
 - the app must render deterministic fallback UI
 - no invalid model output may enter domain logic
 
-### FR-4 Typed outputs
+### FR-5 Typed outputs
 
 All structured model outputs must be schema-validated before use.
 Schema validation failures must fall back deterministically instead of being treated as accepted model output.
 
-### FR-5 Capability detection
+### FR-6 Capability detection
 
 The provider must expose capabilities so the app can decide whether to:
 
@@ -82,12 +89,12 @@ The provider must expose capabilities so the app can decide whether to:
 - request plain text
 - skip inference entirely
 
-### FR-6 Route isolation
+### FR-7 Route isolation
 
 Route handlers must not call Cloudflare AI APIs directly.
 All model access must flow through `src/infra/llm/`.
 
-### FR-7 Provenance reporting
+### FR-8 Provenance reporting
 
 Model-assisted results must expose whether the final output came from:
 
@@ -118,6 +125,7 @@ the app still works using deterministic UI and rules.
 ## Acceptance criteria
 
 - A typed `ModelProvider` interface exists
+- An `OpenAiCompatibleProvider` exists
 - A `CloudflareWorkersAiProvider` exists
 - A `CloudflareAiGatewayProvider` exists
 - A provider resolver selects the configured provider

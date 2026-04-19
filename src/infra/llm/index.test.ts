@@ -3,7 +3,19 @@ import type { Env } from "../../worker";
 import { resolveModelProvider } from "./index";
 
 describe("resolveModelProvider", () => {
-  it("prefers Workers AI when the binding is configured", async () => {
+  it("prefers the local OpenAI-compatible provider when configured", async () => {
+    const provider = resolveModelProvider({
+      LOCAL_MODEL_BASE_URL: "http://127.0.0.1:11434/v1",
+      LOCAL_MODEL_NAME: "gpt-oss:20b",
+      LOCAL_MODEL_API_KEY: "ollama",
+      AI: { run: vi.fn() },
+      WORKERS_AI_MODEL: "@cf/meta/test-model",
+    } as Env);
+
+    expect(provider?.name).toBe("local-openai-compatible");
+  });
+
+  it("falls back to Workers AI when no local provider is configured", async () => {
     const run = vi.fn().mockResolvedValue("model output");
     const provider = resolveModelProvider({
       AI: { run },

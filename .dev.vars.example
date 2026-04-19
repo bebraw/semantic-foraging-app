@@ -4,3 +4,8 @@ SESSION_SECRET=change-this-to-a-long-random-secret
 # Optional: keep a separate key for encrypted third-party credentials or
 # other sensitive values stored by the app.
 # APP_ENCRYPTION_SECRET=change-this-to-a-different-long-random-secret
+
+# Optional local model runtime for Ollama or LM Studio.
+# LOCAL_MODEL_BASE_URL=http://127.0.0.1:11434/v1
+# LOCAL_MODEL_NAME=gpt-oss:20b
+# LOCAL_MODEL_API_KEY=ollama
