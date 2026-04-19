@@ -119,7 +119,11 @@ export function withSavedArtifactSeed(state: ForagingWorkbenchState, artifact: S
 }
 
 export function createHomeScreenModel(input: CreateHomeScreenInput): HomeScreenModel {
-  const candidateCards = buildForagingCandidateCards(input.workbench.intent.latestSubmission, input.workbench.recentSessions);
+  const candidateCards = buildForagingCandidateCards(
+    input.workbench.intent.latestSubmission,
+    input.workbench.recentSessions,
+    input.workbench.savedArtifacts,
+  );
   const mapView = buildMapViewModel(
     candidateCards,
     input.workbench.recentSessions,

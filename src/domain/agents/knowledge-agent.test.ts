@@ -88,6 +88,77 @@ describe("buildForagingCandidateCards", () => {
     expect(cards[0].evidence).toEqual(expect.arrayContaining([expect.objectContaining({ label: "Still missing", detail: "region" })]));
   });
 
+  it("reuses saved artifacts as ranked candidates for explanation intents", () => {
+    const cards = buildForagingCandidateCards(
+      {
+        input: "Explain why this chanterelle trail is worth trying in Helsinki",
+        classification: {
+          intent: "explain-suggestion",
+          confidence: 0.76,
+          needsClarification: false,
+          cues: {
+            species: ["chanterelle"],
+            habitat: ["spruce"],
+            region: ["helsinki"],
+            season: ["autumn"],
+          },
+          missing: [],
+        },
+        confidenceBand: "high",
+        provenance: {
+          source: "deterministic-fallback",
+          provider: null,
+          reason: "no-model-provider",
+        },
+        workflow: {
+          name: "intent-classification",
+          state: "completed",
+        },
+      },
+      [],
+      [
+        {
+          artifactId: "trail-1",
+          sourceCardId: "trail-card-1",
+          kind: "trail",
+          title: "Saved chanterelle trail",
+          summary: "A saved trail through wet spruce cover near Helsinki.",
+          sourceIntent: "explain-suggestion",
+          cues: {
+            species: ["chanterelle"],
+            habitat: ["spruce"],
+            region: ["helsinki"],
+            season: ["autumn"],
+          },
+          evidence: [],
+          spatialContext: {
+            species: ["chanterelle"],
+            habitat: ["spruce"],
+            region: ["helsinki"],
+            season: ["autumn"],
+          },
+          savedAt: "2026-04-19T12:00:00.000Z",
+        },
+      ],
+    );
+
+    expect(cards[0]).toEqual(
+      expect.objectContaining({
+        id: "saved-artifact-trail-1",
+        kind: "trail",
+        title: "Saved chanterelle trail",
+        statusLabel: "Saved trail",
+      }),
+    );
+    expect(cards[0].evidence).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ label: "Saved artifact", detail: expect.stringContaining("explain-suggestion") }),
+        expect.objectContaining({ label: "Species overlap", detail: "chanterelle" }),
+        expect.objectContaining({ label: "Region fit", detail: "helsinki" }),
+      ]),
+    );
+  });
+
   it("returns no cards while clarification is still pending", () => {
     expect(
       buildForagingCandidateCards({

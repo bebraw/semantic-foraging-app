@@ -1,4 +1,5 @@
 import type { ForagingIntentSubmissionState } from "../contracts/app-state";
+import type { StoredForagingArtifact } from "../contracts/artifact";
 import type { ForagingCandidateCard } from "../contracts/foraging-knowledge";
 import type { StoredForagingSession } from "../contracts/session";
 import type { ForagingCues } from "./intent-agent";
@@ -106,6 +107,7 @@ const catalog: CatalogCandidate[] = [
 export function buildForagingCandidateCards(
   submission?: ForagingIntentSubmissionState,
   recentSessions: StoredForagingSession[] = [],
+  savedArtifacts: StoredForagingArtifact[] = [],
 ): ForagingCandidateCard[] {
   if (!submission || submission.workflow.state !== "completed") {
     return [];
@@ -113,17 +115,36 @@ export function buildForagingCandidateCards(
 
   switch (submission.classification.intent) {
     case "find-observations":
-      return selectCatalogCards(submission, ["observation", "patch", "trail"], 3);
+      return combineCandidateSources(
+        selectSavedArtifactCards(submission, savedArtifacts, ["patch", "trail"], 2),
+        selectCatalogCards(submission, ["observation", "patch", "trail"], 3),
+        3,
+      );
     case "inspect-patch":
-      return selectCatalogCards(submission, ["patch", "trail", "observation"], 3);
+      return combineCandidateSources(
+        selectSavedArtifactCards(submission, savedArtifacts, ["patch", "trail"], 2),
+        selectCatalogCards(submission, ["patch", "trail", "observation"], 3),
+        3,
+      );
     case "explain-suggestion":
-      return selectCatalogCards(submission, ["trail", "patch", "observation"], 3);
+      return combineCandidateSources(
+        selectSavedArtifactCards(submission, savedArtifacts, ["trail", "patch"], 2),
+        selectCatalogCards(submission, ["trail", "patch", "observation"], 3),
+        3,
+      );
     case "resume-session":
       return recentSessions.length > 0
         ? buildRecentSessionCards(submission, recentSessions)
         : selectCatalogCards(submission, ["session", "trail", "observation"], 3);
     case "create-field-note":
-      return [createFieldNoteDraftCard(submission), ...selectCatalogCards(submission, ["observation", "patch"], 2)];
+      return [
+        createFieldNoteDraftCard(submission),
+        ...combineCandidateSources(
+          selectSavedArtifactCards(submission, savedArtifacts, ["field-note", "patch"], 1),
+          selectCatalogCards(submission, ["observation", "patch"], 2),
+          2,
+        ),
+      ];
     case "clarify":
       return [];
   }
@@ -212,12 +233,53 @@ function buildRecentSessionCards(
     }));
 }
 
+function selectSavedArtifactCards(
+  submission: ForagingIntentSubmissionState,
+  savedArtifacts: StoredForagingArtifact[],
+  preferredKinds: Array<Exclude<ForagingCandidateCard["kind"], "observation" | "session">>,
+  limit: number,
+): ForagingCandidateCard[] {
+  const preferredWeight = new Map(preferredKinds.map((kind, index) => [kind, preferredKinds.length - index]));
+
+  return savedArtifacts
+    .map((artifact) => ({
+      artifact,
+      kind: mapArtifactKindToCandidateKind(artifact.kind),
+    }))
+    .filter(({ kind }) => preferredWeight.has(kind))
+    .map(({ artifact, kind }) => ({
+      artifact,
+      kind,
+      score: scoreSavedArtifact(artifact, submission.classification.cues) + (preferredWeight.get(kind) ?? 0) * 10,
+    }))
+    .sort((left, right) => right.score - left.score)
+    .slice(0, limit)
+    .map(({ artifact, kind }) => ({
+      id: `saved-artifact-${artifact.artifactId}`,
+      kind,
+      title: artifact.title,
+      summary: artifact.summary,
+      statusLabel: formatSavedArtifactStatus(kind),
+      evidence: buildSavedArtifactEvidence(artifact, submission),
+      spatialContext: artifact.spatialContext,
+    }));
+}
+
 function scoreCandidate(candidate: CatalogCandidate, cues: ForagingCues): number {
   return (
     countOverlap(candidate.species, cues.species) * 5 +
     countOverlap(candidate.habitat, cues.habitat) * 4 +
     countOverlap(candidate.region, cues.region) * 4 +
     countOverlap(candidate.season, cues.season) * 3
+  );
+}
+
+function scoreSavedArtifact(artifact: StoredForagingArtifact, cues: ForagingCues): number {
+  return (
+    countOverlap(artifact.cues.species, cues.species) * 5 +
+    countOverlap(artifact.cues.habitat, cues.habitat) * 4 +
+    countOverlap(artifact.cues.region, cues.region) * 4 +
+    countOverlap(artifact.cues.season, cues.season) * 3
   );
 }
 
@@ -288,6 +350,59 @@ function buildEvidenceNotes(candidate: CatalogCandidate, submission: ForagingInt
   return notes;
 }
 
+function buildSavedArtifactEvidence(
+  artifact: StoredForagingArtifact,
+  submission: ForagingIntentSubmissionState,
+): ForagingCandidateCard["evidence"] {
+  const notes: ForagingCandidateCard["evidence"] = [
+    {
+      label: "Saved artifact",
+      detail: `Stored from ${artifact.sourceIntent} at ${artifact.savedAt}.`,
+    },
+  ];
+  const species = collectOverlap(artifact.cues.species, submission.classification.cues.species);
+  const habitat = collectOverlap(artifact.cues.habitat, submission.classification.cues.habitat);
+  const region = collectOverlap(artifact.cues.region, submission.classification.cues.region);
+  const season = collectOverlap(artifact.cues.season, submission.classification.cues.season);
+
+  if (species.length > 0) {
+    notes.push({
+      label: "Species overlap",
+      detail: species.join(", "),
+    });
+  }
+
+  if (habitat.length > 0) {
+    notes.push({
+      label: "Habitat fit",
+      detail: habitat.join(", "),
+    });
+  }
+
+  if (region.length > 0) {
+    notes.push({
+      label: "Region fit",
+      detail: region.join(", "),
+    });
+  }
+
+  if (season.length > 0) {
+    notes.push({
+      label: "Season fit",
+      detail: season.join(", "),
+    });
+  }
+
+  if (notes.length === 1) {
+    notes.push({
+      label: "Fallback ranking",
+      detail: summarizeCueMatches(submission.classification.cues),
+    });
+  }
+
+  return notes;
+}
+
 function buildRecentSessionEvidence(
   session: StoredForagingSession,
   submission: ForagingIntentSubmissionState,
@@ -343,6 +458,52 @@ function buildRecentSessionEvidence(
 
 function countOverlap(left: string[], right: string[]): number {
   return collectOverlap(left, right).length;
+}
+
+function combineCandidateSources(
+  preferred: ForagingCandidateCard[],
+  fallback: ForagingCandidateCard[],
+  limit: number,
+): ForagingCandidateCard[] {
+  const combined = [...preferred];
+
+  for (const candidate of fallback) {
+    if (combined.some((item) => item.id === candidate.id)) {
+      continue;
+    }
+
+    combined.push(candidate);
+
+    if (combined.length >= limit) {
+      break;
+    }
+  }
+
+  return combined.slice(0, limit);
+}
+
+function mapArtifactKindToCandidateKind(
+  kind: StoredForagingArtifact["kind"],
+): Exclude<ForagingCandidateCard["kind"], "observation" | "session"> {
+  switch (kind) {
+    case "field-note":
+      return "field-note";
+    case "trail":
+      return "trail";
+    case "patch-inspection":
+      return "patch";
+  }
+}
+
+function formatSavedArtifactStatus(kind: Exclude<ForagingCandidateCard["kind"], "observation" | "session">): string {
+  switch (kind) {
+    case "field-note":
+      return "Saved field note";
+    case "trail":
+      return "Saved trail";
+    case "patch":
+      return "Saved patch inspection";
+  }
 }
 
 function collectOverlap(left: string[], right: string[]): string[] {

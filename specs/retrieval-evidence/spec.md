@@ -2,7 +2,7 @@
 
 ## Summary
 
-Completed semantic-foraging intents surface deterministic candidate cards with explicit evidence notes so retrieval behavior is inspectable before durable storage or model-assisted ranking exists.
+Completed semantic-foraging intents surface deterministic candidate cards with explicit evidence notes so retrieval behavior is inspectable before model-assisted ranking exists.
 
 ## Contract
 
@@ -26,6 +26,8 @@ Completed semantic-foraging intents surface deterministic candidate cards with e
 - Ranking must remain deterministic and driven by the classified intent plus extracted species, habitat, region, and season cues.
 - Evidence notes must explain why a candidate was surfaced, such as intent fit, cue overlap, or remaining missing context.
 - The create-field-note intent must surface a draft note scaffold plus nearby contextual leads instead of returning an empty retrieval state.
+- Saved artifacts may contribute candidate cards for matching intents when their cues overlap the current request.
+- Saved-artifact candidates must stay explicit in both status labels and evidence notes rather than masquerading as fresh observations or catalog results.
 - The `resume-session` intent must prefer persisted recent sessions over the static catalog when recent-session state is available.
 - Candidate cards may carry typed spatial context so other screen fragments, such as the map view, can project them without reparsing display strings.
 
@@ -33,4 +35,4 @@ Completed semantic-foraging intents surface deterministic candidate cards with e
 
 - Retrieval cards must remain inspectable in no-model mode.
 - View rendering must not invent evidence text that the knowledge agent did not return.
-- The current slice must stay lightweight and in-memory rather than introducing durable retrieval storage or background indexing.
+- The current slice must stay lightweight and deterministic rather than introducing background indexing or opaque ranking heuristics.

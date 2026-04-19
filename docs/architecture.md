@@ -26,9 +26,9 @@ What exists today:
 - `src/worker.ts` routes both HTML workbench actions and JSON API endpoints through the same app layer.
 - `src/app/bus.ts` dispatches typed messages for screen rendering, health checks, runtime inspection, intent submission, clarification continuation, and explanation requests.
 - `src/domain/agents/intent-agent.ts` and `src/domain/agents/intent-workflow.ts` handle bounded intent classification plus one explicit clarification workflow.
-- `src/domain/agents/knowledge-agent.ts` surfaces deterministic candidate observations, patches, trails, sessions, and field-note scaffolds with explicit evidence.
+- `src/domain/agents/knowledge-agent.ts` surfaces deterministic candidate observations, patches, trails, sessions, field-note scaffolds, and saved-artifact-backed leads with explicit evidence.
 - `src/domain/agents/ui-agent.ts` assembles the typed home/workbench screen model that `src/views/home.ts` renders.
-- `src/infra/storage/` persists clarification workflow snapshots and lightweight recent sessions in process-local memory behind repository interfaces.
+- `src/infra/storage/` persists clarification workflow snapshots, lightweight recent sessions, and saved foraging artifacts in process-local memory behind repository interfaces.
 - `src/domain/agents/map-agent.ts`, `src/infra/geodata/`, and the home view provide a provider-backed geographic map with OSM as the default basemap, optional NLS topographic tiles, FinBIF overlays, and a thin Leaflet enhancement layer.
 - `src/infra/llm/` provides deterministic fallback behavior plus an OpenAI-compatible local model path.
 - `src/infra/observability/trace.ts` adds lightweight per-request tracing and model-call observation.
@@ -836,7 +836,7 @@ The broad foundations are already in place. The next slices that still matter ar
 ### 2. Durable foraging artifacts
 
 - persist saved foraging trails, field notes, and patch inspections through the storage boundary
-- let the user save, refine, or continue a trail instead of only inspecting transient candidates and recent sessions
+- deepen artifact workflows beyond save-and-reuse so the user can refine, compare, and continue a trail instead of only revisiting seeded workbench state
 
 ### 3. Hardening and richer workflows
 
