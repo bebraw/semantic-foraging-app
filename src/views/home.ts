@@ -12,19 +12,6 @@ export function renderHomePage(screen: HomeScreenModel): string {
         </li>`,
     )
     .join("");
-  const routeList = screen.routes
-    .map(
-      (route) =>
-        `<li class="flex items-baseline gap-3 rounded-xl border border-app-line/80 bg-app-surface px-4 py-3">
-          <code class="rounded-full bg-app-accent-ghost px-3 py-1 text-sm font-semibold text-app-accent-strong">${escapeHtml(route.path)}</code>
-          <span>${escapeHtml(route.purpose)}</span>
-        </li>`,
-    )
-    .join("");
-  const runtimeProvider = screen.runtime.provider ?? "none";
-  const runtimeAvailable = screen.runtime.available ? "available" : "fallback active";
-  const runtimeStructuredOutput = screen.runtime.supportsStructuredOutput ? "yes" : "no";
-  const runtimeStreaming = screen.runtime.supportsStreaming ? "yes" : "no";
   const latestIntent = screen.intentWorkbench.latestSubmission;
   const latestExplanation = screen.explanationWorkbench.latestSubmission;
   const clarificationWorkflow = latestIntent?.workflow.state === "awaiting_clarification" ? latestIntent.workflow : null;
@@ -331,44 +318,6 @@ export function renderHomePage(screen: HomeScreenModel): string {
                 ? `<ul class="mt-4">${recentSessionMarkup}</ul>`
                 : `<p class="mt-4 rounded-xl border border-dashed border-app-line px-4 py-4 leading-7 text-app-text-soft">${escapeHtml(screen.recentSessionsEmptyState)}</p>`
             }
-          </section>
-          <section class="rounded-xl border border-app-line bg-app-surface p-6">
-            <div class="flex flex-wrap items-center gap-3">
-              <h2 class="text-lg font-semibold tracking-[-0.02em]">${escapeHtml(screen.runtimeTitle)}</h2>
-              <span class="rounded-full bg-app-accent-ghost px-3 py-1 text-sm font-semibold text-app-accent-strong">${escapeHtml(screen.runtimeModeLabel)}</span>
-            </div>
-            <p class="mt-3 leading-7 text-app-text-soft">${escapeHtml(screen.runtimeSummary)}</p>
-            <dl class="mt-5 grid gap-3 sm:grid-cols-2">
-              <div class="rounded-xl border border-app-line bg-app-canvas px-4 py-3">
-                <dt class="text-[11px] font-semibold uppercase tracking-[0.18em] text-app-text-soft">Provider</dt>
-                <dd class="mt-1 font-medium">${escapeHtml(runtimeProvider)}</dd>
-              </div>
-              <div class="rounded-xl border border-app-line bg-app-canvas px-4 py-3">
-                <dt class="text-[11px] font-semibold uppercase tracking-[0.18em] text-app-text-soft">Availability</dt>
-                <dd class="mt-1 font-medium">${escapeHtml(runtimeAvailable)}</dd>
-              </div>
-              <div class="rounded-xl border border-app-line bg-app-canvas px-4 py-3">
-                <dt class="text-[11px] font-semibold uppercase tracking-[0.18em] text-app-text-soft">Structured output</dt>
-                <dd class="mt-1 font-medium">${escapeHtml(runtimeStructuredOutput)}</dd>
-              </div>
-              <div class="rounded-xl border border-app-line bg-app-canvas px-4 py-3">
-                <dt class="text-[11px] font-semibold uppercase tracking-[0.18em] text-app-text-soft">Streaming</dt>
-                <dd class="mt-1 font-medium">${escapeHtml(runtimeStreaming)}</dd>
-              </div>
-              <div class="rounded-xl border border-app-line bg-app-canvas px-4 py-3 sm:col-span-2">
-                <dt class="text-[11px] font-semibold uppercase tracking-[0.18em] text-app-text-soft">Context class</dt>
-                <dd class="mt-1 font-medium">${escapeHtml(screen.runtime.maxContextClass)}</dd>
-              </div>
-            </dl>
-          </section>
-          <section class="rounded-xl border border-app-line bg-app-surface p-6">
-            <h2 class="mb-3 text-lg font-semibold tracking-[-0.02em]">${escapeHtml(screen.routesTitle)}</h2>
-            <ul class="grid gap-3 text-app-text-soft">${routeList}</ul>
-          </section>
-          <section class="rounded-xl border border-app-line bg-app-surface p-6">
-            <h2 class="mb-3 text-lg font-semibold tracking-[-0.02em]">${escapeHtml(screen.nextStepsTitle)}</h2>
-            <p class="leading-7 text-app-text-soft">${escapeHtml(screen.nextStepsBody)}</p>
-            <p class="mt-4 leading-7 text-app-text-soft">Health probe: <a class="font-semibold text-app-accent-strong underline decoration-app-accent/30 underline-offset-4" href="${escapeHtml(screen.healthPath)}">${escapeHtml(screen.healthPath)}</a></p>
           </section>
         </div>
       </article>

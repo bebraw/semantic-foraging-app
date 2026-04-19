@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { renderPage } from "./render-page";
 
 describe("renderPage", () => {
-  it("renders a shared document shell with trace metadata", () => {
+  it("renders a shared document shell with a non-visible trace attribute", () => {
     const html = renderPage({
       title: "Test Page",
       body: "<main>Body</main>",
@@ -11,8 +11,8 @@ describe("renderPage", () => {
 
     expect(html).toContain("<title>Test Page</title>");
     expect(html).toContain("<main>Body</main>");
-    expect(html).toContain("Trace ID:");
-    expect(html).toContain("trace-shell-test");
+    expect(html).toContain('data-trace-id="trace-shell-test"');
+    expect(html).not.toContain("Trace ID:");
   });
 
   it("renders extra stylesheet and script URLs before inline scripts", () => {

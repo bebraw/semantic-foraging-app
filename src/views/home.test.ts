@@ -4,7 +4,7 @@ import type { HomeScreenModel } from "../domain/contracts/screen";
 import { renderHomePage } from "./home";
 
 describe("renderHomePage", () => {
-  it("renders the foraging workbench, runtime summary, and map enhancement wiring", () => {
+  it("renders the foraging workbench and map enhancement wiring without developer-only sections", () => {
     const html = renderHomePage(createHomeScreenModel());
 
     expect(html).toContain("Foraging Workbench");
@@ -12,8 +12,7 @@ describe("renderHomePage", () => {
     expect(html).toContain("Intent input required");
     expect(html).toContain("Clarification needed");
     expect(html).toContain("Suggested forage trail selected");
-    expect(html).toContain("No-model mode");
-    expect(html).toContain("species, habitat, region, and season cues");
+    expect(html).toContain("Detected cues");
     expect(html).toContain("Candidate leads");
     expect(html).toContain("Foraging map");
     expect(html).toContain("Mapped leads");
@@ -41,8 +40,11 @@ describe("renderHomePage", () => {
     expect(html).toContain("data-map-state=");
     expect(html).toContain('<script src="/vendor/leaflet.js"></script>');
     expect(html).toContain("<script>");
-    expect(html).toContain("Trace ID:");
-    expect(html).toContain("trace-home-test");
+    expect(html).toContain('data-trace-id="trace-home-test"');
+    expect(html).not.toContain("Programmatic routes");
+    expect(html).not.toContain("Model runtime");
+    expect(html).not.toContain("Roadmap focus");
+    expect(html).not.toContain("Trace ID:");
   });
 
   it("serializes tile-backed basemap state for browser enhancement", () => {

@@ -29,6 +29,7 @@ The app represents rendered UI as typed screen models between the app layer and 
 - The app query route must stay a thin adapter over typed app messages and results.
 - Screen models may include lightweight developer-facing metadata such as the active trace ID.
 - Screen models may expose runtime capability details when that data helps contributors understand the current model tier without inspecting environment variables directly.
+- The server-rendered home page should not foreground developer-facing route catalogs, runtime summaries, or visible trace ids; those details may remain in typed screen data and JSON surfaces without becoming primary UI content.
 - The default home-screen presentation should stay visually restrained: white-canvas surfaces, border-led grouping, restrained accent color, and minimal decorative effects so the UI remains easy to reuse and prune.
 - The home screen model may include typed manual-workbench fragments for semantic foraging flows such as intent rehearsal, clarification, and explanation requests.
 - The home screen model may include typed map fragments when spatial projection helps contributors inspect current retrieval state.

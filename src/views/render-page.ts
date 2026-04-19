@@ -19,11 +19,8 @@ export function renderPage(input: PageRenderInput): string {
     <link rel="stylesheet" href="/styles.css">
     ${(input.stylesheets ?? []).map((href) => `<link rel="stylesheet" href="${escapeHtml(href)}">`).join("")}
   </head>
-  <body class="min-h-screen bg-app-canvas text-app-text antialiased">
+  <body class="min-h-screen bg-app-canvas text-app-text antialiased" data-trace-id="${escapeHtml(input.traceId)}">
     ${input.body}
-    <footer class="mx-auto mt-4 w-[min(64rem,calc(100vw-2rem))] px-1 pb-8 text-[11px] uppercase tracking-[0.2em] text-app-text-soft">
-      Trace ID: <span class="font-semibold text-app-accent-strong">${escapeHtml(input.traceId)}</span>
-    </footer>
     ${(input.scriptUrls ?? []).map((src) => `<script src="${escapeHtml(src)}"></script>`).join("")}
     ${(input.scripts ?? []).map((script) => `<script>${script}</script>`).join("")}
   </body>
