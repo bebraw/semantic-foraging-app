@@ -39,7 +39,7 @@ Local development in this repo targets macOS. Other platforms may need script an
 
 ## Starter App
 
-- `GET /` serves a server-rendered semantic foraging workbench for manual flow testing.
+- `GET /` serves a server-rendered semantic foraging workbench for manual flow testing plus deterministic candidate retrieval cards.
 - `GET /styles.css` serves the generated Tailwind stylesheet.
 - `GET /api/health` serves a JSON health response for smoke tests and tooling.
 - `POST /api/app/command` dispatches typed app commands through a generic JSON endpoint.

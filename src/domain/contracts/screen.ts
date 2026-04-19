@@ -1,5 +1,6 @@
 import type { AppRoute } from "../../app-routes";
 import type { ForagingWorkbenchState, WorkbenchAlert } from "./app-state";
+import type { ForagingCandidateCard } from "./foraging-knowledge";
 import type { RuntimeModelCapability } from "./model-runtime";
 
 export type ScreenMeta = {
@@ -58,6 +59,10 @@ export type HomeScreenModel = {
   workbenchBody: string;
   intentWorkbench: IntentWorkbenchModel;
   explanationWorkbench: ExplanationWorkbenchModel;
+  retrievalTitle: string;
+  retrievalBody: string;
+  retrievalEmptyState: string;
+  candidateCards: ForagingCandidateCard[];
   routesTitle: string;
   nextStepsTitle: string;
   nextStepsBody: string;

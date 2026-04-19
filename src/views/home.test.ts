@@ -106,6 +106,28 @@ describe("renderHomePage", () => {
           },
         },
       },
+      retrievalTitle: "Candidate leads",
+      retrievalBody:
+        "Completed foraging intents now surface deterministic observation, patch, trail, note, and session candidates with explicit evidence instead of leaving retrieval implied.",
+      retrievalEmptyState: "Run a completed intent to surface grounded candidate cards and evidence notes.",
+      candidateCards: [
+        {
+          kind: "observation",
+          title: "Autumn chanterelle cluster",
+          summary: "Three nearby observation notes align on damp spruce cover and recent chanterelle sightings.",
+          statusLabel: "Observation cluster",
+          evidence: [
+            {
+              label: "Species overlap",
+              detail: "chanterelle",
+            },
+            {
+              label: "Habitat fit",
+              detail: "spruce, wet",
+            },
+          ],
+        },
+      ],
       routesTitle: "Programmatic routes",
       nextStepsTitle: "Roadmap focus",
       nextStepsBody:
@@ -124,6 +146,9 @@ describe("renderHomePage", () => {
     expect(html).toContain("Suggested forage trail selected");
     expect(html).toContain("No-model mode");
     expect(html).toContain("species, habitat, region, and season cues");
+    expect(html).toContain("Candidate leads");
+    expect(html).toContain("Autumn chanterelle cluster");
+    expect(html).toContain("Species overlap");
     expect(html).toContain("Clarification focus");
     expect(html).toContain("artifact_scope");
     expect(html).toContain('rel="stylesheet" href="/styles.css"');

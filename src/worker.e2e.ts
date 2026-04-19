@@ -5,6 +5,7 @@ test("renders the worker home page", async ({ page }) => {
 
   await expect(page.getByRole("heading", { level: 1, name: "Foraging Workbench" })).toBeVisible();
   await expect(page.getByText("Manual flow rehearsal")).toBeVisible();
+  await expect(page.getByText("Candidate leads")).toBeVisible();
   await expect(page.getByText("Model runtime")).toBeVisible();
   await expect(page.getByRole("link", { name: "/api/health" })).toBeVisible();
   await expect(page.getByText("Trace ID:")).toBeVisible();
@@ -167,6 +168,7 @@ test("supports the manual intent workbench flow", async ({ page }) => {
   await expect(latestIntentResult).toBeVisible();
   await expect(latestIntentResult.locator("dd").filter({ hasText: /^create-field-note$/ })).toBeVisible();
   await expect(latestIntentResult.getByText("species, region")).toBeVisible();
+  await expect(page.getByText("Field note scaffold")).toBeVisible();
 });
 
 test("supports the manual clarification workbench flow", async ({ page }) => {
@@ -183,6 +185,7 @@ test("supports the manual clarification workbench flow", async ({ page }) => {
 
   await expect(latestIntentResult).toBeVisible();
   await expect(latestIntentResult.locator("dd").filter({ hasText: /^find-observations$/ })).toBeVisible();
+  await expect(page.getByText("Autumn chanterelle cluster")).toBeVisible();
 });
 
 test("supports the manual explanation workbench flow", async ({ page }) => {

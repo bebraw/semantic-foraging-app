@@ -14,6 +14,7 @@ describe("worker", () => {
     const body = await response.text();
     expect(body).toContain("Foraging Workbench");
     expect(body).toContain("Intent rehearsal");
+    expect(body).toContain("Candidate leads");
     expect(body).toContain("/api/health");
     expect(body).toContain("Trace ID:");
   });
@@ -328,6 +329,7 @@ describe("worker", () => {
     const body = await response.text();
     expect(body).toContain("Latest intent result");
     expect(body).toContain("create-field-note");
+    expect(body).toContain("Field note scaffold");
   });
 
   it("renders clarification prompts through the home page workflow action", async () => {

@@ -24,6 +24,7 @@ describe("workbench actions", () => {
     expect(body).toContain("Latest intent result");
     expect(body).toContain("create-field-note");
     expect(body).toContain("Detected cues");
+    expect(body).toContain("Field note scaffold");
   });
 
   it("renders a clarification prompt back into the workbench page", async () => {
@@ -80,6 +81,7 @@ describe("workbench actions", () => {
     expect(body).toContain("Latest intent result");
     expect(body).toContain("find-observations");
     expect(body).not.toContain("Clarification needed");
+    expect(body).toContain("Autumn chanterelle cluster");
   });
 
   it("renders an explanation result back into the workbench page", async () => {

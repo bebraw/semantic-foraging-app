@@ -28,6 +28,32 @@ export function renderHomePage(screen: HomeScreenModel): string {
   const latestIntent = screen.intentWorkbench.latestSubmission;
   const latestExplanation = screen.explanationWorkbench.latestSubmission;
   const clarificationWorkflow = latestIntent?.workflow.state === "awaiting_clarification" ? latestIntent.workflow : null;
+  const candidateMarkup = screen.candidateCards
+    .map(
+      (card) =>
+        `<li class="grid gap-4 rounded-[1rem] border border-app-line/70 bg-white/80 p-5 shadow-[0_16px_40px_-30px_rgba(30,26,22,0.3)]">
+          <div class="flex flex-wrap items-center gap-3">
+            <p class="rounded-full bg-app-accent/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-app-accent-strong">${escapeHtml(card.kind)}</p>
+            <p class="text-sm font-semibold text-app-text-soft">${escapeHtml(card.statusLabel)}</p>
+          </div>
+          <div>
+            <h3 class="text-lg font-semibold tracking-[-0.02em]">${escapeHtml(card.title)}</h3>
+            <p class="mt-2 leading-7 text-app-text-soft">${escapeHtml(card.summary)}</p>
+          </div>
+          <dl class="grid gap-3">
+            ${card.evidence
+              .map(
+                (note) =>
+                  `<div class="rounded-2xl border border-app-line/70 bg-app-canvas/45 px-4 py-3">
+                    <dt class="text-xs font-semibold uppercase tracking-[0.16em] text-app-text-soft">${escapeHtml(note.label)}</dt>
+                    <dd class="mt-1 leading-7">${escapeHtml(note.detail)}</dd>
+                  </div>`,
+              )
+              .join("")}
+          </dl>
+        </li>`,
+    )
+    .join("");
   const latestIntentMarkup = latestIntent
     ? `<section class="rounded-2xl border border-app-line/70 bg-app-canvas/55 p-4">
         <h3 class="text-sm font-semibold uppercase tracking-[0.18em] text-app-text-soft">Latest intent result</h3>
@@ -141,6 +167,15 @@ export function renderHomePage(screen: HomeScreenModel): string {
                 ${latestExplanationMarkup}
               </section>
             </div>
+          </section>
+          <section class="rounded-[1rem] border border-app-line/70 bg-white/72 p-6 shadow-[0_16px_40px_-30px_rgba(30,26,22,0.3)]">
+            <h2 class="mb-3 text-lg font-semibold tracking-[-0.02em]">${escapeHtml(screen.retrievalTitle)}</h2>
+            <p class="leading-7 text-app-text-soft">${escapeHtml(screen.retrievalBody)}</p>
+            ${
+              screen.candidateCards.length > 0
+                ? `<ul class="mt-6 grid gap-4 lg:grid-cols-2">${candidateMarkup}</ul>`
+                : `<p class="mt-4 rounded-2xl border border-dashed border-app-line/80 bg-app-canvas/40 px-4 py-4 leading-7 text-app-text-soft">${escapeHtml(screen.retrievalEmptyState)}</p>`
+            }
           </section>
           <section class="rounded-[1rem] border border-app-line/70 bg-white/72 p-6 shadow-[0_16px_40px_-30px_rgba(30,26,22,0.3)]">
             <div class="flex flex-wrap items-center gap-3">

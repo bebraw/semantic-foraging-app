@@ -46,6 +46,7 @@ describe("ui-agent", () => {
         kind: "home",
         title: "Foraging Workbench",
         workbenchTitle: "Manual flow rehearsal",
+        retrievalTitle: "Candidate leads",
         intentWorkbench: expect.objectContaining({
           actionPath: "/actions/intent",
           rawInputValue: "Find chanterelle notes",
@@ -116,6 +117,7 @@ describe("ui-agent", () => {
     expect(screen.alerts).toHaveLength(1);
     expect(screen.intentWorkbench.latestSubmission?.workflow.state).toBe("awaiting_clarification");
     expect(screen.intentWorkbench.clarificationValue).toBe("Search for similar observations");
+    expect(screen.candidateCards).toEqual([]);
   });
 
   it("preserves alerts and explanation state through helper updates", () => {
@@ -144,6 +146,55 @@ describe("ui-agent", () => {
       },
     ]);
     expect(state.explanation.factsText).toBe("Fact one\nFact two");
+  });
+
+  it("derives candidate cards from completed foraging intent submissions", () => {
+    const screen = createHomeScreenModel({
+      routes: exampleRoutes,
+      runtime: {
+        mode: "no-model",
+        provider: null,
+        available: false,
+        supportsStructuredOutput: false,
+        supportsStreaming: false,
+        maxContextClass: "unknown",
+      },
+      traceId: "trace-candidates",
+      workbench: withIntentSubmission(createInitialForagingWorkbenchState(), {
+        input: "Find chanterelles near wet spruce in Helsinki",
+        classification: {
+          intent: "find-observations",
+          confidence: 0.69,
+          needsClarification: false,
+          cues: {
+            species: ["chanterelle"],
+            habitat: ["spruce", "wet"],
+            region: ["helsinki"],
+            season: [],
+          },
+          missing: [],
+        },
+        confidenceBand: "medium",
+        provenance: {
+          source: "deterministic-fallback",
+          provider: null,
+          reason: "no-model-provider",
+        },
+        workflow: {
+          name: "intent-classification",
+          state: "completed",
+        },
+      }),
+    });
+
+    expect(screen.candidateCards).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          kind: "observation",
+          title: "Autumn chanterelle cluster",
+        }),
+      ]),
+    );
   });
 
   it("describes hosted and unavailable runtime tiers in the screen summary", () => {

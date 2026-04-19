@@ -5,6 +5,7 @@ import type {
   ForagingIntentSubmissionState,
   WorkbenchAlert,
 } from "../contracts/app-state";
+import { buildForagingCandidateCards } from "./knowledge-agent";
 import type { RuntimeModelCapability } from "../contracts/model-runtime";
 import type { HomeScreenModel } from "../contracts/screen";
 
@@ -93,6 +94,8 @@ export function withExplanationSubmission(state: ForagingWorkbenchState, submiss
 }
 
 export function createHomeScreenModel(input: CreateHomeScreenInput): HomeScreenModel {
+  const candidateCards = buildForagingCandidateCards(input.workbench.intent.latestSubmission);
+
   return {
     kind: "home",
     eyebrow: "Semantic Foraging",
@@ -144,6 +147,11 @@ export function createHomeScreenModel(input: CreateHomeScreenInput): HomeScreenM
       submitLabel: "Generate explanation",
       latestSubmission: input.workbench.explanation.latestSubmission,
     },
+    retrievalTitle: "Candidate leads",
+    retrievalBody:
+      "Completed foraging intents now surface deterministic observation, patch, trail, note, and session candidates with explicit evidence instead of leaving retrieval implied.",
+    retrievalEmptyState: "Run a completed intent to surface grounded candidate cards and evidence notes.",
+    candidateCards,
     routesTitle: "Programmatic routes",
     nextStepsTitle: "Roadmap focus",
     nextStepsBody:
