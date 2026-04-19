@@ -50,6 +50,7 @@ The semantic-foraging workbench can turn promising leads into lightweight saved 
 - The home screen must render a bounded saved-artifacts section alongside transient candidate cards and recent sessions.
 - The saved-artifacts section may expose stored evidence notes and cue summaries directly so multiple artifacts can be compared without loading each one back into the workbench first.
 - The saved-artifacts section may expose recent revision entries inline so a user can compare the current artifact with its latest saved/refined states.
+- The saved-artifacts section may expose deterministic change summaries for revision entries so a user can compare a historical snapshot against the current artifact before choosing reuse or restore.
 
 ## Regression Guardrails
 

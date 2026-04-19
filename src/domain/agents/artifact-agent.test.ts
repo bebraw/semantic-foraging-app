@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { createArtifactWorkbenchSeed, createStoredForagingArtifact } from "./artifact-agent";
+import { createArtifactWorkbenchSeed, createStoredForagingArtifact, describeArtifactRevisionChanges } from "./artifact-agent";
 
 describe("createStoredForagingArtifact", () => {
   it("maps field-note candidates into stored artifacts", () => {
@@ -163,5 +163,83 @@ describe("createStoredForagingArtifact", () => {
       factsText:
         "Summary: A saved trail connecting damp spruce pockets and recent chanterelle signals.\nNotes: Check the wetter spur first if the western slope is dry.\nIntent fit: Ranked for explain-suggestion.\nDetected cues: species: chanterelle | habitat: spruce, wet | region: helsinki | season: autumn",
     });
+  });
+
+  it("describes how a revision differs from the current artifact", () => {
+    expect(
+      describeArtifactRevisionChanges(
+        {
+          artifactId: "trail-1",
+          sourceCardId: "trail-card-1",
+          kind: "trail",
+          title: "Current trail",
+          summary: "Current summary",
+          notes: "Current notes",
+          sourceIntent: "explain-suggestion",
+          cues: {
+            species: [],
+            habitat: [],
+            region: [],
+            season: [],
+          },
+          evidence: [],
+          spatialContext: {
+            species: [],
+            habitat: [],
+            region: [],
+            season: [],
+          },
+          savedAt: "2026-04-19T12:00:00.000Z",
+          updatedAt: "2026-04-19T12:45:00.000Z",
+          revisions: [],
+        },
+        {
+          kind: "saved",
+          title: "Saved trail",
+          summary: "Saved summary",
+          notes: "",
+          recordedAt: "2026-04-19T12:00:00.000Z",
+        },
+      ),
+    ).toEqual(["Title changed", "Summary changed", "Notes added later"]);
+  });
+
+  it("reports when a revision already matches the current artifact", () => {
+    expect(
+      describeArtifactRevisionChanges(
+        {
+          artifactId: "trail-1",
+          sourceCardId: "trail-card-1",
+          kind: "trail",
+          title: "Saved trail",
+          summary: "Saved summary",
+          notes: "Current notes",
+          sourceIntent: "explain-suggestion",
+          cues: {
+            species: [],
+            habitat: [],
+            region: [],
+            season: [],
+          },
+          evidence: [],
+          spatialContext: {
+            species: [],
+            habitat: [],
+            region: [],
+            season: [],
+          },
+          savedAt: "2026-04-19T12:00:00.000Z",
+          updatedAt: "2026-04-19T12:45:00.000Z",
+          revisions: [],
+        },
+        {
+          kind: "refined",
+          title: "Saved trail",
+          summary: "Saved summary",
+          notes: "Current notes",
+          recordedAt: "2026-04-19T12:45:00.000Z",
+        },
+      ),
+    ).toEqual(["Matches current state"]);
   });
 });

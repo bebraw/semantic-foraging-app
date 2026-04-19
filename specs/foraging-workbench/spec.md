@@ -56,6 +56,7 @@ The home page is a server-rendered semantic foraging workbench that lets contrib
 - Saved artifacts may render recent revision entries inline so the workbench shows how an artifact changed over time without opening a separate editor.
 - Saved artifacts may render restore controls for recent revision entries so revision history is actionable rather than read-only.
 - Saved artifacts may render revision reuse controls so historical artifact states can continue the workbench without first restoring them.
+- Saved artifacts may render deterministic change summaries for revision entries so the current artifact can be compared against historical revisions inline.
 - The workbench must render a recent-sessions section showing persisted recent-session snapshots when available.
 - Invalid form input or typed app errors must render back into the workbench as user-visible alerts instead of raw JSON.
 

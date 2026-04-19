@@ -1,4 +1,4 @@
-import type { StoredForagingArtifact } from "../contracts/artifact";
+import type { ArtifactRevision, StoredForagingArtifact } from "../contracts/artifact";
 import type { ForagingIntentSubmissionState } from "../contracts/app-state";
 import type { ForagingCandidateCard } from "../contracts/foraging-knowledge";
 import { describeConfidence } from "../policies/confidence";
@@ -81,6 +81,27 @@ export function createArtifactIntentSubmission(artifact: StoredForagingArtifact)
   };
 }
 
+export function describeArtifactRevisionChanges(artifact: StoredForagingArtifact, revision: ArtifactRevision): string[] {
+  const changes: string[] = [];
+
+  if (artifact.title !== revision.title) {
+    changes.push("Title changed");
+  }
+
+  if (artifact.summary !== revision.summary) {
+    changes.push("Summary changed");
+  }
+
+  const currentNotes = artifact.notes ?? "";
+  const revisionNotes = revision.notes ?? "";
+
+  if (currentNotes !== revisionNotes) {
+    changes.push(describeNotesChange(currentNotes, revisionNotes));
+  }
+
+  return changes.length > 0 ? changes : ["Matches current state"];
+}
+
 function mapCandidateKind(cardKind: ForagingCandidateCard["kind"]): StoredForagingArtifact["kind"] | null {
   switch (cardKind) {
     case "field-note":
@@ -120,4 +141,16 @@ function formatCueSegment(label: string, values: string[]): string {
   }
 
   return `${label}: ${values.join(", ")}`;
+}
+
+function describeNotesChange(currentNotes: string, revisionNotes: string): string {
+  if (!revisionNotes && currentNotes) {
+    return "Notes added later";
+  }
+
+  if (revisionNotes && !currentNotes) {
+    return "Notes removed later";
+  }
+
+  return "Notes changed";
 }

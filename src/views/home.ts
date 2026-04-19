@@ -1,4 +1,5 @@
 import type { HomeScreenModel } from "../domain/contracts/screen";
+import { describeArtifactRevisionChanges } from "../domain/agents/artifact-agent";
 import { escapeHtml } from "./shared";
 import { renderPage } from "./render-page";
 
@@ -138,6 +139,9 @@ export function renderHomePage(screen: HomeScreenModel): string {
                             <p class="mt-1 font-medium">${escapeHtml(revision.title)}</p>
                             <p class="mt-1 text-sm leading-6 text-app-text-soft">${escapeHtml(revision.summary)}</p>
                             ${revision.notes ? `<p class="mt-2 text-sm leading-6 text-app-text-soft">${escapeHtml(revision.notes)}</p>` : ""}
+                            <p class="mt-2 text-[11px] font-semibold uppercase tracking-[0.16em] text-app-text-soft">${escapeHtml(
+                              `Diff to current: ${describeArtifactRevisionChanges(artifact, revision).join(", ")}`,
+                            )}</p>
                             <form class="mt-3" method="post" action="${escapeHtml(screen.artifactWorkbench.restoreActionPath)}">
                               <input type="hidden" name="artifactId" value="${escapeHtml(artifact.artifactId)}">
                               <input type="hidden" name="recordedAt" value="${escapeHtml(revision.recordedAt)}">

@@ -27,6 +27,8 @@ describe("renderHomePage", () => {
     expect(html).toContain("refined / Recorded 2026-04-19 12:45");
     expect(html).toContain("Restore revision");
     expect(html).toContain("Use revision in workbench");
+    expect(html).toContain("Diff to current: Notes added later");
+    expect(html).toContain("Diff to current: Matches current state");
     expect(html).toContain("Notes");
     expect(html).toContain("Start from the wetter moss pocket after rain.");
     expect(html).toContain("Foraging map");
