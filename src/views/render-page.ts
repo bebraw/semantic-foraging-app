@@ -21,7 +21,7 @@ export function renderPage(input: PageRenderInput): string {
   </head>
   <body class="min-h-screen bg-app-canvas text-app-text antialiased">
     ${input.body}
-    <footer class="mx-auto mt-4 w-[min(56rem,calc(100vw-2rem))] px-1 pb-8 text-xs uppercase tracking-[0.2em] text-app-text-soft">
+    <footer class="mx-auto mt-4 w-[min(64rem,calc(100vw-2rem))] px-1 pb-8 text-[11px] uppercase tracking-[0.2em] text-app-text-soft">
       Trace ID: <span class="font-semibold text-app-accent-strong">${escapeHtml(input.traceId)}</span>
     </footer>
     ${(input.scriptUrls ?? []).map((src) => `<script src="${escapeHtml(src)}"></script>`).join("")}

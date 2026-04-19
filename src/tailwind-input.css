@@ -1,15 +1,18 @@
 @import "tailwindcss";
 
 @theme {
-  --color-app-canvas: #f5efe6;
-  --color-app-surface: rgb(255 251 245 / 0.92);
-  --color-app-text: #1e1a16;
-  --color-app-text-soft: #5f554b;
-  --color-app-accent: #0b6e4f;
-  --color-app-accent-strong: #084c39;
-  --color-app-line: rgb(30 26 22 / 0.12);
+  --color-app-canvas: #ffffff;
+  --color-app-surface: #ffffff;
+  --color-app-text: #10253f;
+  --color-app-text-soft: #61758d;
+  --color-app-accent: #005bbb;
+  --color-app-accent-strong: #004795;
+  --color-app-accent-ghost: rgb(0 91 187 / 0.14);
+  --color-app-line: rgb(16 37 63 / 0.14);
+  --color-app-ink: #10253f;
+  --color-app-ink-text: #eef5fd;
 
-  --shadow-panel: 0 24px 64px -42px rgb(30 26 22 / 0.34);
+  --shadow-panel: 0 0 #0000;
 }
 
 /*
@@ -20,18 +23,23 @@
 @layer base {
   html {
     background: var(--color-app-canvas);
+    color-scheme: light;
   }
 
   body {
-    font-family: Georgia, "Times New Roman", serif;
+    font-family: "Avenir Next", "Segoe UI", "Helvetica Neue", Arial, sans-serif;
     text-rendering: optimizeLegibility;
-    background:
-      radial-gradient(circle at top left, rgb(11 110 79 / 0.18), transparent 35%),
-      linear-gradient(180deg, #f7f0e8 0%, var(--color-app-canvas) 100%);
+    background: var(--color-app-canvas);
+  }
+
+  input,
+  textarea,
+  select {
+    caret-color: var(--color-app-accent);
   }
 
   ::selection {
-    background: rgb(11 110 79 / 0.18);
+    background: rgb(0 91 187 / 0.18);
   }
 
   *,
@@ -41,9 +49,50 @@
   ::file-selector-button {
     border-color: var(--color-gray-200, currentcolor);
   }
+
+  @media (prefers-color-scheme: dark) {
+    html {
+      color-scheme: dark;
+    }
+
+    :root {
+      --color-app-canvas: #0d1724;
+      --color-app-surface: #0d1724;
+      --color-app-text: #ecf3fb;
+      --color-app-text-soft: #9fb5cc;
+      --color-app-accent: #6ab2ff;
+      --color-app-accent-strong: #8fc5ff;
+      --color-app-accent-ghost: rgb(106 178 255 / 0.2);
+      --color-app-line: rgb(236 243 251 / 0.12);
+      --color-app-ink: #0d1724;
+      --color-app-ink-text: #ecf3fb;
+    }
+
+    ::selection {
+      background: rgb(106 178 255 / 0.28);
+    }
+  }
 }
 
 @layer components {
+  textarea,
+  input,
+  button,
+  a {
+    transition:
+      border-color 160ms ease,
+      background-color 160ms ease,
+      color 160ms ease;
+  }
+
+  textarea:focus-visible,
+  input:focus-visible,
+  button:focus-visible,
+  a:focus-visible {
+    outline: 2px solid color-mix(in srgb, var(--color-app-accent) 60%, transparent);
+    outline-offset: 2px;
+  }
+
   [data-map-root][data-map-location="loading"] [data-map-locate] {
     opacity: 0.72;
     cursor: progress;
@@ -56,15 +105,15 @@
 
   .leaflet-container {
     font: inherit;
-    background: linear-gradient(180deg, rgb(217 229 220), rgb(236 243 237));
+    background: #edf4fb;
   }
 
   .leaflet-tooltip.leaflet-feature-tooltip {
-    border: 1px solid rgb(30 26 22 / 0.12);
+    border: 1px solid var(--color-app-line);
     border-radius: 9999px;
-    background: rgb(255 255 255 / 0.92);
+    background: color-mix(in srgb, var(--color-app-surface) 92%, transparent);
     color: var(--color-app-text);
-    box-shadow: 0 12px 24px -20px rgb(30 26 22 / 0.5);
+    box-shadow: none;
   }
 
   .leaflet-tooltip.leaflet-feature-tooltip::before {
@@ -102,8 +151,8 @@
 
   [data-map-root][data-map-enhanced="true"] [data-map-item][data-map-active="true"] {
     opacity: 1;
-    border-color: rgb(11 110 79 / 0.34);
-    background: rgb(11 110 79 / 0.1);
+    border-color: color-mix(in srgb, var(--color-app-accent) 36%, transparent);
+    background: var(--color-app-accent-ghost);
     transform: translateY(-1px);
   }
 }

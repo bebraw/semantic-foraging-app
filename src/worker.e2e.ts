@@ -387,7 +387,7 @@ test("serves the generated stylesheet", async ({ request }) => {
 
   expect(response.ok()).toBe(true);
   expect(response.headers()["content-type"]).toContain("text/css");
-  await expect(response.text()).resolves.toContain("--color-app-canvas:#f5efe6");
+  await expect(response.text()).resolves.toContain("--color-app-accent:#005bbb");
 });
 
 test("serves local Leaflet assets for the browser map", async ({ request }) => {
