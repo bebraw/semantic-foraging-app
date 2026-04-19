@@ -97,6 +97,14 @@ export function renderHomePage(screen: HomeScreenModel): string {
             <h3 class="text-lg font-semibold tracking-[-0.02em]">${escapeHtml(artifact.title)}</h3>
             <p class="mt-2 leading-7 text-app-text-soft">${escapeHtml(artifact.summary)}</p>
           </div>
+          ${
+            artifact.notes
+              ? `<div class="grid gap-2">
+                  <p class="text-[11px] font-semibold uppercase tracking-[0.16em] text-app-text-soft">Notes</p>
+                  <p class="leading-7 text-app-text-soft">${escapeHtml(artifact.notes)}</p>
+                </div>`
+              : ""
+          }
           <p class="text-sm text-app-text-soft">Detected cues: ${escapeHtml(formatCueSummary(artifact.cues))}</p>
           ${
             artifact.evidence.length > 0
@@ -129,6 +137,7 @@ export function renderHomePage(screen: HomeScreenModel): string {
                             )} / ${escapeHtml(formatRecordedAtLabel(revision.recordedAt))}</p>
                             <p class="mt-1 font-medium">${escapeHtml(revision.title)}</p>
                             <p class="mt-1 text-sm leading-6 text-app-text-soft">${escapeHtml(revision.summary)}</p>
+                            ${revision.notes ? `<p class="mt-2 text-sm leading-6 text-app-text-soft">${escapeHtml(revision.notes)}</p>` : ""}
                           </li>`,
                       )
                       .join("")}
@@ -155,6 +164,13 @@ export function renderHomePage(screen: HomeScreenModel): string {
                 class="min-h-24 rounded-xl border border-app-line bg-white px-4 py-3 text-sm leading-7 text-app-text"
                 name="summary"
               >${escapeHtml(artifact.summary)}</textarea>
+            </label>
+            <label class="grid gap-2">
+              <span class="text-[11px] font-semibold uppercase tracking-[0.16em] text-app-text-soft">Notes</span>
+              <textarea
+                class="min-h-24 rounded-xl border border-app-line bg-white px-4 py-3 text-sm leading-7 text-app-text"
+                name="notes"
+              >${escapeHtml(artifact.notes ?? "")}</textarea>
             </label>
             <div class="flex flex-wrap items-center gap-3">
               <button class="inline-flex w-fit items-center rounded-lg bg-app-ink px-4 py-2 text-xs font-semibold uppercase tracking-[0.16em] text-app-ink-text" type="submit">Update artifact</button>

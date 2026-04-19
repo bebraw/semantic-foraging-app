@@ -23,6 +23,7 @@ export async function refineSavedArtifact(
     ...existingArtifact,
     title: message.title,
     summary: message.summary,
+    notes: message.notes,
     updatedAt: now,
     revisions: [
       ...existingArtifact.revisions,
@@ -30,6 +31,7 @@ export async function refineSavedArtifact(
         kind: "refined" as const,
         title: message.title,
         summary: message.summary,
+        notes: message.notes,
         recordedAt: now,
       },
     ],

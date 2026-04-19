@@ -22,6 +22,7 @@ export function createStoredForagingArtifact(
     kind,
     title: card.title,
     summary: card.summary,
+    notes: "",
     sourceIntent,
     cues: card.spatialContext,
     evidence: card.evidence,
@@ -33,6 +34,7 @@ export function createStoredForagingArtifact(
         kind: "saved",
         title: card.title,
         summary: card.summary,
+        notes: "",
         recordedAt: savedAt,
       },
     ],
@@ -46,6 +48,7 @@ export function createArtifactWorkbenchSeed(artifact: StoredForagingArtifact): {
 } {
   const factLines = [
     `Summary: ${artifact.summary}`,
+    artifact.notes ? `Notes: ${artifact.notes}` : "",
     ...artifact.evidence.map((note) => `${note.label}: ${note.detail}`),
     formatArtifactCueFacts(artifact),
   ].filter(Boolean);

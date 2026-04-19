@@ -400,6 +400,13 @@ function buildSavedArtifactEvidence(
     });
   }
 
+  if (artifact.notes) {
+    notes.push({
+      label: "Artifact notes",
+      detail: artifact.notes,
+    });
+  }
+
   return notes;
 }
 

@@ -7,6 +7,7 @@ export type ArtifactRevision = {
   kind: "saved" | "refined";
   title: string;
   summary: string;
+  notes?: string;
   recordedAt: string;
 };
 
@@ -16,6 +17,7 @@ export type StoredForagingArtifact = {
   kind: SavedArtifactKind;
   title: string;
   summary: string;
+  notes?: string;
   sourceIntent: Exclude<ForagingIntent, "clarify">;
   cues: ForagingCues;
   evidence: EvidenceNote[];

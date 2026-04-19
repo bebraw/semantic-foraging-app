@@ -372,6 +372,7 @@ describe("workbench actions", () => {
     refineFormData.set("artifactId", artifacts[0].artifactId);
     refineFormData.set("title", "Refined chanterelle trail");
     refineFormData.set("summary", "Refined summary for the saved chanterelle route.");
+    refineFormData.set("notes", "Start near the wetter spruce edge and keep the old moss hollow in view.");
 
     vi.setSystemTime(new Date("2026-04-19T13:15:00.000Z"));
 
@@ -388,12 +389,14 @@ describe("workbench actions", () => {
     expect(body).toContain("Artifact updated");
     expect(body).toContain("Refined chanterelle trail");
     expect(body).toContain("Refined summary for the saved chanterelle route.");
+    expect(body).toContain("Start near the wetter spruce edge and keep the old moss hollow in view.");
 
     const refinedArtifact = await context.savedArtifactRepository.getArtifact(artifacts[0].artifactId);
     expect(refinedArtifact).toEqual(
       expect.objectContaining({
         title: "Refined chanterelle trail",
         summary: "Refined summary for the saved chanterelle route.",
+        notes: "Start near the wetter spruce edge and keep the old moss hollow in view.",
         updatedAt: "2026-04-19T13:15:00.000Z",
         revisions: [
           expect.objectContaining({
@@ -404,6 +407,7 @@ describe("workbench actions", () => {
             kind: "refined",
             title: "Refined chanterelle trail",
             summary: "Refined summary for the saved chanterelle route.",
+            notes: "Start near the wetter spruce edge and keep the old moss hollow in view.",
             recordedAt: "2026-04-19T13:15:00.000Z",
           }),
         ],

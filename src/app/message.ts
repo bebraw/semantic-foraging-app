@@ -48,6 +48,7 @@ export type RefineSavedArtifactMessage = {
   artifactId: string;
   title: string;
   summary: string;
+  notes: string;
 };
 
 export type AppMessage =

@@ -350,6 +350,7 @@ describe("ui-agent", () => {
             kind: "trail",
             title: "Saved trail",
             summary: "Saved trail summary",
+            notes: "Start from the shaded edge and work inward.",
             sourceIntent: "explain-suggestion",
             cues: {
               species: ["chanterelle"],
@@ -427,6 +428,7 @@ describe("ui-agent", () => {
             kind: "trail",
             title: "Saved chanterelle trail",
             summary: "A saved trail through wet spruce cover near Helsinki.",
+            notes: "Start from the shadier north bend.",
             sourceIntent: "explain-suggestion",
             cues: {
               species: ["chanterelle"],
@@ -482,6 +484,7 @@ describe("ui-agent", () => {
       kind: "trail",
       title: "Saved trail",
       summary: "Saved trail summary",
+      notes: "Focus on damp pockets after rainfall.",
       sourceIntent: "explain-suggestion",
       cues: {
         species: ["chanterelle"],
@@ -536,6 +539,7 @@ describe("ui-agent", () => {
     );
     expect(state.explanation.title).toBe("Saved trail");
     expect(state.explanation.factsText).toContain("Summary: Saved trail summary");
+    expect(state.explanation.factsText).toContain("Notes: Focus on damp pockets after rainfall.");
     expect(state.explanation.factsText).toContain("Intent fit: Ranked for explain-suggestion.");
   });
 

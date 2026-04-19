@@ -409,6 +409,7 @@ describe("createAppBus", () => {
             kind: "trail",
             title: "Saved trail",
             summary: "Saved trail summary",
+            notes: "Start from the damper side.",
             sourceIntent: "explain-suggestion",
             cues: {
               species: ["chanterelle"],
@@ -459,6 +460,7 @@ describe("createAppBus", () => {
           kind: "trail",
           title: "Saved trail",
           summary: "Saved trail summary",
+          notes: "Start from the damper side.",
           sourceIntent: "explain-suggestion",
           cues: {
             species: ["chanterelle"],
@@ -528,6 +530,7 @@ describe("createAppBus", () => {
         kind: "trail",
         title: "Saved trail",
         summary: "Saved trail summary",
+        notes: "Start from the damper side.",
         sourceIntent: "explain-suggestion",
         cues: {
           species: ["chanterelle"],
@@ -564,6 +567,7 @@ describe("createAppBus", () => {
       artifactId: "trail-1",
       title: "Refined trail",
       summary: "Refined trail summary",
+      notes: "Recheck the wetter edge before dusk.",
     });
 
     expect(savedArtifactRepository.updateArtifact).toHaveBeenCalledWith(
@@ -571,6 +575,7 @@ describe("createAppBus", () => {
         artifactId: "trail-1",
         title: "Refined trail",
         summary: "Refined trail summary",
+        notes: "Recheck the wetter edge before dusk.",
       }),
     );
     expect(result).toEqual({
@@ -579,6 +584,7 @@ describe("createAppBus", () => {
         artifactId: "trail-1",
         title: "Refined trail",
         summary: "Refined trail summary",
+        notes: "Recheck the wetter edge before dusk.",
       }),
     });
   });
@@ -598,6 +604,7 @@ describe("createAppBus", () => {
       artifactId: "missing",
       title: "Refined trail",
       summary: "Refined trail summary",
+      notes: "Recheck the wetter edge before dusk.",
     });
 
     expect(result).toEqual({
@@ -621,6 +628,7 @@ describe("createAppBus", () => {
           kind: "trail",
           title: "Saved trail",
           summary: "Saved trail summary",
+          notes: "Start from the damper side.",
           sourceIntent: "explain-suggestion",
           cues: {
             species: [],
@@ -655,6 +663,7 @@ describe("createAppBus", () => {
       artifactId: "trail-1",
       title: "Refined trail",
       summary: "Refined trail summary",
+      notes: "Recheck the wetter edge before dusk.",
     });
 
     expect(result).toEqual({

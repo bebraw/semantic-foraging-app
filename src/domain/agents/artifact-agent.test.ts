@@ -33,6 +33,7 @@ describe("createStoredForagingArtifact", () => {
       kind: "field-note",
       title: "Field note scaffold",
       summary: "A starter note seeded from the current request.",
+      notes: "",
       sourceIntent: "create-field-note",
       cues: {
         species: ["chanterelle"],
@@ -59,6 +60,7 @@ describe("createStoredForagingArtifact", () => {
           kind: "saved",
           title: "Field note scaffold",
           summary: "A starter note seeded from the current request.",
+          notes: "",
           recordedAt: "2026-04-19T12:00:00.000Z",
         },
       ],
@@ -123,6 +125,7 @@ describe("createStoredForagingArtifact", () => {
       kind: "trail",
       title: "Saved chanterelle trail",
       summary: "A saved trail connecting damp spruce pockets and recent chanterelle signals.",
+      notes: "Check the wetter spur first if the western slope is dry.",
       sourceIntent: "explain-suggestion",
       cues: {
         species: ["chanterelle"],
@@ -158,7 +161,7 @@ describe("createStoredForagingArtifact", () => {
       rawInput: "Saved chanterelle trail",
       title: "Saved chanterelle trail",
       factsText:
-        "Summary: A saved trail connecting damp spruce pockets and recent chanterelle signals.\nIntent fit: Ranked for explain-suggestion.\nDetected cues: species: chanterelle | habitat: spruce, wet | region: helsinki | season: autumn",
+        "Summary: A saved trail connecting damp spruce pockets and recent chanterelle signals.\nNotes: Check the wetter spur first if the western slope is dry.\nIntent fit: Ranked for explain-suggestion.\nDetected cues: species: chanterelle | habitat: spruce, wet | region: helsinki | season: autumn",
     });
   });
 });

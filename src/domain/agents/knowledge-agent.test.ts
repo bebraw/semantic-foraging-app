@@ -123,6 +123,7 @@ describe("buildForagingCandidateCards", () => {
           kind: "trail",
           title: "Saved chanterelle trail",
           summary: "A saved trail through wet spruce cover near Helsinki.",
+          notes: "Check the east-side moss pocket after rain.",
           sourceIntent: "explain-suggestion",
           cues: {
             species: ["chanterelle"],
@@ -164,6 +165,7 @@ describe("buildForagingCandidateCards", () => {
         expect.objectContaining({ label: "Saved artifact", detail: expect.stringContaining("explain-suggestion") }),
         expect.objectContaining({ label: "Species overlap", detail: "chanterelle" }),
         expect.objectContaining({ label: "Region fit", detail: "helsinki" }),
+        expect.objectContaining({ label: "Artifact notes", detail: "Check the east-side moss pocket after rain." }),
       ]),
     );
   });

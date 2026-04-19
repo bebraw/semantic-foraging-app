@@ -19,10 +19,13 @@ describe("renderHomePage", () => {
     expect(html).toContain("Update artifact");
     expect(html).toContain('action="/actions/artifact/refine"');
     expect(html).toContain('name="summary"');
+    expect(html).toContain('name="notes"');
     expect(html).toContain("Intent fit");
     expect(html).toContain("Ranked for explain-suggestion.");
     expect(html).toContain("Revision history");
     expect(html).toContain("refined / Recorded 2026-04-19 12:45");
+    expect(html).toContain("Notes");
+    expect(html).toContain("Start from the wetter moss pocket after rain.");
     expect(html).toContain("Foraging map");
     expect(html).toContain("Mapped leads");
     expect(html).toContain("Focused lead");
@@ -444,6 +447,7 @@ function createHomeScreenModel(): HomeScreenModel {
         kind: "trail",
         title: "Saved chanterelle trail",
         summary: "A saved trail connecting damp spruce pockets and recent chanterelle signals.",
+        notes: "Start from the wetter moss pocket after rain.",
         sourceIntent: "explain-suggestion",
         cues: {
           species: ["chanterelle"],
@@ -470,12 +474,14 @@ function createHomeScreenModel(): HomeScreenModel {
             kind: "saved",
             title: "Saved chanterelle trail",
             summary: "A saved trail connecting damp spruce pockets and recent chanterelle signals.",
+            notes: "",
             recordedAt: "2026-04-19T12:30:00.000Z",
           },
           {
             kind: "refined",
             title: "Saved chanterelle trail",
             summary: "A saved trail connecting damp spruce pockets and recent chanterelle signals.",
+            notes: "Start from the wetter moss pocket after rain.",
             recordedAt: "2026-04-19T12:45:00.000Z",
           },
         ],

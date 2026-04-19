@@ -270,6 +270,7 @@ export async function handleArtifactRefineActionRequest(request: Request, contex
   const artifactId = readRequiredField(formData, "artifactId");
   const title = readRequiredField(formData, "title");
   const summary = readRequiredField(formData, "summary");
+  const notes = readOptionalField(formData, "notes");
   const state = createInitialForagingWorkbenchState();
 
   if (!artifactId.ok || !title.ok || !summary.ok) {
@@ -288,6 +289,7 @@ export async function handleArtifactRefineActionRequest(request: Request, contex
     artifactId: artifactId.value,
     title: title.value,
     summary: summary.value,
+    notes: notes.value,
   });
 
   if (result.kind === "error") {
@@ -351,6 +353,14 @@ function readRequiredField(formData: FormData, name: string): { ok: true; value:
   return {
     ok: true,
     value,
+  };
+}
+
+function readOptionalField(formData: FormData, name: string): { value: string } {
+  const rawValue = formData.get(name);
+
+  return {
+    value: typeof rawValue === "string" ? rawValue.trim() : "",
   };
 }
 
