@@ -22,6 +22,7 @@ export async function refineSavedArtifact(
     ...existingArtifact,
     title: message.title,
     summary: message.summary,
+    updatedAt: new Date().toISOString(),
   };
 
   try {

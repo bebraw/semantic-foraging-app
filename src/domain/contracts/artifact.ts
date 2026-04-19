@@ -14,4 +14,5 @@ export type StoredForagingArtifact = {
   evidence: EvidenceNote[];
   spatialContext: SpatialContext;
   savedAt: string;
+  updatedAt?: string;
 };

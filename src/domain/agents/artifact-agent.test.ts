@@ -53,6 +53,7 @@ describe("createStoredForagingArtifact", () => {
         season: ["autumn"],
       },
       savedAt: "2026-04-19T12:00:00.000Z",
+      updatedAt: "2026-04-19T12:00:00.000Z",
     });
   });
 
@@ -134,6 +135,7 @@ describe("createStoredForagingArtifact", () => {
         season: ["autumn"],
       },
       savedAt: "2026-04-19T12:00:00.000Z",
+      updatedAt: "2026-04-19T12:00:00.000Z",
     });
 
     expect(seed).toEqual({

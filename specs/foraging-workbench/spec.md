@@ -38,6 +38,7 @@ The home page is a server-rendered semantic foraging workbench that lets contrib
 - Successful saved-artifact refinement must render:
   - an informational alert that the artifact was updated
   - the updated artifact title and summary in the saved-artifacts section
+  - an updated timestamp when the refined artifact has changed since its original save
 - The workbench may render a server-first map fragment when current leads or recent sessions have mappable spatial context.
 - The workbench must render a saved-artifacts section showing persisted field notes, trails, and patch inspections when available.
 - Saved artifacts may render stored evidence and cue summaries inline so the workbench supports lightweight comparison before reuse.

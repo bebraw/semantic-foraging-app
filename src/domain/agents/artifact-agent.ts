@@ -27,6 +27,7 @@ export function createStoredForagingArtifact(
     evidence: card.evidence,
     spatialContext: card.spatialContext,
     savedAt,
+    updatedAt: savedAt,
   };
 }
 

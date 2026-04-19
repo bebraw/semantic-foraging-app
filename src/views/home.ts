@@ -91,6 +91,7 @@ export function renderHomePage(screen: HomeScreenModel): string {
             <p class="rounded-full bg-app-accent-ghost px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-app-accent-strong">${escapeHtml(artifact.kind)}</p>
             <p class="text-[11px] font-semibold uppercase tracking-[0.18em] text-app-text-soft">${escapeHtml(artifact.sourceIntent)}</p>
             <p class="text-sm text-app-text-soft">${escapeHtml(formatSavedAtLabel(artifact.savedAt))}</p>
+            ${artifact.updatedAt && artifact.updatedAt !== artifact.savedAt ? `<p class="text-sm text-app-text-soft">${escapeHtml(formatUpdatedAtLabel(artifact.updatedAt))}</p>` : ""}
           </div>
           <div>
             <h3 class="text-lg font-semibold tracking-[-0.02em]">${escapeHtml(artifact.title)}</h3>
@@ -431,6 +432,16 @@ function formatSavedAtLabel(savedAt: string): string {
   }
 
   return `Saved ${date.toISOString().slice(0, 16).replace("T", " ")}`;
+}
+
+function formatUpdatedAtLabel(updatedAt: string): string {
+  const date = new Date(updatedAt);
+
+  if (Number.isNaN(date.getTime())) {
+    return updatedAt;
+  }
+
+  return `Updated ${date.toISOString().slice(0, 16).replace("T", " ")}`;
 }
 
 function renderMapFeature(

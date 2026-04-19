@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { exampleRoutes } from "../app-routes";
 import { createAppContext } from "../app/context";
 import { createRequestTrace } from "../infra/observability/trace";
@@ -13,6 +13,10 @@ import {
 } from "./workbench";
 
 describe("workbench actions", () => {
+  beforeEach(() => {
+    vi.useRealTimers();
+  });
+
   it("renders an intent result back into the workbench page", async () => {
     const formData = new FormData();
     formData.set("input", "Create a new field note");
@@ -298,6 +302,9 @@ describe("workbench actions", () => {
   });
 
   it("refines a saved artifact through the server-rendered workbench", async () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2026-04-19T12:00:00.000Z"));
+
     const context = createAppContext(exampleRoutes);
     const saveFormData = new FormData();
     saveFormData.set(
@@ -366,6 +373,8 @@ describe("workbench actions", () => {
     refineFormData.set("title", "Refined chanterelle trail");
     refineFormData.set("summary", "Refined summary for the saved chanterelle route.");
 
+    vi.setSystemTime(new Date("2026-04-19T13:15:00.000Z"));
+
     const response = await handleArtifactRefineActionRequest(
       new Request("http://example.com/actions/artifact/refine", {
         method: "POST",
@@ -385,8 +394,10 @@ describe("workbench actions", () => {
       expect.objectContaining({
         title: "Refined chanterelle trail",
         summary: "Refined summary for the saved chanterelle route.",
+        updatedAt: "2026-04-19T13:15:00.000Z",
       }),
     );
+    expect(body).toContain("Updated 2026-04-19 13:15");
   });
 
   it("renders a validation alert when the intent form is empty", async () => {

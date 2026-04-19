@@ -38,6 +38,7 @@ describe("renderHomePage", () => {
     expect(html).toContain("Saved chanterelle trail");
     expect(html).toContain("Find chanterelles");
     expect(html).toContain("Saved 2026-04-19 12:00");
+    expect(html).toContain("Updated 2026-04-19 12:45");
     expect(html).toContain("Clarification focus");
     expect(html).toContain("artifact_scope");
     expect(html).toContain('rel="stylesheet" href="/styles.css"');
@@ -461,6 +462,7 @@ function createHomeScreenModel(): HomeScreenModel {
           season: ["autumn"],
         },
         savedAt: "2026-04-19T12:30:00.000Z",
+        updatedAt: "2026-04-19T12:45:00.000Z",
       },
     ],
     recentSessionsTitle: "Recent sessions",
