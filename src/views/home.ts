@@ -246,7 +246,7 @@ export function renderHomePage(screen: HomeScreenModel): string {
                       <div class="relative aspect-[16/9]">
                         <div class="absolute inset-0 hidden overflow-hidden rounded-[0.9rem] border border-app-line bg-[#edf4fb]" data-map-browser-frame aria-hidden="true">
                           <div class="absolute inset-0" data-map-leaflet></div>
-                          <div class="pointer-events-none absolute inset-x-3 bottom-3 flex flex-wrap items-end justify-between gap-3">
+                          <div class="pointer-events-none absolute inset-x-3 bottom-3 flex flex-wrap items-end justify-between gap-3" data-map-browser-chrome>
                             <p class="max-w-[18rem] rounded-full border border-app-line bg-white/96 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-app-text-soft" data-map-browser-source></p>
                             <p class="rounded-full border border-app-line bg-white/96 px-3 py-1 text-[11px] font-semibold text-app-text-soft" data-map-browser-attribution></p>
                             <p class="rounded-full border border-app-line bg-white/96 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-app-text-soft" data-map-browser-zoom></p>

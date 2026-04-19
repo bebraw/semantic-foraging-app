@@ -133,6 +133,16 @@
   [data-map-browser-frame][data-map-mode="browser"] [data-map-leaflet] {
     height: 100%;
     width: 100%;
+    z-index: 0;
+  }
+
+  [data-map-browser-frame] {
+    isolation: isolate;
+  }
+
+  [data-map-browser-frame] [data-map-browser-chrome],
+  [data-map-browser-frame] [data-map-zoom-controls] {
+    z-index: 900;
   }
 
   .leaflet-container {
