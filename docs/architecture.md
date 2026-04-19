@@ -37,7 +37,7 @@ What is still intentionally unfinished:
 
 - workflow state is still limited to the clarification flow rather than broader multi-step foraging work
 - observability is still request-scoped and lightweight
-- saved artifacts can now seed retrieval and workbench continuation, but they still do not have a dedicated compare/refine artifact workflow
+- saved artifacts can now surface stored evidence inline and seed workbench continuation, but they still do not have a dedicated refinement/editor workflow
 - the local-model path still assumes an OpenAI-compatible endpoint instead of runtime-specific local adapters
 
 ---

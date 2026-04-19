@@ -16,6 +16,8 @@ describe("renderHomePage", () => {
     expect(html).toContain("Candidate leads");
     expect(html).toContain("Saved artifacts");
     expect(html).toContain("Use in workbench");
+    expect(html).toContain("Intent fit");
+    expect(html).toContain("Ranked for explain-suggestion.");
     expect(html).toContain("Foraging map");
     expect(html).toContain("Mapped leads");
     expect(html).toContain("Focused lead");

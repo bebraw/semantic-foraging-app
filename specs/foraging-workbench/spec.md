@@ -36,6 +36,7 @@ The home page is a server-rendered semantic foraging workbench that lets contrib
   - the explanation inputs seeded from the saved artifact summary, evidence, or cues
 - The workbench may render a server-first map fragment when current leads or recent sessions have mappable spatial context.
 - The workbench must render a saved-artifacts section showing persisted field notes, trails, and patch inspections when available.
+- Saved artifacts may render stored evidence and cue summaries inline so the workbench supports lightweight comparison before reuse.
 - The workbench must render a recent-sessions section showing persisted recent-session snapshots when available.
 - Invalid form input or typed app errors must render back into the workbench as user-visible alerts instead of raw JSON.
 

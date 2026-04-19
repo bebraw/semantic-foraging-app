@@ -37,6 +37,7 @@ The semantic-foraging workbench can turn promising leads into lightweight saved 
 - Reusing a saved artifact may synthesize a typed completed intent state with explicit artifact-reuse provenance so the workbench can continue retrieval from the artifact's stored source intent and cues.
 - Saved artifacts must remain serializable so they can move through the storage boundary without view-specific data massaging.
 - The home screen must render a bounded saved-artifacts section alongside transient candidate cards and recent sessions.
+- The saved-artifacts section may expose stored evidence notes and cue summaries directly so multiple artifacts can be compared without loading each one back into the workbench first.
 
 ## Regression Guardrails
 
