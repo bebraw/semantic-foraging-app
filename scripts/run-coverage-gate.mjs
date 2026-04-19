@@ -66,6 +66,7 @@ function isRuntimeSourceFile(path) {
   return (
     sourceExtensions.has(extname(path)) &&
     !path.endsWith(".d.ts") &&
+    !isGeneratedSourceFile(path) &&
     !isTestSupportFile(path) &&
     !isUnitTestFile(path) &&
     !isEndToEndTestFile(path)
@@ -82,4 +83,8 @@ function isEndToEndTestFile(path) {
 
 function isTestSupportFile(path) {
   return /(^|\/)test-support\.[cm]?[jt]sx?$/.test(path);
+}
+
+function isGeneratedSourceFile(path) {
+  return path.startsWith("src/generated/");
 }

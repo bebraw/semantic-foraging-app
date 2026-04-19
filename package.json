@@ -14,7 +14,7 @@
     }
   },
   "scripts": {
-    "build:css": "mkdir -p ./.generated && tailwindcss -i ./src/tailwind-input.css -o ./.generated/styles.css --minify && node ./scripts/build-generated-styles-module.mjs && prettier --write ./src/generated/styles.ts",
+    "build:css": "mkdir -p ./.generated && tailwindcss -i ./src/tailwind-input.css -o ./.generated/styles.css --minify && node ./scripts/build-generated-styles-module.mjs && prettier --write ./src/generated/*.ts",
     "ci:local": "agent-ci run --workflow .github/workflows/ci.yml",
     "ci:local:quiet": "agent-ci run --quiet --workflow .github/workflows/ci.yml",
     "ci:local:all": "agent-ci run --all",
@@ -39,6 +39,7 @@
     "@playwright/test": "1.59.1",
     "@redwoodjs/agent-ci": "0.12.2",
     "@tailwindcss/cli": "4.2.2",
+    "@types/leaflet": "1.9.21",
     "@types/node": "24.3.1",
     "@vitest/coverage-v8": "4.1.2",
     "chrome-launcher": "1.2.1",
@@ -48,5 +49,8 @@
     "typescript": "6.0.2",
     "vitest": "4.1.2",
     "wrangler": "4.80.0"
+  },
+  "dependencies": {
+    "leaflet": "1.9.4"
   }
 }

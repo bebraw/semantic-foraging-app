@@ -9,7 +9,7 @@ import { consoleLogger, logTraceSummary, silentLogger } from "./infra/observabil
 import { attachTraceHeaders, createRequestTrace } from "./infra/observability/trace";
 import { InMemoryRecentSessionRepository, InMemoryWorkflowRepository } from "./infra/storage/memory-store";
 import { renderNotFoundPage } from "./views/not-found";
-import { cssResponse, htmlResponse } from "./views/shared";
+import { cssResponse, htmlResponse, javascriptResponse } from "./views/shared";
 
 const workflowRepository = new InMemoryWorkflowRepository();
 const recentSessionRepository = new InMemoryRecentSessionRepository();
@@ -35,6 +35,16 @@ export async function handleRequest(request: Request, env: Env = {}): Promise<Re
 
   if (url.pathname === "/styles.css") {
     response = cssResponse(await loadStylesheet());
+    return finalizeResponse(response, trace);
+  }
+
+  if (url.pathname === "/vendor/leaflet.css") {
+    response = cssResponse(await loadLeafletStylesheet());
+    return finalizeResponse(response, trace);
+  }
+
+  if (url.pathname === "/vendor/leaflet.js") {
+    response = javascriptResponse(await loadLeafletScript());
     return finalizeResponse(response, trace);
   }
 
@@ -100,6 +110,26 @@ async function loadStylesheet(): Promise<string> {
 
   const styles = await import("./generated/styles");
   return styles.default;
+}
+
+async function loadLeafletStylesheet(): Promise<string> {
+  if (typeof process !== "undefined" && process.release?.name === "node") {
+    const { readFile } = await import("node:fs/promises");
+    return await readFile(new URL("../node_modules/leaflet/dist/leaflet.css", import.meta.url), "utf8");
+  }
+
+  const stylesheet = await import("./generated/leaflet-css");
+  return stylesheet.default;
+}
+
+async function loadLeafletScript(): Promise<string> {
+  if (typeof process !== "undefined" && process.release?.name === "node") {
+    const { readFile } = await import("node:fs/promises");
+    return await readFile(new URL("../node_modules/leaflet/dist/leaflet.js", import.meta.url), "utf8");
+  }
+
+  const script = await import("./generated/leaflet-js");
+  return script.default;
 }
 
 function finalizeResponse(response: Response, trace: ReturnType<typeof createRequestTrace>): Response {

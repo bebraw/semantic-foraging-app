@@ -35,6 +35,7 @@ The app represents rendered UI as typed screen models between the app layer and 
 - View-specific browser enhancement may attach to server-rendered screen fragments, but it must operate only on typed data already present in the rendered screen model.
 - When provider-backed map tiles are available, the rendered home screen may serialize typed map state into the HTML so lightweight browser code can project overlays on top of the configured basemap.
 - Typed map fragments may include browser-only location-control copy so the rendered UI can ask for geolocation permission without inventing ad hoc text or policy in the script layer.
+- External browser libraries such as Leaflet may render typed map fragments, but they must be fed only by server-owned screen data and locally served pinned assets.
 
 ## Regression Guardrails
 

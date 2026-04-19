@@ -34,10 +34,12 @@ describe("renderHomePage", () => {
     expect(html).toContain("Clarification focus");
     expect(html).toContain("artifact_scope");
     expect(html).toContain('rel="stylesheet" href="/styles.css"');
+    expect(html).toContain('rel="stylesheet" href="/vendor/leaflet.css"');
     expect(html).toContain("data-map-detail-label");
     expect(html).toContain("data-map-browser-frame");
     expect(html).toContain("data-map-browser-attribution");
     expect(html).toContain("data-map-state=");
+    expect(html).toContain('<script src="/vendor/leaflet.js"></script>');
     expect(html).toContain("<script>");
     expect(html).toContain("Trace ID:");
     expect(html).toContain("trace-home-test");
@@ -58,7 +60,7 @@ describe("renderHomePage", () => {
     expect(html).toContain("https://tiles.example.test/topographic/{z}/{x}/{y}.png");
     expect(html).toContain('data-map-zoom-in aria-label="Zoom in"');
     expect(html).toContain('data-map-zoom-out aria-label="Zoom out"');
-    expect(html).toContain("data-map-browser-overlay");
+    expect(html).toContain("data-map-leaflet");
     expect(html).toContain("data-map-fallback");
   });
 

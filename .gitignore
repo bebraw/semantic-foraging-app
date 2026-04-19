@@ -13,3 +13,5 @@ reports/
 test-results/
 src/generated/*
 !src/generated/styles.d.ts
+!src/generated/leaflet-css.d.ts
+!src/generated/leaflet-js.d.ts

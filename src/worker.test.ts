@@ -395,4 +395,19 @@ describe("worker", () => {
     expect(response.headers.get("x-trace-id")).toBeTruthy();
     await expect(response.text()).resolves.toContain("--color-app-canvas:#f5efe6");
   });
+
+  it("serves local Leaflet assets", async () => {
+    const stylesheetResponse = await handleRequest(new Request("http://example.com/vendor/leaflet.css"));
+    const scriptResponse = await handleRequest(new Request("http://example.com/vendor/leaflet.js"));
+
+    expect(stylesheetResponse.status).toBe(200);
+    expect(stylesheetResponse.headers.get("content-type")).toContain("text/css");
+    expect(stylesheetResponse.headers.get("x-trace-id")).toBeTruthy();
+    await expect(stylesheetResponse.text()).resolves.toContain(".leaflet-container");
+
+    expect(scriptResponse.status).toBe(200);
+    expect(scriptResponse.headers.get("content-type")).toContain("application/javascript");
+    expect(scriptResponse.headers.get("x-trace-id")).toBeTruthy();
+    await expect(scriptResponse.text()).resolves.toContain("Leaflet");
+  });
 });

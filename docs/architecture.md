@@ -40,6 +40,7 @@ The repo now implements the first application-layer slice from this document:
 - the map fragment now uses provider-backed geospatial contracts so Finnish basemap and observation data can flow through the same typed screen-model boundary.
 - the browser now defaults to OpenStreetMap standard tiles for no-key interactive map previews, while NLS remains an opt-in Finnish topographic basemap.
 - the browser map can now ask for current location on explicit user action and re-center locally without sending live coordinates through the Worker.
+- the browser map runtime now uses Leaflet as a pinned local client library while the Worker remains the source of truth for map data and configuration.
 - `src/domain/agents/intent-workflow.ts` now defines the first serializable workflow-state contract and deterministic transition helper.
 - `src/domain/agents/ui-agent.ts` now owns the home/workbench screen model instead of leaving screen assembly inside the use case.
 - `src/infra/observability/trace.ts` now creates per-request traces and wraps model-provider calls with traced operations.

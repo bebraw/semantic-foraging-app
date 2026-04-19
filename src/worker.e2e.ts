@@ -240,7 +240,8 @@ test("asks for current location and re-orients the map in the browser only", asy
   await expect(locationStatus).toContainText("Using current location to orient the map.");
   await expect(locationStatus).toContainText("60.1699°N");
   await expect(locationStatus).toContainText("24.9384°E");
-  await expect(mapSection.locator("[data-map-location-marker]")).toHaveCount(1);
+  await expect(mapSection.locator(".leaflet-container")).toBeVisible();
+  await expect(mapSection.locator(".leaflet-tooltip").filter({ hasText: "Current location" })).toBeVisible();
 });
 
 test("uses persisted recent sessions in the manual resume flow", async ({ page }) => {
@@ -387,4 +388,17 @@ test("serves the generated stylesheet", async ({ request }) => {
   expect(response.ok()).toBe(true);
   expect(response.headers()["content-type"]).toContain("text/css");
   await expect(response.text()).resolves.toContain("--color-app-canvas:#f5efe6");
+});
+
+test("serves local Leaflet assets for the browser map", async ({ request }) => {
+  const cssResponse = await request.get("/vendor/leaflet.css");
+  const jsResponse = await request.get("/vendor/leaflet.js");
+
+  expect(cssResponse.ok()).toBe(true);
+  expect(cssResponse.headers()["content-type"]).toContain("text/css");
+  await expect(cssResponse.text()).resolves.toContain(".leaflet-container");
+
+  expect(jsResponse.ok()).toBe(true);
+  expect(jsResponse.headers()["content-type"]).toContain("application/javascript");
+  await expect(jsResponse.text()).resolves.toContain("Leaflet");
 });

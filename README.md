@@ -43,7 +43,9 @@ Local development in this repo targets macOS. Other platforms may need script an
 - Completed intents are persisted as lightweight in-memory recent sessions and rendered back into the workbench.
 - `resume-session` flows now reuse those persisted recent sessions instead of relying only on static demo session cards.
 - The workbench now includes a typed server-rendered map fragment for spatial lead inspection.
+- The browser map enhancement now renders through locally served Leaflet assets rather than custom tile math or CDN-hosted scripts.
 - `GET /styles.css` serves the generated Tailwind stylesheet.
+- `GET /vendor/leaflet.css` and `GET /vendor/leaflet.js` serve the pinned local Leaflet client assets used by the map enhancement.
 - `GET /api/health` serves a JSON health response for smoke tests and tooling.
 - `POST /api/app/command` dispatches typed app commands through a generic JSON endpoint.
 - `POST /api/app/query` returns a typed screen model for bounded app-query requests.
