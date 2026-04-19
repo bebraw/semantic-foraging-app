@@ -486,6 +486,26 @@ describe("ui-agent", () => {
     });
 
     expect(state.intent.rawInput).toBe("Saved trail");
+    expect(state.intent.latestSubmission).toEqual(
+      expect.objectContaining({
+        input: "Saved trail",
+        classification: expect.objectContaining({
+          intent: "explain-suggestion",
+          cues: expect.objectContaining({
+            species: ["chanterelle"],
+          }),
+        }),
+        provenance: {
+          source: "deterministic-fallback",
+          provider: null,
+          reason: "artifact-reuse",
+        },
+        workflow: {
+          name: "intent-classification",
+          state: "completed",
+        },
+      }),
+    );
     expect(state.explanation.title).toBe("Saved trail");
     expect(state.explanation.factsText).toContain("Summary: Saved trail summary");
     expect(state.explanation.factsText).toContain("Intent fit: Ranked for explain-suggestion.");

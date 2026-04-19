@@ -1,5 +1,8 @@
 import type { StoredForagingArtifact } from "../contracts/artifact";
+import type { ForagingIntentSubmissionState } from "../contracts/app-state";
 import type { ForagingCandidateCard } from "../contracts/foraging-knowledge";
+import { describeConfidence } from "../policies/confidence";
+import { deterministicProvenance } from "../policies/provenance";
 import type { ForagingIntent } from "./intent-agent";
 
 export function createStoredForagingArtifact(
@@ -42,6 +45,27 @@ export function createArtifactWorkbenchSeed(artifact: StoredForagingArtifact): {
     rawInput: artifact.title,
     title: artifact.title,
     factsText: factLines.join("\n"),
+  };
+}
+
+export function createArtifactIntentSubmission(artifact: StoredForagingArtifact): ForagingIntentSubmissionState {
+  const confidence = 1;
+
+  return {
+    input: artifact.title,
+    classification: {
+      intent: artifact.sourceIntent,
+      confidence,
+      needsClarification: false,
+      cues: artifact.cues,
+      missing: [],
+    },
+    confidenceBand: describeConfidence(confidence),
+    provenance: deterministicProvenance("artifact-reuse"),
+    workflow: {
+      name: "intent-classification",
+      state: "completed",
+    },
   };
 }
 

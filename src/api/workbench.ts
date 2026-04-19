@@ -42,7 +42,7 @@ const ProvenanceSchema = z.discriminatedUnion("source", [
   z.object({
     source: z.literal("deterministic-fallback"),
     provider: z.null(),
-    reason: z.enum(["no-model-provider", "provider-unavailable", "model-inference-failed", "model-schema-failed"]),
+    reason: z.enum(["no-model-provider", "provider-unavailable", "model-inference-failed", "model-schema-failed", "artifact-reuse"]),
   }),
   z.object({
     source: z.literal("model"),

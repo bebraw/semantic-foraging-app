@@ -8,7 +8,7 @@ import type {
 import type { StoredForagingArtifact } from "../contracts/artifact";
 import { buildMapViewModel } from "./map-agent";
 import { buildForagingCandidateCards } from "./knowledge-agent";
-import { createArtifactWorkbenchSeed } from "./artifact-agent";
+import { createArtifactIntentSubmission, createArtifactWorkbenchSeed } from "./artifact-agent";
 import type { RuntimeModelCapability } from "../contracts/model-runtime";
 import type { HomeScreenModel } from "../contracts/screen";
 import type { MapBasemapModel, MapOverlayModel } from "../contracts/map";
@@ -103,12 +103,15 @@ export function withExplanationSubmission(state: ForagingWorkbenchState, submiss
 
 export function withSavedArtifactSeed(state: ForagingWorkbenchState, artifact: StoredForagingArtifact): ForagingWorkbenchState {
   const seed = createArtifactWorkbenchSeed(artifact);
+  const latestSubmission = createArtifactIntentSubmission(artifact);
 
   return {
     ...state,
     intent: {
       ...state.intent,
       rawInput: seed.rawInput,
+      clarification: "",
+      latestSubmission,
     },
     explanation: {
       ...state.explanation,

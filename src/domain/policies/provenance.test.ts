@@ -17,6 +17,14 @@ describe("deterministicProvenance", () => {
       reason: "model-schema-failed",
     });
   });
+
+  it("supports saved artifact reuse as deterministic provenance", () => {
+    expect(deterministicProvenance("artifact-reuse")).toEqual({
+      source: "deterministic-fallback",
+      provider: null,
+      reason: "artifact-reuse",
+    });
+  });
 });
 
 describe("modelProvenance", () => {

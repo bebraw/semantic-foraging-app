@@ -1,4 +1,9 @@
-export type DeterministicProvenanceReason = "no-model-provider" | "provider-unavailable" | "model-inference-failed" | "model-schema-failed";
+export type DeterministicProvenanceReason =
+  | "no-model-provider"
+  | "provider-unavailable"
+  | "model-inference-failed"
+  | "model-schema-failed"
+  | "artifact-reuse";
 
 export type ModelProvenanceReason = "structured-inference";
 

@@ -210,7 +210,7 @@ describe("workbench actions", () => {
     expect(body).toContain("Field note scaffold");
   });
 
-  it("loads a saved artifact back into the workbench forms", async () => {
+  it("loads a saved artifact back into the workbench as continued intent context", async () => {
     const context = createAppContext(exampleRoutes);
     const saveFormData = new FormData();
     saveFormData.set(
@@ -288,8 +288,12 @@ describe("workbench actions", () => {
     expect(response.status).toBe(200);
     const body = await response.text();
     expect(body).toContain("Artifact loaded");
+    expect(body).toContain("Latest intent result");
+    expect(body).toContain("explain-suggestion");
+    expect(body).toContain("deterministic-fallback / artifact-reuse");
     expect(body).toContain('value="Saved chanterelle trail"');
     expect(body).toContain("Summary: A saved trail connecting damp spruce pockets and recent chanterelle signals.");
+    expect(body).toContain("Candidate leads");
   });
 
   it("renders a validation alert when the intent form is empty", async () => {

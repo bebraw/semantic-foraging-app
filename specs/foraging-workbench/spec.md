@@ -32,6 +32,7 @@ The home page is a server-rendered semantic foraging workbench that lets contrib
 - Successful saved-artifact reuse must render:
   - an informational alert that the artifact was loaded
   - the intent input seeded from the saved artifact
+  - a latest-intent result seeded from the saved artifact's stored source intent and cues
   - the explanation inputs seeded from the saved artifact summary, evidence, or cues
 - The workbench may render a server-first map fragment when current leads or recent sessions have mappable spatial context.
 - The workbench must render a saved-artifacts section showing persisted field notes, trails, and patch inspections when available.
