@@ -44,6 +44,9 @@ describe("handleAppQueryRequest", () => {
       screen: expect.objectContaining({
         kind: "home",
         title: "Foraging Workbench",
+        mapView: expect.objectContaining({
+          title: "Foraging map",
+        }),
         runtime: {
           mode: "no-model",
           provider: null,

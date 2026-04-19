@@ -1,6 +1,7 @@
 import type { AppRoute } from "../../app-routes";
 import type { ForagingWorkbenchState, WorkbenchAlert } from "./app-state";
 import type { ForagingCandidateCard } from "./foraging-knowledge";
+import type { MapViewModel } from "./map";
 import type { RuntimeModelCapability } from "./model-runtime";
 import type { StoredForagingSession } from "./session";
 
@@ -60,6 +61,7 @@ export type HomeScreenModel = {
   workbenchBody: string;
   intentWorkbench: IntentWorkbenchModel;
   explanationWorkbench: ExplanationWorkbenchModel;
+  mapView: MapViewModel;
   retrievalTitle: string;
   retrievalBody: string;
   retrievalEmptyState: string;

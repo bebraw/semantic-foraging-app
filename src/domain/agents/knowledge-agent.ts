@@ -12,6 +12,7 @@ type CatalogCandidate = ForagingCandidateCard & {
 
 const catalog: CatalogCandidate[] = [
   {
+    id: "observation-autumn-chanterelle-cluster",
     kind: "observation",
     title: "Autumn chanterelle cluster",
     summary: "Three nearby observation notes align on damp spruce cover and recent chanterelle sightings.",
@@ -21,8 +22,15 @@ const catalog: CatalogCandidate[] = [
     region: ["helsinki", "uusimaa"],
     season: ["autumn"],
     evidence: [],
+    spatialContext: {
+      species: ["chanterelle"],
+      habitat: ["spruce", "mossy", "wet"],
+      region: ["helsinki", "uusimaa"],
+      season: ["autumn"],
+    },
   },
   {
+    id: "observation-pine-edge-porcini-revisit",
     kind: "observation",
     title: "Pine-edge porcini revisit",
     summary: "A previous field note and two observations point to a dry pine margin worth rechecking.",
@@ -32,8 +40,15 @@ const catalog: CatalogCandidate[] = [
     region: ["north karelia"],
     season: ["summer", "autumn"],
     evidence: [],
+    spatialContext: {
+      species: ["porcini", "boletus"],
+      habitat: ["pine", "ridge"],
+      region: ["north karelia"],
+      season: ["summer", "autumn"],
+    },
   },
   {
+    id: "patch-mossy-spruce-hollow",
     kind: "patch",
     title: "Mossy spruce hollow",
     summary: "A compact patch with repeated chanterelle and trumpet signals in wet mossy spruce cover.",
@@ -43,8 +58,15 @@ const catalog: CatalogCandidate[] = [
     region: ["helsinki", "uusimaa"],
     season: ["autumn"],
     evidence: [],
+    spatialContext: {
+      species: ["chanterelle", "trumpet"],
+      habitat: ["spruce", "mossy", "wet"],
+      region: ["helsinki", "uusimaa"],
+      season: ["autumn"],
+    },
   },
   {
+    id: "trail-north-ridge-wet-spruce-loop",
     kind: "trail",
     title: "North ridge wet-spruce loop",
     summary: "A trail fragment linking a mossy ridge, older notes, and a recent wet-spruce observation pocket.",
@@ -54,8 +76,15 @@ const catalog: CatalogCandidate[] = [
     region: ["north karelia"],
     season: ["summer", "autumn"],
     evidence: [],
+    spatialContext: {
+      species: ["chanterelle", "morel"],
+      habitat: ["spruce", "wet", "ridge"],
+      region: ["north karelia"],
+      season: ["summer", "autumn"],
+    },
   },
   {
+    id: "session-last-autumn-chanterelle-review",
     kind: "session",
     title: "Last autumn chanterelle review",
     summary: "A saved session that compared damp spruce stands and recent chanterelle observations.",
@@ -65,6 +94,12 @@ const catalog: CatalogCandidate[] = [
     region: ["helsinki"],
     season: ["autumn"],
     evidence: [],
+    spatialContext: {
+      species: ["chanterelle"],
+      habitat: ["spruce", "wet"],
+      region: ["helsinki"],
+      season: ["autumn"],
+    },
   },
 ];
 
@@ -98,6 +133,7 @@ function createFieldNoteDraftCard(submission: ForagingIntentSubmissionState): Fo
   const { cues, missing } = submission.classification;
 
   return {
+    id: "field-note-scaffold",
     kind: "field-note",
     title: "Field note scaffold",
     summary: "A starter note seeded from the current request so the next slice can persist real field-note drafts.",
@@ -116,6 +152,7 @@ function createFieldNoteDraftCard(submission: ForagingIntentSubmissionState): Fo
         detail: missing.length > 0 ? missing.join(", ") : "No major gaps detected.",
       },
     ],
+    spatialContext: cues,
   };
 }
 
@@ -135,11 +172,18 @@ function selectCatalogCards(
     .sort((left, right) => right.score - left.score)
     .slice(0, limit)
     .map(({ candidate }) => ({
+      id: candidate.id,
       kind: candidate.kind,
       title: candidate.title,
       summary: candidate.summary,
       statusLabel: candidate.statusLabel,
       evidence: buildEvidenceNotes(candidate, submission),
+      spatialContext: {
+        species: candidate.species,
+        habitat: candidate.habitat,
+        region: candidate.region,
+        season: candidate.season,
+      },
     }));
 }
 
@@ -158,11 +202,13 @@ function buildRecentSessionCards(
     .sort((left, right) => right.score - left.score)
     .slice(0, 3)
     .map(({ session }) => ({
+      id: `recent-session-${session.sessionId}`,
       kind: "session",
       title: session.title,
       summary: session.summary,
       statusLabel: "Recent session",
       evidence: buildRecentSessionEvidence(session, submission),
+      spatialContext: session.cues,
     }));
 }
 

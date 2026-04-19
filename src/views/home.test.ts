@@ -106,12 +106,42 @@ describe("renderHomePage", () => {
           },
         },
       },
+      mapView: {
+        title: "Foraging map",
+        description:
+          "This typed map fragment projects current leads and saved sessions into a shared terrain frame so spatial cues are visible before adding a heavier client-side map stack.",
+        emptyState: "Run a completed foraging intent to project leads into the map frame.",
+        legendTitle: "Mapped leads",
+        viewport: {
+          width: 640,
+          height: 360,
+          frameLabel: "Deterministic terrain frame",
+        },
+        features: [
+          {
+            id: "candidate-observation-autumn-chanterelle-cluster",
+            label: "Autumn chanterelle cluster",
+            kind: "observation",
+            summary: "Three nearby observation notes align on damp spruce cover and recent chanterelle sightings.",
+            evidenceSummary: "chanterelle",
+            sourceSection: "candidate-leads",
+            geometry: {
+              kind: "point",
+              point: {
+                x: 70,
+                y: 60,
+              },
+            },
+          },
+        ],
+      },
       retrievalTitle: "Candidate leads",
       retrievalBody:
         "Completed foraging intents now surface deterministic observation, patch, trail, note, and session candidates with explicit evidence instead of leaving retrieval implied.",
       retrievalEmptyState: "Run a completed intent to surface grounded candidate cards and evidence notes.",
       candidateCards: [
         {
+          id: "observation-autumn-chanterelle-cluster",
           kind: "observation",
           title: "Autumn chanterelle cluster",
           summary: "Three nearby observation notes align on damp spruce cover and recent chanterelle sightings.",
@@ -126,6 +156,12 @@ describe("renderHomePage", () => {
               detail: "spruce, wet",
             },
           ],
+          spatialContext: {
+            species: ["chanterelle"],
+            habitat: ["spruce", "wet"],
+            region: ["helsinki"],
+            season: ["autumn"],
+          },
         },
       ],
       recentSessionsTitle: "Recent sessions",
@@ -167,6 +203,9 @@ describe("renderHomePage", () => {
     expect(html).toContain("No-model mode");
     expect(html).toContain("species, habitat, region, and season cues");
     expect(html).toContain("Candidate leads");
+    expect(html).toContain("Foraging map");
+    expect(html).toContain("Mapped leads");
+    expect(html).toContain("Deterministic terrain frame");
     expect(html).toContain("Autumn chanterelle cluster");
     expect(html).toContain("Species overlap");
     expect(html).toContain("Recent sessions");

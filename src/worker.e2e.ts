@@ -5,6 +5,7 @@ test("renders the worker home page", async ({ page }) => {
 
   await expect(page.getByRole("heading", { level: 1, name: "Foraging Workbench" })).toBeVisible();
   await expect(page.getByText("Manual flow rehearsal")).toBeVisible();
+  await expect(page.getByText("Foraging map")).toBeVisible();
   await expect(page.getByText("Candidate leads")).toBeVisible();
   await expect(page.getByText("Model runtime")).toBeVisible();
   await expect(page.getByRole("link", { name: "/api/health" })).toBeVisible();

@@ -27,6 +27,7 @@ Completed semantic-foraging intents surface deterministic candidate cards with e
 - Evidence notes must explain why a candidate was surfaced, such as intent fit, cue overlap, or remaining missing context.
 - The create-field-note intent must surface a draft note scaffold plus nearby contextual leads instead of returning an empty retrieval state.
 - The `resume-session` intent must prefer persisted recent sessions over the static catalog when recent-session state is available.
+- Candidate cards may carry typed spatial context so other screen fragments, such as the map view, can project them without reparsing display strings.
 
 ## Regression Guardrails
 

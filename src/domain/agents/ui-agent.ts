@@ -5,6 +5,7 @@ import type {
   ForagingIntentSubmissionState,
   WorkbenchAlert,
 } from "../contracts/app-state";
+import { buildMapViewModel } from "./map-agent";
 import { buildForagingCandidateCards } from "./knowledge-agent";
 import type { RuntimeModelCapability } from "../contracts/model-runtime";
 import type { HomeScreenModel } from "../contracts/screen";
@@ -96,6 +97,7 @@ export function withExplanationSubmission(state: ForagingWorkbenchState, submiss
 
 export function createHomeScreenModel(input: CreateHomeScreenInput): HomeScreenModel {
   const candidateCards = buildForagingCandidateCards(input.workbench.intent.latestSubmission, input.workbench.recentSessions);
+  const mapView = buildMapViewModel(candidateCards, input.workbench.recentSessions);
 
   return {
     kind: "home",
@@ -148,6 +150,7 @@ export function createHomeScreenModel(input: CreateHomeScreenInput): HomeScreenM
       submitLabel: "Generate explanation",
       latestSubmission: input.workbench.explanation.latestSubmission,
     },
+    mapView,
     retrievalTitle: "Candidate leads",
     retrievalBody:
       "Completed foraging intents now surface deterministic observation, patch, trail, note, and session candidates with explicit evidence instead of leaving retrieval implied.",

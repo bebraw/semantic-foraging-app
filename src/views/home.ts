@@ -28,6 +28,19 @@ export function renderHomePage(screen: HomeScreenModel): string {
   const latestIntent = screen.intentWorkbench.latestSubmission;
   const latestExplanation = screen.explanationWorkbench.latestSubmission;
   const clarificationWorkflow = latestIntent?.workflow.state === "awaiting_clarification" ? latestIntent.workflow : null;
+  const mapMarkup = screen.mapView.features
+    .map((feature) => renderMapFeature(feature, screen.mapView.viewport.width, screen.mapView.viewport.height))
+    .join("");
+  const mapLegendMarkup = screen.mapView.features
+    .map(
+      (feature) =>
+        `<li class="rounded-2xl border border-app-line/70 bg-app-canvas/45 px-4 py-3">
+          <p class="text-xs font-semibold uppercase tracking-[0.18em] text-app-text-soft">${escapeHtml(feature.kind)} / ${escapeHtml(feature.sourceSection)}</p>
+          <p class="mt-2 font-medium">${escapeHtml(feature.label)}</p>
+          <p class="mt-2 text-sm leading-6 text-app-text-soft">${escapeHtml(feature.evidenceSummary)}</p>
+        </li>`,
+    )
+    .join("");
   const recentSessionMarkup = screen.recentSessions
     .map(
       (session) =>
@@ -185,6 +198,42 @@ export function renderHomePage(screen: HomeScreenModel): string {
             </div>
           </section>
           <section class="rounded-[1rem] border border-app-line/70 bg-white/72 p-6 shadow-[0_16px_40px_-30px_rgba(30,26,22,0.3)]">
+            <h2 class="mb-3 text-lg font-semibold tracking-[-0.02em]">${escapeHtml(screen.mapView.title)}</h2>
+            <p class="leading-7 text-app-text-soft">${escapeHtml(screen.mapView.description)}</p>
+            ${
+              screen.mapView.features.length > 0
+                ? `<div class="mt-6 grid gap-5 lg:grid-cols-[minmax(0,1.4fr)_minmax(18rem,0.9fr)]">
+                    <figure class="overflow-hidden rounded-[1rem] border border-app-line/70 bg-[linear-gradient(180deg,rgba(11,110,79,0.09),rgba(255,255,255,0.6)),linear-gradient(135deg,rgba(255,255,255,0.75),rgba(245,239,230,0.95))] p-4">
+                      <svg viewBox="0 0 ${screen.mapView.viewport.width} ${screen.mapView.viewport.height}" class="h-auto w-full rounded-[0.9rem] border border-app-line/60 bg-[linear-gradient(180deg,rgba(255,255,255,0.88),rgba(244,236,226,0.96))]" role="img" aria-label="${escapeHtml(screen.mapView.viewport.frameLabel)}">
+                        <rect x="18" y="22" width="604" height="316" rx="26" fill="rgba(255,255,255,0.42)" stroke="rgba(30,26,22,0.08)"/>
+                        <path d="M92 276C152 228 202 206 252 180C326 142 382 136 458 102C515 76 548 66 590 54" fill="none" stroke="rgba(11,110,79,0.15)" stroke-width="18" stroke-linecap="round"/>
+                        <path d="M112 112C168 130 218 156 266 148C324 138 348 110 412 100C486 88 522 112 560 156" fill="none" stroke="rgba(30,26,22,0.08)" stroke-width="24" stroke-linecap="round"/>
+                        <g stroke="rgba(30,26,22,0.08)" stroke-dasharray="4 8">
+                          <line x1="140" y1="40" x2="140" y2="320"/>
+                          <line x1="280" y1="40" x2="280" y2="320"/>
+                          <line x1="420" y1="40" x2="420" y2="320"/>
+                          <line x1="560" y1="40" x2="560" y2="320"/>
+                          <line x1="40" y1="110" x2="600" y2="110"/>
+                          <line x1="40" y1="190" x2="600" y2="190"/>
+                          <line x1="40" y1="270" x2="600" y2="270"/>
+                        </g>
+                        <g fill="rgba(30,26,22,0.45)" font-size="12">
+                          <text x="72" y="84">West ridges</text>
+                          <text x="452" y="92">Southern damp stands</text>
+                          <text x="300" y="304">Observation basin</text>
+                        </g>
+                        ${mapMarkup}
+                      </svg>
+                    </figure>
+                    <div class="grid gap-3">
+                      <h3 class="text-sm font-semibold uppercase tracking-[0.18em] text-app-text-soft">${escapeHtml(screen.mapView.legendTitle)}</h3>
+                      <ul class="grid gap-3">${mapLegendMarkup}</ul>
+                    </div>
+                  </div>`
+                : `<p class="mt-4 rounded-2xl border border-dashed border-app-line/80 bg-app-canvas/40 px-4 py-4 leading-7 text-app-text-soft">${escapeHtml(screen.mapView.emptyState)}</p>`
+            }
+          </section>
+          <section class="rounded-[1rem] border border-app-line/70 bg-white/72 p-6 shadow-[0_16px_40px_-30px_rgba(30,26,22,0.3)]">
             <h2 class="mb-3 text-lg font-semibold tracking-[-0.02em]">${escapeHtml(screen.retrievalTitle)}</h2>
             <p class="leading-7 text-app-text-soft">${escapeHtml(screen.retrievalBody)}</p>
             ${
@@ -277,4 +326,50 @@ function formatSavedAtLabel(savedAt: string): string {
   }
 
   return `Saved ${date.toISOString().slice(0, 16).replace("T", " ")}`;
+}
+
+function renderMapFeature(feature: HomeScreenModel["mapView"]["features"][number], width: number, height: number): string {
+  const tone = feature.sourceSection === "recent-sessions" ? "#0b6e4f" : "#1e1a16";
+
+  switch (feature.geometry.kind) {
+    case "point": {
+      const x = percentToFrame(feature.geometry.point.x, width);
+      const y = percentToFrame(feature.geometry.point.y, height);
+
+      return `<g>
+        <circle cx="${x}" cy="${y}" r="14" fill="white" fill-opacity="0.82" stroke="${tone}" stroke-width="2"/>
+        <circle cx="${x}" cy="${y}" r="6" fill="${tone}"/>
+        <text x="${x + 18}" y="${y - 10}" fill="rgba(30,26,22,0.8)" font-size="12">${escapeHtml(feature.label)}</text>
+      </g>`;
+    }
+    case "area": {
+      const x = percentToFrame(feature.geometry.center.x, width);
+      const y = percentToFrame(feature.geometry.center.y, height);
+
+      return `<g>
+        <circle cx="${x}" cy="${y}" r="${feature.geometry.radius}" fill="rgba(11,110,79,0.12)" stroke="${tone}" stroke-width="2"/>
+        <circle cx="${x}" cy="${y}" r="5" fill="${tone}"/>
+        <text x="${x + 22}" y="${y - 14}" fill="rgba(30,26,22,0.8)" font-size="12">${escapeHtml(feature.label)}</text>
+      </g>`;
+    }
+    case "trail": {
+      const [first, second, third] = feature.geometry.points;
+      const firstX = percentToFrame(first.x, width);
+      const firstY = percentToFrame(first.y, height);
+      const secondX = percentToFrame(second.x, width);
+      const secondY = percentToFrame(second.y, height);
+      const thirdX = percentToFrame(third.x, width);
+      const thirdY = percentToFrame(third.y, height);
+
+      return `<g>
+        <path d="M ${firstX} ${firstY} Q ${secondX} ${secondY} ${thirdX} ${thirdY}" fill="none" stroke="${tone}" stroke-width="4" stroke-linecap="round"/>
+        <circle cx="${secondX}" cy="${secondY}" r="6" fill="${tone}"/>
+        <text x="${secondX + 16}" y="${secondY - 14}" fill="rgba(30,26,22,0.8)" font-size="12">${escapeHtml(feature.label)}</text>
+      </g>`;
+    }
+  }
+}
+
+function percentToFrame(percent: number, frameSize: number): number {
+  return (percent / 100) * frameSize;
 }

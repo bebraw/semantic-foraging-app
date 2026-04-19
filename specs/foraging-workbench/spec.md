@@ -28,6 +28,7 @@ The home page is a server-rendered semantic foraging workbench that lets contrib
   - the submitted title
   - the explanation text
   - provenance summary
+- The workbench may render a server-first map fragment when current leads or recent sessions have mappable spatial context.
 - The workbench must render a recent-sessions section showing persisted recent-session snapshots when available.
 - Invalid form input or typed app errors must render back into the workbench as user-visible alerts instead of raw JSON.
 
@@ -39,6 +40,7 @@ The home page is a server-rendered semantic foraging workbench that lets contrib
 - The intent clarification path must reuse the same stored workflow state used by the JSON clarification endpoint.
 - The workbench must make the semantic-foraging intent taxonomy visible instead of collapsing back to generic search/create/explain labels.
 - Completed intent submissions must feed the same recent-session view shown on the workbench without requiring client-side state management.
+- The first map slice must remain useful as rendered HTML without requiring a browser-side map runtime.
 - The explanation workbench must split multiline facts input into grounded fact strings before dispatching the typed explanation query.
 
 ## Regression Guardrails

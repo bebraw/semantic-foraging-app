@@ -47,6 +47,9 @@ describe("ui-agent", () => {
         kind: "home",
         title: "Foraging Workbench",
         workbenchTitle: "Manual flow rehearsal",
+        mapView: expect.objectContaining({
+          title: "Foraging map",
+        }),
         retrievalTitle: "Candidate leads",
         recentSessionsTitle: "Recent sessions",
         intentWorkbench: expect.objectContaining({
@@ -120,6 +123,7 @@ describe("ui-agent", () => {
     expect(screen.intentWorkbench.latestSubmission?.workflow.state).toBe("awaiting_clarification");
     expect(screen.intentWorkbench.clarificationValue).toBe("Search for similar observations");
     expect(screen.candidateCards).toEqual([]);
+    expect(screen.mapView.features).toEqual([]);
   });
 
   it("preserves alerts and explanation state through helper updates", () => {
@@ -197,6 +201,14 @@ describe("ui-agent", () => {
         }),
       ]),
     );
+    expect(screen.mapView.features).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          kind: "observation",
+          sourceSection: "candidate-leads",
+        }),
+      ]),
+    );
   });
 
   it("prefers persisted recent sessions for resume-session candidate cards", () => {
@@ -263,6 +275,14 @@ describe("ui-agent", () => {
         statusLabel: "Recent session",
       }),
     ]);
+    expect(screen.mapView.features).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          kind: "session",
+          sourceSection: "candidate-leads",
+        }),
+      ]),
+    );
   });
 
   it("preserves recent sessions in the home screen model", () => {

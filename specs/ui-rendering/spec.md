@@ -30,6 +30,7 @@ The app represents rendered UI as typed screen models between the app layer and 
 - Screen models may include lightweight developer-facing metadata such as the active trace ID.
 - Screen models may expose runtime capability details when that data helps contributors understand the current model tier without inspecting environment variables directly.
 - The home screen model may include typed manual-workbench fragments for semantic foraging flows such as intent rehearsal, clarification, and explanation requests.
+- The home screen model may include typed map fragments when spatial projection helps contributors inspect current retrieval state.
 
 ## Regression Guardrails
 

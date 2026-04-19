@@ -32,8 +32,12 @@ describe("buildForagingCandidateCards", () => {
     expect(cards).toHaveLength(3);
     expect(cards[0]).toEqual(
       expect.objectContaining({
+        id: "observation-autumn-chanterelle-cluster",
         kind: "observation",
         title: "Autumn chanterelle cluster",
+        spatialContext: expect.objectContaining({
+          region: ["helsinki", "uusimaa"],
+        }),
       }),
     );
     expect(cards[0].evidence).toEqual(
@@ -73,8 +77,12 @@ describe("buildForagingCandidateCards", () => {
 
     expect(cards[0]).toEqual(
       expect.objectContaining({
+        id: "field-note-scaffold",
         kind: "field-note",
         title: "Field note scaffold",
+        spatialContext: expect.objectContaining({
+          species: ["chanterelle"],
+        }),
       }),
     );
     expect(cards[0].evidence).toEqual(expect.arrayContaining([expect.objectContaining({ label: "Still missing", detail: "region" })]));
@@ -160,9 +168,13 @@ describe("buildForagingCandidateCards", () => {
 
     expect(cards).toEqual([
       expect.objectContaining({
+        id: "recent-session-session-1",
         kind: "session",
         title: "Find chanterelles",
         statusLabel: "Recent session",
+        spatialContext: expect.objectContaining({
+          region: ["helsinki"],
+        }),
       }),
     ]);
     expect(cards[0].evidence).toEqual(

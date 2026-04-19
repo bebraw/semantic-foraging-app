@@ -14,6 +14,7 @@ describe("worker", () => {
     const body = await response.text();
     expect(body).toContain("Foraging Workbench");
     expect(body).toContain("Intent rehearsal");
+    expect(body).toContain("Foraging map");
     expect(body).toContain("Candidate leads");
     expect(body).toContain("Recent sessions");
     expect(body).toContain("/api/health");
