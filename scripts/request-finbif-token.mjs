@@ -1,4 +1,5 @@
 const requestPath = "/v0/api-users";
+const defaultTimeoutMs = 15000;
 const usage = `Usage:
   npm run finbif:request-token -- you@example.com
 
@@ -15,15 +16,23 @@ if (!email) {
 }
 
 async function requestFinbifToken(emailAddress) {
-  const response = await fetch(`https://api.laji.fi${requestPath}`, {
-    method: "POST",
-    headers: {
-      accept: "application/json",
-      "content-type": "application/json",
-      "user-agent": "semantic-foraging-app/request-finbif-token",
-    },
-    body: JSON.stringify({ email: emailAddress }),
-  });
+  const timeoutMs = readTimeoutMs();
+  let response;
+
+  try {
+    response = await fetch(`https://api.laji.fi${requestPath}`, {
+      method: "POST",
+      headers: {
+        accept: "application/json",
+        "content-type": "application/json",
+        "user-agent": "semantic-foraging-app/request-finbif-token",
+      },
+      body: JSON.stringify({ email: emailAddress }),
+      signal: AbortSignal.timeout(timeoutMs),
+    });
+  } catch (error) {
+    throw createRequestError(error, timeoutMs);
+  }
 
   const payload = await readPayload(response);
 
@@ -34,6 +43,42 @@ async function requestFinbifToken(emailAddress) {
 
   console.log(`Requested a FinBIF access token for ${emailAddress}.`);
   console.log("Check that inbox, then add FINBIF_ACCESS_TOKEN=... to .dev.vars.");
+}
+
+function readTimeoutMs() {
+  const rawValue = process.env.FINBIF_REQUEST_TIMEOUT_MS;
+
+  if (!rawValue) {
+    return defaultTimeoutMs;
+  }
+
+  const parsedValue = Number.parseInt(rawValue, 10);
+
+  if (!Number.isFinite(parsedValue) || parsedValue <= 0) {
+    throw new Error(`FINBIF_REQUEST_TIMEOUT_MS must be a positive integer. Received: ${rawValue}`);
+  }
+
+  return parsedValue;
+}
+
+function createRequestError(error, timeoutMs) {
+  if (error instanceof Error && error.name === "TimeoutError") {
+    return new Error(`FinBIF token request timed out after ${timeoutMs} ms. The API may be temporarily unavailable; try again later.`);
+  }
+
+  if (error instanceof Error && error.cause && typeof error.cause === "object" && "code" in error.cause) {
+    const code = error.cause.code;
+
+    if (typeof code === "string" && code.trim()) {
+      return new Error(`FinBIF token request failed before the API responded (${code}).`);
+    }
+  }
+
+  if (error instanceof Error && error.message) {
+    return new Error(`FinBIF token request failed: ${error.message}`);
+  }
+
+  return new Error("FinBIF token request failed before the API responded.");
 }
 
 async function readPayload(response) {
