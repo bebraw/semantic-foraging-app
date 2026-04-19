@@ -152,22 +152,21 @@ function createNlsBasemap(apiKey?: string): MapBasemapModel {
 }
 
 function buildNlsTileTemplate(apiKey: string): string {
-  const base = "https://avoin-karttakuva.maanmittauslaitos.fi/avoin/wmts";
-  const params = new URLSearchParams({
-    service: "WMTS",
-    request: "GetTile",
-    version: "1.0.0",
-    layer: "maastokartta",
-    style: "default",
-    format: "image/png",
-    TileMatrixSet: "WGS84_Pseudo-Mercator",
-    TileMatrix: "{z}",
-    TileRow: "{y}",
-    TileCol: "{x}",
-    "api-key": apiKey,
-  });
+  const params = [
+    "service=WMTS",
+    "request=GetTile",
+    "version=1.0.0",
+    "layer=maastokartta",
+    "style=default",
+    "format=image/png",
+    "TileMatrixSet=WGS84_Pseudo-Mercator",
+    "TileMatrix={z}",
+    "TileRow={y}",
+    "TileCol={x}",
+    `api-key=${encodeURIComponent(apiKey)}`,
+  ];
 
-  return `${base}?${params.toString()}`;
+  return `https://avoin-karttakuva.maanmittauslaitos.fi/avoin/wmts?${params.join("&")}`;
 }
 
 function buildFinbifOccurrenceUrl(taxonId: string): string {
