@@ -65,6 +65,7 @@ describe("ui-agent", () => {
         artifactWorkbench: expect.objectContaining({
           saveActionPath: "/actions/artifact/save",
           useActionPath: "/actions/artifact/use",
+          refineActionPath: "/actions/artifact/refine",
         }),
         meta: {
           traceId: "trace-ui-agent",

@@ -265,6 +265,48 @@ export async function handleArtifactUseActionRequest(request: Request, context: 
   );
 }
 
+export async function handleArtifactRefineActionRequest(request: Request, context: AppContext): Promise<Response> {
+  const formData = await request.formData();
+  const artifactId = readRequiredField(formData, "artifactId");
+  const title = readRequiredField(formData, "title");
+  const summary = readRequiredField(formData, "summary");
+  const state = createInitialForagingWorkbenchState();
+
+  if (!artifactId.ok || !title.ok || !summary.ok) {
+    return await renderWorkbenchResponse(
+      context,
+      withWorkbenchAlert(
+        state,
+        createWorkbenchAlert("Artifact update failed", "Provide an artifact id, title, and summary before refining a saved artifact."),
+      ),
+      400,
+    );
+  }
+
+  const result = await createAppBus(context).dispatch({
+    type: "RefineSavedArtifact",
+    artifactId: artifactId.value,
+    title: title.value,
+    summary: summary.value,
+  });
+
+  if (result.kind === "error") {
+    return await renderWorkbenchErrorResponse(context, state, result, "Artifact update failed");
+  }
+
+  if (result.kind !== "saved-artifact") {
+    throw new Error("Expected a saved-artifact result");
+  }
+
+  return await renderWorkbenchResponse(
+    context,
+    withWorkbenchAlert(
+      state,
+      createWorkbenchAlert("Artifact updated", `Updated ${result.payload.title} without leaving the workbench.`, "info"),
+    ),
+  );
+}
+
 async function renderWorkbenchErrorResponse(
   context: AppContext,
   state: ReturnType<typeof createInitialForagingWorkbenchState>,

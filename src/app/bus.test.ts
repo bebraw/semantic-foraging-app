@@ -400,6 +400,7 @@ describe("createAppBus", () => {
     const bus = createAppBus(
       createAppContext(exampleRoutes, null, createRequestTrace("unknown"), undefined, undefined, undefined, {
         saveArtifact: vi.fn(),
+        updateArtifact: vi.fn(),
         getArtifact: vi.fn(),
         listArtifacts: vi.fn().mockResolvedValue([
           {
@@ -442,6 +443,7 @@ describe("createAppBus", () => {
     const bus = createAppBus(
       createAppContext(exampleRoutes, null, createRequestTrace("unknown"), undefined, undefined, undefined, {
         saveArtifact: vi.fn(),
+        updateArtifact: vi.fn(),
         getArtifact: vi.fn().mockResolvedValue({
           artifactId: "trail-1",
           sourceCardId: "trail-card-1",
@@ -480,6 +482,7 @@ describe("createAppBus", () => {
     const bus = createAppBus(
       createAppContext(exampleRoutes, null, createRequestTrace("unknown"), undefined, undefined, undefined, {
         saveArtifact: vi.fn(),
+        updateArtifact: vi.fn(),
         getArtifact: vi.fn().mockResolvedValue(null),
         listArtifacts: vi.fn().mockResolvedValue([]),
       }),
@@ -493,6 +496,137 @@ describe("createAppBus", () => {
         category: "validation_error",
         message: "Saved artifact was not found for the provided artifactId.",
         status: 404,
+      },
+    });
+  });
+
+  it("updates one saved artifact through the app bus", async () => {
+    const savedArtifactRepository = {
+      saveArtifact: vi.fn(),
+      updateArtifact: vi.fn(),
+      getArtifact: vi.fn().mockResolvedValue({
+        artifactId: "trail-1",
+        sourceCardId: "trail-card-1",
+        kind: "trail",
+        title: "Saved trail",
+        summary: "Saved trail summary",
+        sourceIntent: "explain-suggestion",
+        cues: {
+          species: ["chanterelle"],
+          habitat: [],
+          region: [],
+          season: [],
+        },
+        evidence: [],
+        spatialContext: {
+          species: ["chanterelle"],
+          habitat: [],
+          region: [],
+          season: [],
+        },
+        savedAt: "2026-04-19T12:00:00.000Z",
+      }),
+      listArtifacts: vi.fn().mockResolvedValue([]),
+    };
+    const bus = createAppBus(
+      createAppContext(exampleRoutes, null, createRequestTrace("unknown"), undefined, undefined, undefined, savedArtifactRepository),
+    );
+
+    const result = await bus.dispatch({
+      type: "RefineSavedArtifact",
+      artifactId: "trail-1",
+      title: "Refined trail",
+      summary: "Refined trail summary",
+    });
+
+    expect(savedArtifactRepository.updateArtifact).toHaveBeenCalledWith(
+      expect.objectContaining({
+        artifactId: "trail-1",
+        title: "Refined trail",
+        summary: "Refined trail summary",
+      }),
+    );
+    expect(result).toEqual({
+      kind: "saved-artifact",
+      payload: expect.objectContaining({
+        artifactId: "trail-1",
+        title: "Refined trail",
+        summary: "Refined trail summary",
+      }),
+    });
+  });
+
+  it("returns a typed error when refining a missing saved artifact", async () => {
+    const bus = createAppBus(
+      createAppContext(exampleRoutes, null, createRequestTrace("unknown"), undefined, undefined, undefined, {
+        saveArtifact: vi.fn(),
+        updateArtifact: vi.fn(),
+        getArtifact: vi.fn().mockResolvedValue(null),
+        listArtifacts: vi.fn().mockResolvedValue([]),
+      }),
+    );
+
+    const result = await bus.dispatch({
+      type: "RefineSavedArtifact",
+      artifactId: "missing",
+      title: "Refined trail",
+      summary: "Refined trail summary",
+    });
+
+    expect(result).toEqual({
+      kind: "error",
+      error: {
+        category: "validation_error",
+        message: "Saved artifact was not found for the provided artifactId.",
+        status: 404,
+      },
+    });
+  });
+
+  it("returns a typed storage error when saved artifacts cannot be refined", async () => {
+    const bus = createAppBus(
+      createAppContext(exampleRoutes, null, createRequestTrace("unknown"), undefined, undefined, undefined, {
+        saveArtifact: vi.fn(),
+        updateArtifact: vi.fn().mockRejectedValue(new Error("storage unavailable")),
+        getArtifact: vi.fn().mockResolvedValue({
+          artifactId: "trail-1",
+          sourceCardId: "trail-card-1",
+          kind: "trail",
+          title: "Saved trail",
+          summary: "Saved trail summary",
+          sourceIntent: "explain-suggestion",
+          cues: {
+            species: [],
+            habitat: [],
+            region: [],
+            season: [],
+          },
+          evidence: [],
+          spatialContext: {
+            species: [],
+            habitat: [],
+            region: [],
+            season: [],
+          },
+          savedAt: "2026-04-19T12:00:00.000Z",
+        }),
+        listArtifacts: vi.fn().mockResolvedValue([]),
+      }),
+    );
+
+    const result = await bus.dispatch({
+      type: "RefineSavedArtifact",
+      artifactId: "trail-1",
+      title: "Refined trail",
+      summary: "Refined trail summary",
+    });
+
+    expect(result).toEqual({
+      kind: "error",
+      error: {
+        category: "storage_failure",
+        message: "Saved artifact state could not be updated.",
+        status: 503,
       },
     });
   });
@@ -595,6 +729,7 @@ describe("createAppBus", () => {
     const bus = createAppBus(
       createAppContext(exampleRoutes, null, createRequestTrace("unknown"), undefined, undefined, undefined, {
         saveArtifact: vi.fn().mockRejectedValue(new Error("storage unavailable")),
+        updateArtifact: vi.fn(),
         getArtifact: vi.fn(),
         listArtifacts: vi.fn().mockResolvedValue([]),
       }),

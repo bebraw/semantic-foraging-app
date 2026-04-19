@@ -13,6 +13,7 @@ The home page is a server-rendered semantic foraging workbench that lets contrib
   - a manual explanation-rehearsal form that posts to `POST /actions/explanation`
   - save-artifact forms for supported candidate cards that post to `POST /actions/artifact/save`
   - saved-artifact reuse forms that post to `POST /actions/artifact/use`
+  - saved-artifact refinement forms that post to `POST /actions/artifact/refine`
 - Successful intent submissions must render:
   - the latest input
   - classified intent
@@ -34,9 +35,13 @@ The home page is a server-rendered semantic foraging workbench that lets contrib
   - the intent input seeded from the saved artifact
   - a latest-intent result seeded from the saved artifact's stored source intent and cues
   - the explanation inputs seeded from the saved artifact summary, evidence, or cues
+- Successful saved-artifact refinement must render:
+  - an informational alert that the artifact was updated
+  - the updated artifact title and summary in the saved-artifacts section
 - The workbench may render a server-first map fragment when current leads or recent sessions have mappable spatial context.
 - The workbench must render a saved-artifacts section showing persisted field notes, trails, and patch inspections when available.
 - Saved artifacts may render stored evidence and cue summaries inline so the workbench supports lightweight comparison before reuse.
+- Saved artifacts may render inline refinement controls for bounded edits such as title and summary changes.
 - The workbench must render a recent-sessions section showing persisted recent-session snapshots when available.
 - Invalid form input or typed app errors must render back into the workbench as user-visible alerts instead of raw JSON.
 

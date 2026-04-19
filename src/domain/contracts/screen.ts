@@ -49,6 +49,7 @@ export type ExplanationWorkbenchModel = {
 export type ArtifactWorkbenchModel = {
   saveActionPath: string;
   useActionPath: string;
+  refineActionPath: string;
 };
 
 export type HomeScreenModel = {

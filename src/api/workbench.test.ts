@@ -4,6 +4,7 @@ import { createAppContext } from "../app/context";
 import { createRequestTrace } from "../infra/observability/trace";
 import type { WorkflowRepository } from "../infra/storage/repository";
 import {
+  handleArtifactRefineActionRequest,
   handleArtifactSaveActionRequest,
   handleArtifactUseActionRequest,
   handleExplanationActionRequest,
@@ -294,6 +295,98 @@ describe("workbench actions", () => {
     expect(body).toContain('value="Saved chanterelle trail"');
     expect(body).toContain("Summary: A saved trail connecting damp spruce pockets and recent chanterelle signals.");
     expect(body).toContain("Candidate leads");
+  });
+
+  it("refines a saved artifact through the server-rendered workbench", async () => {
+    const context = createAppContext(exampleRoutes);
+    const saveFormData = new FormData();
+    saveFormData.set(
+      "candidate",
+      JSON.stringify({
+        id: "trail-north-ridge-wet-spruce-loop",
+        kind: "trail",
+        title: "Saved chanterelle trail",
+        summary: "A saved trail connecting damp spruce pockets and recent chanterelle signals.",
+        statusLabel: "Trail fragment",
+        evidence: [
+          {
+            label: "Intent fit",
+            detail: "Ranked for explain-suggestion.",
+          },
+        ],
+        spatialContext: {
+          species: ["chanterelle"],
+          habitat: ["spruce", "wet"],
+          region: ["helsinki"],
+          season: ["autumn"],
+        },
+      }),
+    );
+    saveFormData.set("sourceIntent", "explain-suggestion");
+    saveFormData.set(
+      "intentSubmission",
+      JSON.stringify({
+        input: "Explain this trail",
+        classification: {
+          intent: "explain-suggestion",
+          confidence: 0.82,
+          needsClarification: false,
+          cues: {
+            species: ["chanterelle"],
+            habitat: ["spruce", "wet"],
+            region: ["helsinki"],
+            season: ["autumn"],
+          },
+          missing: [],
+        },
+        confidenceBand: "high",
+        provenance: {
+          source: "deterministic-fallback",
+          provider: null,
+          reason: "no-model-provider",
+        },
+        workflow: {
+          name: "intent-classification",
+          state: "completed",
+        },
+      }),
+    );
+
+    await handleArtifactSaveActionRequest(
+      new Request("http://example.com/actions/artifact/save", {
+        method: "POST",
+        body: saveFormData,
+      }),
+      context,
+    );
+
+    const artifacts = await context.savedArtifactRepository.listArtifacts(1);
+    const refineFormData = new FormData();
+    refineFormData.set("artifactId", artifacts[0].artifactId);
+    refineFormData.set("title", "Refined chanterelle trail");
+    refineFormData.set("summary", "Refined summary for the saved chanterelle route.");
+
+    const response = await handleArtifactRefineActionRequest(
+      new Request("http://example.com/actions/artifact/refine", {
+        method: "POST",
+        body: refineFormData,
+      }),
+      context,
+    );
+
+    expect(response.status).toBe(200);
+    const body = await response.text();
+    expect(body).toContain("Artifact updated");
+    expect(body).toContain("Refined chanterelle trail");
+    expect(body).toContain("Refined summary for the saved chanterelle route.");
+
+    const refinedArtifact = await context.savedArtifactRepository.getArtifact(artifacts[0].artifactId);
+    expect(refinedArtifact).toEqual(
+      expect.objectContaining({
+        title: "Refined chanterelle trail",
+        summary: "Refined summary for the saved chanterelle route.",
+      }),
+    );
   });
 
   it("renders a validation alert when the intent form is empty", async () => {

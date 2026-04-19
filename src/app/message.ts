@@ -43,6 +43,13 @@ export type LoadSavedArtifactMessage = {
   artifactId: string;
 };
 
+export type RefineSavedArtifactMessage = {
+  type: "RefineSavedArtifact";
+  artifactId: string;
+  title: string;
+  summary: string;
+};
+
 export type AppMessage =
   | RenderHomeScreenMessage
   | RunHealthCheckMessage
@@ -51,4 +58,5 @@ export type AppMessage =
   | ClarifyUserIntentMessage
   | RequestExplanationMessage
   | SaveArtifactMessage
-  | LoadSavedArtifactMessage;
+  | LoadSavedArtifactMessage
+  | RefineSavedArtifactMessage;

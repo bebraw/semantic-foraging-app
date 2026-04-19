@@ -32,9 +32,11 @@ The semantic-foraging workbench can turn promising leads into lightweight saved 
   - `patch` candidates save as `patch-inspection`
 - The workbench must expose a server-rendered save action that posts the current candidate payload and completed intent state to `POST /actions/artifact/save`.
 - The workbench must expose a server-rendered reuse action that posts an `artifactId` to `POST /actions/artifact/use`.
+- The workbench must expose a server-rendered refine action that posts an `artifactId`, title, and summary to `POST /actions/artifact/refine`.
 - Reusing a saved artifact must load it through the saved-artifact repository boundary instead of trusting a browser-roundtripped artifact payload.
 - Reusing a saved artifact must seed the existing intent and explanation forms so the workbench can refine a saved trail, note, or patch inspection without introducing a separate artifact editor yet.
 - Reusing a saved artifact may synthesize a typed completed intent state with explicit artifact-reuse provenance so the workbench can continue retrieval from the artifact's stored source intent and cues.
+- Refining a saved artifact must update the existing stored artifact through the repository boundary instead of creating a duplicate artifact record.
 - Saved artifacts must remain serializable so they can move through the storage boundary without view-specific data massaging.
 - The home screen must render a bounded saved-artifacts section alongside transient candidate cards and recent sessions.
 - The saved-artifacts section may expose stored evidence notes and cue summaries directly so multiple artifacts can be compared without loading each one back into the workbench first.

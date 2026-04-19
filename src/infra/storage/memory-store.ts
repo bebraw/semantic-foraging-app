@@ -46,6 +46,16 @@ export class InMemorySavedArtifactRepository implements SavedArtifactRepository 
     }
   }
 
+  async updateArtifact(artifact: StoredForagingArtifact): Promise<void> {
+    const index = this.artifacts.findIndex((item) => item.artifactId === artifact.artifactId);
+
+    if (index < 0) {
+      throw new Error(`Artifact ${artifact.artifactId} was not found.`);
+    }
+
+    this.artifacts[index] = artifact;
+  }
+
   async getArtifact(artifactId: string): Promise<StoredForagingArtifact | null> {
     return this.artifacts.find((artifact) => artifact.artifactId === artifactId) ?? null;
   }

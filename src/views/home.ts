@@ -112,9 +112,32 @@ export function renderHomePage(screen: HomeScreenModel): string {
                 </dl>`
               : ""
           }
-          <form class="flex flex-wrap items-center gap-3" method="post" action="${escapeHtml(screen.artifactWorkbench.useActionPath)}">
+          <form class="grid gap-3 rounded-xl border border-app-line/80 bg-app-surface px-4 py-4" method="post" action="${escapeHtml(
+            screen.artifactWorkbench.refineActionPath,
+          )}">
             <input type="hidden" name="artifactId" value="${escapeHtml(artifact.artifactId)}">
-            <button class="inline-flex w-fit items-center rounded-lg bg-app-ink px-4 py-2 text-xs font-semibold uppercase tracking-[0.16em] text-app-ink-text" type="submit">Use in workbench</button>
+            <label class="grid gap-2">
+              <span class="text-[11px] font-semibold uppercase tracking-[0.16em] text-app-text-soft">Title</span>
+              <input
+                class="rounded-xl border border-app-line bg-white px-4 py-3 text-sm text-app-text"
+                type="text"
+                name="title"
+                value="${escapeHtml(artifact.title)}"
+              >
+            </label>
+            <label class="grid gap-2">
+              <span class="text-[11px] font-semibold uppercase tracking-[0.16em] text-app-text-soft">Summary</span>
+              <textarea
+                class="min-h-24 rounded-xl border border-app-line bg-white px-4 py-3 text-sm leading-7 text-app-text"
+                name="summary"
+              >${escapeHtml(artifact.summary)}</textarea>
+            </label>
+            <div class="flex flex-wrap items-center gap-3">
+              <button class="inline-flex w-fit items-center rounded-lg bg-app-ink px-4 py-2 text-xs font-semibold uppercase tracking-[0.16em] text-app-ink-text" type="submit">Update artifact</button>
+              <button class="inline-flex w-fit items-center rounded-lg border border-app-line bg-white px-4 py-2 text-xs font-semibold uppercase tracking-[0.16em] text-app-text" type="submit" formaction="${escapeHtml(
+                screen.artifactWorkbench.useActionPath,
+              )}" formmethod="post">Use in workbench</button>
+            </div>
           </form>
         </li>`,
     )
