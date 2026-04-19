@@ -43,7 +43,7 @@ The home page is a server-rendered semantic foraging workbench that lets contrib
 - Completed intent submissions must feed the same recent-session view shown on the workbench without requiring client-side state management.
 - The first map slice must remain useful as rendered HTML without requiring a browser-side map runtime.
 - The physical-map slice may enhance the browser surface with provider-backed basemap tiles and public geodata overlays, with OpenStreetMap available as the default no-key basemap while server-rendered fallback content remains available when browser enhancement cannot run.
-- The map panel may expose an explicit current-location control that asks the browser for permission and re-orients the interactive map without sending live coordinates back through the app bus.
+- The map panel may request current location by default when the browser map is available, and it may keep an explicit current-location control as a retry path without sending live coordinates back through the app bus.
 - The explanation workbench must split multiline facts input into grounded fact strings before dispatching the typed explanation query.
 
 ## Regression Guardrails

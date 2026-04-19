@@ -218,7 +218,7 @@ test("progressively enhances the map detail panel without changing the server-re
   await expect(detailEvidence).toContainText("Ranked for find-observations.");
 });
 
-test("asks for current location and re-orients the map in the browser only", async ({ page, context }) => {
+test("uses current location by default and re-orients the map in the browser only", async ({ page, context }) => {
   await context.grantPermissions(["geolocation"]);
   await context.setGeolocation({
     latitude: 60.1699,
@@ -233,8 +233,6 @@ test("asks for current location and re-orients the map in the browser only", asy
   const mapSection = page.locator("section").filter({ hasText: "Foraging map" }).first();
   const mapRoot = mapSection.locator("[data-map-root]");
   const locationStatus = mapSection.locator("[data-map-location-status]");
-
-  await mapSection.getByRole("button", { name: "Use current location" }).click();
 
   await expect(mapRoot).toHaveAttribute("data-map-location", "active");
   await expect(locationStatus).toContainText("Using current location to orient the map.");

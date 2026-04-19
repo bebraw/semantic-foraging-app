@@ -602,6 +602,55 @@ function renderMapEnhancementScript(): string {
         locateButton.setAttribute("aria-busy", nextState === "loading" ? "true" : "false");
       }
     };
+    const requestCurrentLocation = () => {
+      if (!state?.basemap?.available || !state?.basemap?.tileTemplateUrl) {
+        setLocationState("error", control.errorLabel);
+        return;
+      }
+
+      if (!navigator.geolocation) {
+        setLocationState("unsupported", control.unsupportedLabel);
+        return;
+      }
+
+      if (root.getAttribute("data-map-location") === "loading") {
+        return;
+      }
+
+      setLocationState("loading", control.loadingLabel);
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          currentLocation = {
+            point: {
+              longitude: position.coords.longitude,
+              latitude: position.coords.latitude,
+            },
+            accuracyMeters: position.coords.accuracy,
+          };
+          activeCenter = currentLocation.point;
+          activeZoom = clamp(
+            Math.max(activeZoom ?? Math.round(state.viewport.zoom ?? state.basemap.minZoom ?? 0), 12),
+            state.basemap.minZoom ?? 0,
+            state.basemap.maxZoom ?? 19,
+          );
+          setLocationState("active", formatLocationMessage(control, currentLocation.point));
+          renderBrowserMap(root.getAttribute("data-map-active-id"));
+        },
+        (error) => {
+          if (error.code === error.PERMISSION_DENIED) {
+            setLocationState("denied", control.deniedLabel);
+            return;
+          }
+
+          setLocationState("error", control.errorLabel);
+        },
+        {
+          enableHighAccuracy: true,
+          maximumAge: 300000,
+          timeout: 10000,
+        },
+      );
+    };
     const renderBrowserMap = (activeId) => {
       if (
         !leaflet ||
@@ -804,51 +853,7 @@ function renderMapEnhancementScript(): string {
     }
 
     if (locateButton) {
-      locateButton.addEventListener("click", () => {
-        if (!state?.basemap?.available || !state?.basemap?.tileTemplateUrl) {
-          setLocationState("error", control.errorLabel);
-          return;
-        }
-
-        if (!navigator.geolocation) {
-          setLocationState("unsupported", control.unsupportedLabel);
-          return;
-        }
-
-        setLocationState("loading", control.loadingLabel);
-        navigator.geolocation.getCurrentPosition(
-          (position) => {
-            currentLocation = {
-              point: {
-                longitude: position.coords.longitude,
-                latitude: position.coords.latitude,
-              },
-              accuracyMeters: position.coords.accuracy,
-            };
-            activeCenter = currentLocation.point;
-            activeZoom = clamp(
-              Math.max(activeZoom ?? Math.round(state.viewport.zoom ?? state.basemap.minZoom ?? 0), 12),
-              state.basemap.minZoom ?? 0,
-              state.basemap.maxZoom ?? 19,
-            );
-            setLocationState("active", formatLocationMessage(control, currentLocation.point));
-            renderBrowserMap(root.getAttribute("data-map-active-id"));
-          },
-          (error) => {
-            if (error.code === error.PERMISSION_DENIED) {
-              setLocationState("denied", control.deniedLabel);
-              return;
-            }
-
-            setLocationState("error", control.errorLabel);
-          },
-          {
-            enableHighAccuracy: true,
-            maximumAge: 300000,
-            timeout: 10000,
-          },
-        );
-      });
+      locateButton.addEventListener("click", requestCurrentLocation);
     }
 
     const initialId =
@@ -858,6 +863,7 @@ function renderMapEnhancementScript(): string {
 
     setLocationState("idle", control.idleLabel);
     activate(initialId);
+    requestCurrentLocation();
   }
 })();
 `.trim();

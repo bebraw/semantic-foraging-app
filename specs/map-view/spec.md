@@ -38,7 +38,7 @@ The home screen includes a typed map fragment that can project candidate leads a
 - Real observation overlays must come through an explicit provider boundary rather than being hard-coded in the view.
 - Geometry generation and fallback behavior must remain deterministic enough for request-driven tests to validate the fragment reliably.
 - When map features exist, the rendered fragment may include a focused-detail panel plus lightweight browser behavior that updates that panel from typed data attributes already present in the markup.
-- The browser enhancement may ask for geolocation permission only after an explicit user action and may use that result to re-center the interactive map locally.
+- The browser enhancement may request geolocation permission by default when an interactive basemap is available and may use that result to re-center the interactive map locally, while leaving the in-frame control available as a retry path.
 - The client map runtime may use Leaflet as a browser-only rendering layer as long as all basemap, feature, overlay, and location-control inputs still come from typed screen data.
 
 ## Regression Guardrails
