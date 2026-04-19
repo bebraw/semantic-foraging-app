@@ -1,3 +1,4 @@
+import type { StoredForagingArtifact } from "../../domain/contracts/artifact";
 import type { StoredIntentWorkflow } from "../../domain/contracts/workflow";
 import type { StoredForagingSession } from "../../domain/contracts/session";
 
@@ -10,4 +11,9 @@ export interface WorkflowRepository {
 export interface RecentSessionRepository {
   saveRecentSession(session: StoredForagingSession): Promise<void>;
   listRecentSessions(limit: number): Promise<StoredForagingSession[]>;
+}
+
+export interface SavedArtifactRepository {
+  saveArtifact(artifact: StoredForagingArtifact): Promise<void>;
+  listArtifacts(limit: number): Promise<StoredForagingArtifact[]>;
 }
