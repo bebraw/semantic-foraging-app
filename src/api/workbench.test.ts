@@ -302,6 +302,118 @@ describe("workbench actions", () => {
     expect(body).toContain("Candidate leads");
   });
 
+  it("loads a saved artifact revision into the workbench without mutating the stored artifact", async () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2026-04-19T12:00:00.000Z"));
+
+    const context = createAppContext(exampleRoutes);
+    const saveFormData = new FormData();
+    saveFormData.set(
+      "candidate",
+      JSON.stringify({
+        id: "trail-north-ridge-wet-spruce-loop",
+        kind: "trail",
+        title: "Saved chanterelle trail",
+        summary: "A saved trail connecting damp spruce pockets and recent chanterelle signals.",
+        statusLabel: "Trail fragment",
+        evidence: [
+          {
+            label: "Intent fit",
+            detail: "Ranked for explain-suggestion.",
+          },
+        ],
+        spatialContext: {
+          species: ["chanterelle"],
+          habitat: ["spruce", "wet"],
+          region: ["helsinki"],
+          season: ["autumn"],
+        },
+      }),
+    );
+    saveFormData.set("sourceIntent", "explain-suggestion");
+    saveFormData.set(
+      "intentSubmission",
+      JSON.stringify({
+        input: "Explain this trail",
+        classification: {
+          intent: "explain-suggestion",
+          confidence: 0.82,
+          needsClarification: false,
+          cues: {
+            species: ["chanterelle"],
+            habitat: ["spruce", "wet"],
+            region: ["helsinki"],
+            season: ["autumn"],
+          },
+          missing: [],
+        },
+        confidenceBand: "high",
+        provenance: {
+          source: "deterministic-fallback",
+          provider: null,
+          reason: "no-model-provider",
+        },
+        workflow: {
+          name: "intent-classification",
+          state: "completed",
+        },
+      }),
+    );
+
+    await handleArtifactSaveActionRequest(
+      new Request("http://example.com/actions/artifact/save", {
+        method: "POST",
+        body: saveFormData,
+      }),
+      context,
+    );
+
+    const artifacts = await context.savedArtifactRepository.listArtifacts(1);
+    const refineFormData = new FormData();
+    refineFormData.set("artifactId", artifacts[0].artifactId);
+    refineFormData.set("title", "Refined chanterelle trail");
+    refineFormData.set("summary", "Refined summary for the saved chanterelle route.");
+    refineFormData.set("notes", "Start near the wetter spruce edge and keep the old moss hollow in view.");
+
+    vi.setSystemTime(new Date("2026-04-19T13:15:00.000Z"));
+
+    await handleArtifactRefineActionRequest(
+      new Request("http://example.com/actions/artifact/refine", {
+        method: "POST",
+        body: refineFormData,
+      }),
+      context,
+    );
+
+    const useFormData = new FormData();
+    useFormData.set("artifactId", artifacts[0].artifactId);
+    useFormData.set("recordedAt", "2026-04-19T12:00:00.000Z");
+
+    const response = await handleArtifactUseActionRequest(
+      new Request("http://example.com/actions/artifact/use", {
+        method: "POST",
+        body: useFormData,
+      }),
+      context,
+    );
+
+    expect(response.status).toBe(200);
+    const body = await response.text();
+    expect(body).toContain("Artifact loaded");
+    expect(body).toContain("Loaded Saved chanterelle trail from revision history into the workbench forms.");
+    expect(body).toContain('value="Saved chanterelle trail"');
+    expect(body).toContain("Summary: A saved trail connecting damp spruce pockets and recent chanterelle signals.");
+
+    const storedArtifact = await context.savedArtifactRepository.getArtifact(artifacts[0].artifactId);
+    expect(storedArtifact).toEqual(
+      expect.objectContaining({
+        title: "Refined chanterelle trail",
+        summary: "Refined summary for the saved chanterelle route.",
+        notes: "Start near the wetter spruce edge and keep the old moss hollow in view.",
+      }),
+    );
+  });
+
   it("refines a saved artifact through the server-rendered workbench", async () => {
     vi.useFakeTimers();
     vi.setSystemTime(new Date("2026-04-19T12:00:00.000Z"));

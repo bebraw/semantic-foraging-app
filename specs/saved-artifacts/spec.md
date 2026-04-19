@@ -34,12 +34,13 @@ The semantic-foraging workbench can turn promising leads into lightweight saved 
   - `trail` candidates save as `trail`
   - `patch` candidates save as `patch-inspection`
 - The workbench must expose a server-rendered save action that posts the current candidate payload and completed intent state to `POST /actions/artifact/save`.
-- The workbench must expose a server-rendered reuse action that posts an `artifactId` to `POST /actions/artifact/use`.
+- The workbench must expose a server-rendered reuse action that posts an `artifactId` to `POST /actions/artifact/use`, with optional revision `recordedAt` support when reusing historical artifact state.
 - The workbench must expose a server-rendered refine action that posts an `artifactId`, title, summary, and optional notes to `POST /actions/artifact/refine`.
 - The workbench must expose a server-rendered restore action that posts an `artifactId` and revision `recordedAt` to `POST /actions/artifact/restore`.
 - Reusing a saved artifact must load it through the saved-artifact repository boundary instead of trusting a browser-roundtripped artifact payload.
 - Reusing a saved artifact must seed the existing intent and explanation forms so the workbench can refine a saved trail, note, or patch inspection without introducing a separate artifact editor yet.
 - Reusing a saved artifact may synthesize a typed completed intent state with explicit artifact-reuse provenance so the workbench can continue retrieval from the artifact's stored source intent and cues.
+- Reusing a saved artifact revision should seed the workbench from the selected historical title, summary, and notes without mutating the stored artifact first.
 - Refining a saved artifact must update the existing stored artifact through the repository boundary instead of creating a duplicate artifact record.
 - Refining a saved artifact should advance `updatedAt` so the workbench can show that the artifact has changed since it was first saved.
 - Saved artifacts should keep a lightweight revision log so bounded refinements remain inspectable instead of silently overwriting the previous title and summary.

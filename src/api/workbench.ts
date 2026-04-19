@@ -233,6 +233,7 @@ export async function handleArtifactSaveActionRequest(request: Request, context:
 export async function handleArtifactUseActionRequest(request: Request, context: AppContext): Promise<Response> {
   const formData = await request.formData();
   const artifactId = readRequiredField(formData, "artifactId");
+  const recordedAt = readOptionalField(formData, "recordedAt");
   const state = createInitialForagingWorkbenchState();
 
   if (!artifactId.ok) {
@@ -243,10 +244,16 @@ export async function handleArtifactUseActionRequest(request: Request, context: 
     );
   }
 
-  const result = await createAppBus(context).dispatch({
-    type: "LoadSavedArtifact",
-    artifactId: artifactId.value,
-  });
+  const result = recordedAt.value
+    ? await createAppBus(context).dispatch({
+        type: "LoadSavedArtifactRevision",
+        artifactId: artifactId.value,
+        recordedAt: recordedAt.value,
+      })
+    : await createAppBus(context).dispatch({
+        type: "LoadSavedArtifact",
+        artifactId: artifactId.value,
+      });
 
   if (result.kind === "error") {
     return await renderWorkbenchErrorResponse(context, state, result, "Artifact load failed");
@@ -260,7 +267,13 @@ export async function handleArtifactUseActionRequest(request: Request, context: 
     context,
     withWorkbenchAlert(
       withSavedArtifactSeed(state, result.payload),
-      createWorkbenchAlert("Artifact loaded", `Loaded ${result.payload.title} into the workbench forms.`, "info"),
+      createWorkbenchAlert(
+        "Artifact loaded",
+        recordedAt.value
+          ? `Loaded ${result.payload.title} from revision history into the workbench forms.`
+          : `Loaded ${result.payload.title} into the workbench forms.`,
+        "info",
+      ),
     ),
   );
 }

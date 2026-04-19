@@ -141,7 +141,12 @@ export function renderHomePage(screen: HomeScreenModel): string {
                             <form class="mt-3" method="post" action="${escapeHtml(screen.artifactWorkbench.restoreActionPath)}">
                               <input type="hidden" name="artifactId" value="${escapeHtml(artifact.artifactId)}">
                               <input type="hidden" name="recordedAt" value="${escapeHtml(revision.recordedAt)}">
-                              <button class="inline-flex w-fit items-center rounded-lg border border-app-line bg-white px-3 py-2 text-[11px] font-semibold uppercase tracking-[0.16em] text-app-text" type="submit">Restore revision</button>
+                              <div class="flex flex-wrap items-center gap-3">
+                                <button class="inline-flex w-fit items-center rounded-lg border border-app-line bg-white px-3 py-2 text-[11px] font-semibold uppercase tracking-[0.16em] text-app-text" type="submit">Restore revision</button>
+                                <button class="inline-flex w-fit items-center rounded-lg border border-app-line bg-white px-3 py-2 text-[11px] font-semibold uppercase tracking-[0.16em] text-app-text" type="submit" formaction="${escapeHtml(
+                                  screen.artifactWorkbench.useActionPath,
+                                )}" formmethod="post">Use revision in workbench</button>
+                              </div>
                             </form>
                           </li>`,
                       )

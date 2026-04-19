@@ -43,6 +43,12 @@ export type LoadSavedArtifactMessage = {
   artifactId: string;
 };
 
+export type LoadSavedArtifactRevisionMessage = {
+  type: "LoadSavedArtifactRevision";
+  artifactId: string;
+  recordedAt: string;
+};
+
 export type RefineSavedArtifactMessage = {
   type: "RefineSavedArtifact";
   artifactId: string;
@@ -66,5 +72,6 @@ export type AppMessage =
   | RequestExplanationMessage
   | SaveArtifactMessage
   | LoadSavedArtifactMessage
+  | LoadSavedArtifactRevisionMessage
   | RefineSavedArtifactMessage
   | RestoreSavedArtifactRevisionMessage;

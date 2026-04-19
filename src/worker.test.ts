@@ -477,6 +477,108 @@ describe("worker", () => {
     expect(body).toContain("restored / Recorded 2026-04-19 13:30");
   });
 
+  it("routes saved-artifact revision reuse through the worker action surface", async () => {
+    vi.setSystemTime(new Date("2026-04-19T12:00:00.000Z"));
+
+    const saveFormData = new FormData();
+    saveFormData.set(
+      "candidate",
+      JSON.stringify({
+        id: "trail-north-ridge-wet-spruce-loop",
+        kind: "trail",
+        title: "Saved chanterelle trail",
+        summary: "A saved trail connecting damp spruce pockets and recent chanterelle signals.",
+        statusLabel: "Trail fragment",
+        evidence: [
+          {
+            label: "Intent fit",
+            detail: "Ranked for explain-suggestion.",
+          },
+        ],
+        spatialContext: {
+          species: ["chanterelle"],
+          habitat: ["spruce", "wet"],
+          region: ["helsinki"],
+          season: ["autumn"],
+        },
+      }),
+    );
+    saveFormData.set("sourceIntent", "explain-suggestion");
+    saveFormData.set(
+      "intentSubmission",
+      JSON.stringify({
+        input: "Explain this chanterelle trail",
+        classification: {
+          intent: "explain-suggestion",
+          confidence: 0.92,
+          needsClarification: false,
+          cues: {
+            species: ["chanterelle"],
+            habitat: ["spruce", "wet"],
+            region: ["helsinki"],
+            season: ["autumn"],
+          },
+          missing: [],
+        },
+        confidenceBand: "high",
+        provenance: {
+          source: "deterministic-fallback",
+          provider: null,
+          reason: "no-model-provider",
+        },
+        workflow: {
+          name: "intent-classification",
+          state: "completed",
+        },
+      }),
+    );
+
+    const saveResponse = await handleRequest(
+      new Request("http://example.com/actions/artifact/save", {
+        method: "POST",
+        body: saveFormData,
+      }),
+    );
+    const saveBody = await saveResponse.text();
+    const artifactIdMatch = saveBody.match(/name="artifactId" value="([^"]+)"/);
+
+    if (!artifactIdMatch) {
+      throw new Error("Expected an artifact id in the rendered saved-artifact form");
+    }
+
+    const refineFormData = new FormData();
+    refineFormData.set("artifactId", artifactIdMatch[1]);
+    refineFormData.set("title", "Refined chanterelle trail");
+    refineFormData.set("summary", "Refined summary for the saved chanterelle route.");
+    refineFormData.set("notes", "Start near the wetter spruce edge and keep the old moss hollow in view.");
+
+    vi.setSystemTime(new Date("2026-04-19T13:15:00.000Z"));
+
+    await handleRequest(
+      new Request("http://example.com/actions/artifact/refine", {
+        method: "POST",
+        body: refineFormData,
+      }),
+    );
+
+    const useFormData = new FormData();
+    useFormData.set("artifactId", artifactIdMatch[1]);
+    useFormData.set("recordedAt", "2026-04-19T12:00:00.000Z");
+
+    const response = await handleRequest(
+      new Request("http://example.com/actions/artifact/use", {
+        method: "POST",
+        body: useFormData,
+      }),
+    );
+
+    expect(response.status).toBe(200);
+    const body = await response.text();
+    expect(body).toContain("Artifact loaded");
+    expect(body).toContain("Loaded Saved chanterelle trail from revision history into the workbench forms.");
+    expect(body).toContain("Summary: A saved trail connecting damp spruce pockets and recent chanterelle signals.");
+  });
+
   it("returns a not found page for unknown routes", async () => {
     const response = await handleRequest(new Request("http://example.com/missing"));
 

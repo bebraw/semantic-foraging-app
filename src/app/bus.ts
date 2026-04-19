@@ -4,6 +4,7 @@ import type { AppContext } from "./context";
 import type { AppMessage } from "./message";
 import { continueIntentWorkflow } from "./use-cases/continue-intent-workflow";
 import { handleUserIntent } from "./use-cases/handle-user-intent";
+import { loadSavedArtifactRevision } from "./use-cases/load-saved-artifact-revision";
 import { inspectModelRuntime } from "./use-cases/inspect-model-runtime";
 import { requestExplanation } from "./use-cases/request-explanation";
 import { refineSavedArtifact } from "./use-cases/refine-saved-artifact";
@@ -38,6 +39,8 @@ export function createAppBus(context: AppContext): AppBus {
             return await saveArtifact(context, message);
           case "LoadSavedArtifact":
             return await loadSavedArtifact(context, message);
+          case "LoadSavedArtifactRevision":
+            return await loadSavedArtifactRevision(context, message);
           case "RefineSavedArtifact":
             return await refineSavedArtifact(context, message);
           case "RestoreSavedArtifactRevision":
