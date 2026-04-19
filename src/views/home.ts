@@ -97,6 +97,10 @@ export function renderHomePage(screen: HomeScreenModel): string {
             <p class="mt-2 leading-7 text-app-text-soft">${escapeHtml(artifact.summary)}</p>
           </div>
           <p class="text-sm text-app-text-soft">Detected cues: ${escapeHtml(formatCueSummary(artifact.cues))}</p>
+          <form class="flex flex-wrap items-center gap-3" method="post" action="${escapeHtml(screen.artifactWorkbench.useActionPath)}">
+            <input type="hidden" name="artifactId" value="${escapeHtml(artifact.artifactId)}">
+            <button class="inline-flex w-fit items-center rounded-lg bg-app-ink px-4 py-2 text-xs font-semibold uppercase tracking-[0.16em] text-app-ink-text" type="submit">Use in workbench</button>
+          </form>
         </li>`,
     )
     .join("");

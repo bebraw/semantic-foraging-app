@@ -31,11 +31,15 @@ The semantic-foraging workbench can turn promising leads into lightweight saved 
   - `trail` candidates save as `trail`
   - `patch` candidates save as `patch-inspection`
 - The workbench must expose a server-rendered save action that posts the current candidate payload and completed intent state to `POST /actions/artifact/save`.
+- The workbench must expose a server-rendered reuse action that posts an `artifactId` to `POST /actions/artifact/use`.
+- Reusing a saved artifact must load it through the saved-artifact repository boundary instead of trusting a browser-roundtripped artifact payload.
+- Reusing a saved artifact may seed the existing intent and explanation forms so the workbench can refine a saved trail, note, or patch inspection without introducing a separate artifact editor yet.
 - Saved artifacts must remain serializable so they can move through the storage boundary without view-specific data massaging.
 - The home screen must render a bounded saved-artifacts section alongside transient candidate cards and recent sessions.
 
 ## Regression Guardrails
 
 - Saving an artifact must not remove deterministic retrieval behavior from the current workbench.
+- Missing saved artifacts must fail through a typed app error instead of degrading silently into empty workbench state.
 - Unsupported candidate kinds must fail through a typed app error instead of saving partial or ambiguous artifact state.
 - The initial artifact implementation must stay lightweight and process-local rather than choosing durable platform storage immediately.

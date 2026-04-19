@@ -142,4 +142,34 @@ describe("InMemorySavedArtifactRepository", () => {
       expect.objectContaining({ artifactId: "trail-1" }),
     ]);
   });
+
+  it("returns a saved artifact by id", async () => {
+    const repository = new InMemorySavedArtifactRepository();
+
+    await repository.saveArtifact({
+      artifactId: "trail-1",
+      sourceCardId: "trail-card-1",
+      kind: "trail",
+      title: "Saved trail",
+      summary: "Saved trail summary",
+      sourceIntent: "explain-suggestion",
+      cues: {
+        species: [],
+        habitat: [],
+        region: [],
+        season: [],
+      },
+      evidence: [],
+      spatialContext: {
+        species: [],
+        habitat: [],
+        region: [],
+        season: [],
+      },
+      savedAt: "2026-04-19T10:00:00.000Z",
+    });
+
+    await expect(repository.getArtifact("trail-1")).resolves.toEqual(expect.objectContaining({ artifactId: "trail-1" }));
+    await expect(repository.getArtifact("missing")).resolves.toBeNull();
+  });
 });

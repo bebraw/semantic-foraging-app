@@ -22,6 +22,7 @@ The app exposes a small repository boundary for workflow-state persistence so bo
 - The initial implementation uses process-local in-memory storage and is not durable across Worker restarts.
 - Recent-session snapshots must be listed newest first so the home screen can surface the freshest saved trail context.
 - Saved artifacts must remain serializable when written to the repository.
+- Saved artifacts must support direct lookup by `artifactId` so a server-rendered workbench action can reload them without shipping the full artifact payload back through the browser.
 
 ## Regression Guardrails
 

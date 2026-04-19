@@ -9,6 +9,7 @@ import {
   withExplanationSubmission,
   withIntentInput,
   withIntentSubmission,
+  withSavedArtifactSeed,
   withWorkbenchAlert,
 } from "../domain/agents/ui-agent";
 import { renderHomePage } from "../views/home";
@@ -226,6 +227,41 @@ export async function handleArtifactSaveActionRequest(request: Request, context:
   return await renderWorkbenchResponse(
     context,
     withWorkbenchAlert(state, createWorkbenchAlert("Artifact saved", `Saved ${result.payload.title} as ${result.payload.kind}.`, "info")),
+  );
+}
+
+export async function handleArtifactUseActionRequest(request: Request, context: AppContext): Promise<Response> {
+  const formData = await request.formData();
+  const artifactId = readRequiredField(formData, "artifactId");
+  const state = createInitialForagingWorkbenchState();
+
+  if (!artifactId.ok) {
+    return await renderWorkbenchResponse(
+      context,
+      withWorkbenchAlert(state, createWorkbenchAlert("Artifact load failed", "Provide an artifact id before reusing a saved artifact.")),
+      400,
+    );
+  }
+
+  const result = await createAppBus(context).dispatch({
+    type: "LoadSavedArtifact",
+    artifactId: artifactId.value,
+  });
+
+  if (result.kind === "error") {
+    return await renderWorkbenchErrorResponse(context, state, result, "Artifact load failed");
+  }
+
+  if (result.kind !== "saved-artifact") {
+    throw new Error("Expected a saved-artifact result");
+  }
+
+  return await renderWorkbenchResponse(
+    context,
+    withWorkbenchAlert(
+      withSavedArtifactSeed(state, result.payload),
+      createWorkbenchAlert("Artifact loaded", `Loaded ${result.payload.title} into the workbench forms.`, "info"),
+    ),
   );
 }
 

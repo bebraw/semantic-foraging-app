@@ -8,6 +8,7 @@ import {
   withExplanationSubmission,
   withIntentInput,
   withIntentSubmission,
+  withSavedArtifactSeed,
   withWorkbenchAlert,
 } from "./ui-agent";
 
@@ -63,6 +64,7 @@ describe("ui-agent", () => {
         }),
         artifactWorkbench: expect.objectContaining({
           saveActionPath: "/actions/artifact/save",
+          useActionPath: "/actions/artifact/use",
         }),
         meta: {
           traceId: "trace-ui-agent",
@@ -368,6 +370,41 @@ describe("ui-agent", () => {
     });
 
     expect(screen.savedArtifacts).toEqual([expect.objectContaining({ artifactId: "trail-1" })]);
+  });
+
+  it("seeds the workbench forms from a saved artifact", () => {
+    const state = withSavedArtifactSeed(createInitialForagingWorkbenchState(), {
+      artifactId: "trail-1",
+      sourceCardId: "trail-card-1",
+      kind: "trail",
+      title: "Saved trail",
+      summary: "Saved trail summary",
+      sourceIntent: "explain-suggestion",
+      cues: {
+        species: ["chanterelle"],
+        habitat: ["spruce"],
+        region: ["helsinki"],
+        season: ["autumn"],
+      },
+      evidence: [
+        {
+          label: "Intent fit",
+          detail: "Ranked for explain-suggestion.",
+        },
+      ],
+      spatialContext: {
+        species: ["chanterelle"],
+        habitat: ["spruce"],
+        region: ["helsinki"],
+        season: ["autumn"],
+      },
+      savedAt: "2026-04-19T12:00:00.000Z",
+    });
+
+    expect(state.intent.rawInput).toBe("Saved trail");
+    expect(state.explanation.title).toBe("Saved trail");
+    expect(state.explanation.factsText).toContain("Summary: Saved trail summary");
+    expect(state.explanation.factsText).toContain("Intent fit: Ranked for explain-suggestion.");
   });
 
   it("describes hosted and unavailable runtime tiers in the screen summary", () => {

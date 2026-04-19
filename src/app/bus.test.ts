@@ -400,6 +400,7 @@ describe("createAppBus", () => {
     const bus = createAppBus(
       createAppContext(exampleRoutes, null, createRequestTrace("unknown"), undefined, undefined, undefined, {
         saveArtifact: vi.fn(),
+        getArtifact: vi.fn(),
         listArtifacts: vi.fn().mockResolvedValue([
           {
             artifactId: "trail-1",
@@ -434,6 +435,65 @@ describe("createAppBus", () => {
       screen: expect.objectContaining({
         savedArtifacts: [expect.objectContaining({ artifactId: "trail-1" })],
       }),
+    });
+  });
+
+  it("loads one saved artifact through the app bus", async () => {
+    const bus = createAppBus(
+      createAppContext(exampleRoutes, null, createRequestTrace("unknown"), undefined, undefined, undefined, {
+        saveArtifact: vi.fn(),
+        getArtifact: vi.fn().mockResolvedValue({
+          artifactId: "trail-1",
+          sourceCardId: "trail-card-1",
+          kind: "trail",
+          title: "Saved trail",
+          summary: "Saved trail summary",
+          sourceIntent: "explain-suggestion",
+          cues: {
+            species: ["chanterelle"],
+            habitat: [],
+            region: [],
+            season: [],
+          },
+          evidence: [],
+          spatialContext: {
+            species: ["chanterelle"],
+            habitat: [],
+            region: [],
+            season: [],
+          },
+          savedAt: "2026-04-19T12:00:00.000Z",
+        }),
+        listArtifacts: vi.fn().mockResolvedValue([]),
+      }),
+    );
+
+    const result = await bus.dispatch({ type: "LoadSavedArtifact", artifactId: "trail-1" });
+
+    expect(result).toEqual({
+      kind: "saved-artifact",
+      payload: expect.objectContaining({ artifactId: "trail-1" }),
+    });
+  });
+
+  it("returns a typed error when a saved artifact is missing", async () => {
+    const bus = createAppBus(
+      createAppContext(exampleRoutes, null, createRequestTrace("unknown"), undefined, undefined, undefined, {
+        saveArtifact: vi.fn(),
+        getArtifact: vi.fn().mockResolvedValue(null),
+        listArtifacts: vi.fn().mockResolvedValue([]),
+      }),
+    );
+
+    const result = await bus.dispatch({ type: "LoadSavedArtifact", artifactId: "missing" });
+
+    expect(result).toEqual({
+      kind: "error",
+      error: {
+        category: "validation_error",
+        message: "Saved artifact was not found for the provided artifactId.",
+        status: 404,
+      },
     });
   });
 
@@ -535,6 +595,7 @@ describe("createAppBus", () => {
     const bus = createAppBus(
       createAppContext(exampleRoutes, null, createRequestTrace("unknown"), undefined, undefined, undefined, {
         saveArtifact: vi.fn().mockRejectedValue(new Error("storage unavailable")),
+        getArtifact: vi.fn(),
         listArtifacts: vi.fn().mockResolvedValue([]),
       }),
     );

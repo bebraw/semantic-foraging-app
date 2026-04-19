@@ -276,6 +276,27 @@ test("supports the manual explanation workbench flow", async ({ page }) => {
   await expect(latestExplanation.locator("p").filter({ hasText: /^Suggested forage trail selected$/ })).toBeVisible();
 });
 
+test("loads a saved artifact back into the workbench forms", async ({ page }) => {
+  await page.goto("/");
+
+  await page.getByLabel("What do you want to do?").fill("Create a new field note");
+  await page.getByRole("button", { name: "Classify request" }).click();
+  await page.getByRole("button", { name: "Save field note" }).click();
+
+  const savedArtifactsSection = page
+    .locator("section")
+    .filter({ has: page.getByRole("heading", { level: 2, name: "Saved artifacts" }) })
+    .first();
+
+  await expect(savedArtifactsSection.getByText("Field note scaffold")).toBeVisible();
+  await savedArtifactsSection.getByRole("button", { name: "Use in workbench" }).click();
+
+  await expect(page.getByText("Artifact loaded")).toBeVisible();
+  await expect(page.getByLabel("What do you want to do?")).toHaveValue("Field note scaffold");
+  await expect(page.getByLabel("Decision or result title")).toHaveValue("Field note scaffold");
+  await expect(page.getByLabel("Grounding facts")).toContainText("Summary: A starter note seeded from the current request");
+});
+
 test("classifies intent through the command endpoint without a model provider", async ({ request }) => {
   const response = await request.post("/api/intent", {
     data: {

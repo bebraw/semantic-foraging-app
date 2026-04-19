@@ -5,8 +5,10 @@ import type {
   ForagingIntentSubmissionState,
   WorkbenchAlert,
 } from "../contracts/app-state";
+import type { StoredForagingArtifact } from "../contracts/artifact";
 import { buildMapViewModel } from "./map-agent";
 import { buildForagingCandidateCards } from "./knowledge-agent";
+import { createArtifactWorkbenchSeed } from "./artifact-agent";
 import type { RuntimeModelCapability } from "../contracts/model-runtime";
 import type { HomeScreenModel } from "../contracts/screen";
 import type { MapBasemapModel, MapOverlayModel } from "../contracts/map";
@@ -99,6 +101,23 @@ export function withExplanationSubmission(state: ForagingWorkbenchState, submiss
   };
 }
 
+export function withSavedArtifactSeed(state: ForagingWorkbenchState, artifact: StoredForagingArtifact): ForagingWorkbenchState {
+  const seed = createArtifactWorkbenchSeed(artifact);
+
+  return {
+    ...state,
+    intent: {
+      ...state.intent,
+      rawInput: seed.rawInput,
+    },
+    explanation: {
+      ...state.explanation,
+      title: seed.title,
+      factsText: seed.factsText,
+    },
+  };
+}
+
 export function createHomeScreenModel(input: CreateHomeScreenInput): HomeScreenModel {
   const candidateCards = buildForagingCandidateCards(input.workbench.intent.latestSubmission, input.workbench.recentSessions);
   const mapView = buildMapViewModel(
@@ -160,6 +179,7 @@ export function createHomeScreenModel(input: CreateHomeScreenInput): HomeScreenM
     },
     artifactWorkbench: {
       saveActionPath: "/actions/artifact/save",
+      useActionPath: "/actions/artifact/use",
     },
     mapView,
     retrievalTitle: "Candidate leads",

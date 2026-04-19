@@ -9,6 +9,7 @@ import { requestExplanation } from "./use-cases/request-explanation";
 import { renderScreen } from "./use-cases/render-screen";
 import { runHealthCheck } from "./use-cases/run-health-check";
 import { saveArtifact } from "./use-cases/save-artifact";
+import { loadSavedArtifact } from "./use-cases/load-saved-artifact";
 
 export type AppBus = {
   dispatch(message: AppMessage): Promise<AppResult>;
@@ -33,6 +34,8 @@ export function createAppBus(context: AppContext): AppBus {
             return await requestExplanation(context, message);
           case "SaveArtifact":
             return await saveArtifact(context, message);
+          case "LoadSavedArtifact":
+            return await loadSavedArtifact(context, message);
         }
       });
     },

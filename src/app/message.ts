@@ -38,6 +38,11 @@ export type SaveArtifactMessage = {
   sourceIntent: Exclude<ForagingIntent, "clarify">;
 };
 
+export type LoadSavedArtifactMessage = {
+  type: "LoadSavedArtifact";
+  artifactId: string;
+};
+
 export type AppMessage =
   | RenderHomeScreenMessage
   | RunHealthCheckMessage
@@ -45,4 +50,5 @@ export type AppMessage =
   | SubmitUserIntentMessage
   | ClarifyUserIntentMessage
   | RequestExplanationMessage
-  | SaveArtifactMessage;
+  | SaveArtifactMessage
+  | LoadSavedArtifactMessage;

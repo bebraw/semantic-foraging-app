@@ -15,5 +15,6 @@ export interface RecentSessionRepository {
 
 export interface SavedArtifactRepository {
   saveArtifact(artifact: StoredForagingArtifact): Promise<void>;
+  getArtifact(artifactId: string): Promise<StoredForagingArtifact | null>;
   listArtifacts(limit: number): Promise<StoredForagingArtifact[]>;
 }

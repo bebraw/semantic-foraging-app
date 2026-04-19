@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { createStoredForagingArtifact } from "./artifact-agent";
+import { createArtifactWorkbenchSeed, createStoredForagingArtifact } from "./artifact-agent";
 
 describe("createStoredForagingArtifact", () => {
   it("maps field-note candidates into stored artifacts", () => {
@@ -105,5 +105,42 @@ describe("createStoredForagingArtifact", () => {
         "find-observations",
       ),
     ).toBeNull();
+  });
+
+  it("creates a workbench seed from a saved artifact", () => {
+    const seed = createArtifactWorkbenchSeed({
+      artifactId: "trail-1",
+      sourceCardId: "trail-card-1",
+      kind: "trail",
+      title: "Saved chanterelle trail",
+      summary: "A saved trail connecting damp spruce pockets and recent chanterelle signals.",
+      sourceIntent: "explain-suggestion",
+      cues: {
+        species: ["chanterelle"],
+        habitat: ["spruce", "wet"],
+        region: ["helsinki"],
+        season: ["autumn"],
+      },
+      evidence: [
+        {
+          label: "Intent fit",
+          detail: "Ranked for explain-suggestion.",
+        },
+      ],
+      spatialContext: {
+        species: ["chanterelle"],
+        habitat: ["spruce", "wet"],
+        region: ["helsinki"],
+        season: ["autumn"],
+      },
+      savedAt: "2026-04-19T12:00:00.000Z",
+    });
+
+    expect(seed).toEqual({
+      rawInput: "Saved chanterelle trail",
+      title: "Saved chanterelle trail",
+      factsText:
+        "Summary: A saved trail connecting damp spruce pockets and recent chanterelle signals.\nIntent fit: Ranked for explain-suggestion.\nDetected cues: species: chanterelle | habitat: spruce, wet | region: helsinki | season: autumn",
+    });
   });
 });

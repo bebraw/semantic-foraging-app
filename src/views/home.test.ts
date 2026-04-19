@@ -15,6 +15,7 @@ describe("renderHomePage", () => {
     expect(html).toContain("Detected cues");
     expect(html).toContain("Candidate leads");
     expect(html).toContain("Saved artifacts");
+    expect(html).toContain("Use in workbench");
     expect(html).toContain("Foraging map");
     expect(html).toContain("Mapped leads");
     expect(html).toContain("Focused lead");
@@ -307,6 +308,7 @@ function createHomeScreenModel(): HomeScreenModel {
     },
     artifactWorkbench: {
       saveActionPath: "/actions/artifact/save",
+      useActionPath: "/actions/artifact/use",
     },
     mapView: {
       title: "Foraging map",

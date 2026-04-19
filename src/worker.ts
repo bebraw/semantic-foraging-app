@@ -3,6 +3,7 @@ import { exampleRoutes } from "./app-routes";
 import { handleAppCommandRequest, handleIntentClarificationRequest, handleIntentCommandRequest } from "./api/app-command";
 import { handleAppQueryRequest, handleExplanationQueryRequest, handleHealthRequest, handleHomePageRequest } from "./api/app-query";
 import {
+  handleArtifactUseActionRequest,
   handleArtifactSaveActionRequest,
   handleExplanationActionRequest,
   handleIntentActionRequest,
@@ -107,6 +108,11 @@ export async function handleRequest(request: Request, env: Env = {}): Promise<Re
 
   if (url.pathname === "/actions/artifact/save" && request.method === "POST") {
     response = await handleArtifactSaveActionRequest(request, context);
+    return finalizeResponse(response, trace);
+  }
+
+  if (url.pathname === "/actions/artifact/use" && request.method === "POST") {
+    response = await handleArtifactUseActionRequest(request, context);
     return finalizeResponse(response, trace);
   }
 

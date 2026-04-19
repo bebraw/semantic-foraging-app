@@ -27,6 +27,24 @@ export function createStoredForagingArtifact(
   };
 }
 
+export function createArtifactWorkbenchSeed(artifact: StoredForagingArtifact): {
+  rawInput: string;
+  title: string;
+  factsText: string;
+} {
+  const factLines = [
+    `Summary: ${artifact.summary}`,
+    ...artifact.evidence.map((note) => `${note.label}: ${note.detail}`),
+    formatArtifactCueFacts(artifact),
+  ].filter(Boolean);
+
+  return {
+    rawInput: artifact.title,
+    title: artifact.title,
+    factsText: factLines.join("\n"),
+  };
+}
+
 function mapCandidateKind(cardKind: ForagingCandidateCard["kind"]): StoredForagingArtifact["kind"] | null {
   switch (cardKind) {
     case "field-note":
@@ -47,4 +65,23 @@ function createArtifactId(kind: StoredForagingArtifact["kind"]): string {
   }
 
   return `${kind}-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`;
+}
+
+function formatArtifactCueFacts(artifact: StoredForagingArtifact): string {
+  const segments = [
+    formatCueSegment("species", artifact.cues.species),
+    formatCueSegment("habitat", artifact.cues.habitat),
+    formatCueSegment("region", artifact.cues.region),
+    formatCueSegment("season", artifact.cues.season),
+  ].filter(Boolean);
+
+  return segments.length > 0 ? `Detected cues: ${segments.join(" | ")}` : "";
+}
+
+function formatCueSegment(label: string, values: string[]): string {
+  if (values.length === 0) {
+    return "";
+  }
+
+  return `${label}: ${values.join(", ")}`;
 }
