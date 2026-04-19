@@ -193,7 +193,9 @@ test("uses persisted recent sessions in the manual resume flow", async ({ page }
 
   await page.getByLabel("What do you want to do?").fill("Find chanterelles near wet spruce in Helsinki");
   await page.getByRole("button", { name: "Classify request" }).click();
-  await expect(page.getByText("Find chanterelles near wet spruce in Helsinki")).toBeVisible();
+  const recentSessionsSection = page.locator("section").filter({ hasText: "Recent sessions" }).first();
+
+  await expect(recentSessionsSection.getByRole("heading", { name: "Find chanterelles near wet spruce in Helsinki" })).toBeVisible();
 
   await page.getByLabel("What do you want to do?").fill("Resume my chanterelle session");
   await page.getByRole("button", { name: "Classify request" }).click();
@@ -202,8 +204,8 @@ test("uses persisted recent sessions in the manual resume flow", async ({ page }
 
   await expect(latestIntentResult).toBeVisible();
   await expect(latestIntentResult.locator("dd").filter({ hasText: /^resume-session$/ })).toBeVisible();
-  await expect(page.getByText("Recent session")).toBeVisible();
-  await expect(page.getByText("Find chanterelles near wet spruce in Helsinki")).toBeVisible();
+  await expect(recentSessionsSection.getByText("Recent session").first()).toBeVisible();
+  await expect(recentSessionsSection.getByRole("heading", { name: "Find chanterelles near wet spruce in Helsinki" })).toBeVisible();
 });
 
 test("supports the manual explanation workbench flow", async ({ page }) => {
