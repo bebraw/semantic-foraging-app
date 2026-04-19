@@ -18,11 +18,21 @@ export async function refineSavedArtifact(
     return createAppErrorResult("validation_error", "Saved artifact was not found for the provided artifactId.", 404);
   }
 
+  const now = new Date().toISOString();
   const refinedArtifact = {
     ...existingArtifact,
     title: message.title,
     summary: message.summary,
-    updatedAt: new Date().toISOString(),
+    updatedAt: now,
+    revisions: [
+      ...existingArtifact.revisions,
+      {
+        kind: "refined" as const,
+        title: message.title,
+        summary: message.summary,
+        recordedAt: now,
+      },
+    ],
   };
 
   try {

@@ -21,6 +21,8 @@ describe("renderHomePage", () => {
     expect(html).toContain('name="summary"');
     expect(html).toContain("Intent fit");
     expect(html).toContain("Ranked for explain-suggestion.");
+    expect(html).toContain("Revision history");
+    expect(html).toContain("refined / Recorded 2026-04-19 12:45");
     expect(html).toContain("Foraging map");
     expect(html).toContain("Mapped leads");
     expect(html).toContain("Focused lead");
@@ -463,6 +465,20 @@ function createHomeScreenModel(): HomeScreenModel {
         },
         savedAt: "2026-04-19T12:30:00.000Z",
         updatedAt: "2026-04-19T12:45:00.000Z",
+        revisions: [
+          {
+            kind: "saved",
+            title: "Saved chanterelle trail",
+            summary: "A saved trail connecting damp spruce pockets and recent chanterelle signals.",
+            recordedAt: "2026-04-19T12:30:00.000Z",
+          },
+          {
+            kind: "refined",
+            title: "Saved chanterelle trail",
+            summary: "A saved trail connecting damp spruce pockets and recent chanterelle signals.",
+            recordedAt: "2026-04-19T12:45:00.000Z",
+          },
+        ],
       },
     ],
     recentSessionsTitle: "Recent sessions",

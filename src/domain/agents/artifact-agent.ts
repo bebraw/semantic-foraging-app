@@ -28,6 +28,14 @@ export function createStoredForagingArtifact(
     spatialContext: card.spatialContext,
     savedAt,
     updatedAt: savedAt,
+    revisions: [
+      {
+        kind: "saved",
+        title: card.title,
+        summary: card.summary,
+        recordedAt: savedAt,
+      },
+    ],
   };
 }
 

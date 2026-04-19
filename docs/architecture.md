@@ -37,7 +37,7 @@ What is still intentionally unfinished:
 
 - workflow state is still limited to the clarification flow rather than broader multi-step foraging work
 - observability is still request-scoped and lightweight
-- saved artifacts can now surface stored evidence inline, support bounded title/summary refinement with update timestamps, and seed workbench continuation, but they still do not have a richer artifact-specific editor or version history
+- saved artifacts can now surface stored evidence inline, support bounded title/summary refinement with update timestamps, keep a lightweight revision history, and seed workbench continuation, but they still do not have a richer artifact-specific editor
 - the local-model path still assumes an OpenAI-compatible endpoint instead of runtime-specific local adapters
 
 ---
@@ -837,7 +837,7 @@ The broad foundations are already in place. The next slices that still matter ar
 ### 2. Durable foraging artifacts
 
 - persist saved foraging trails, field notes, and patch inspections through the storage boundary
-- deepen artifact workflows beyond save, inline refinement with update tracking, reuse, and seeded continuation so the user can compare and continue a trail with richer artifact-specific editing than title/summary adjustments alone
+- deepen artifact workflows beyond save, inline refinement with update tracking and revision history, reuse, and seeded continuation so the user can continue a trail with richer artifact-specific editing than title/summary adjustments alone
 
 ### 3. Hardening and richer workflows
 

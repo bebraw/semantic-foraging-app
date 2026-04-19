@@ -54,6 +54,14 @@ describe("createStoredForagingArtifact", () => {
       },
       savedAt: "2026-04-19T12:00:00.000Z",
       updatedAt: "2026-04-19T12:00:00.000Z",
+      revisions: [
+        {
+          kind: "saved",
+          title: "Field note scaffold",
+          summary: "A starter note seeded from the current request.",
+          recordedAt: "2026-04-19T12:00:00.000Z",
+        },
+      ],
     });
   });
 
@@ -136,6 +144,14 @@ describe("createStoredForagingArtifact", () => {
       },
       savedAt: "2026-04-19T12:00:00.000Z",
       updatedAt: "2026-04-19T12:00:00.000Z",
+      revisions: [
+        {
+          kind: "saved",
+          title: "Saved chanterelle trail",
+          summary: "A saved trail connecting damp spruce pockets and recent chanterelle signals.",
+          recordedAt: "2026-04-19T12:00:00.000Z",
+        },
+      ],
     });
 
     expect(seed).toEqual({

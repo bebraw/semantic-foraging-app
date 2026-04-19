@@ -3,6 +3,13 @@ import type { EvidenceNote, SpatialContext } from "./foraging-knowledge";
 
 export type SavedArtifactKind = "field-note" | "trail" | "patch-inspection";
 
+export type ArtifactRevision = {
+  kind: "saved" | "refined";
+  title: string;
+  summary: string;
+  recordedAt: string;
+};
+
 export type StoredForagingArtifact = {
   artifactId: string;
   sourceCardId: string;
@@ -15,4 +22,5 @@ export type StoredForagingArtifact = {
   spatialContext: SpatialContext;
   savedAt: string;
   updatedAt?: string;
+  revisions: ArtifactRevision[];
 };

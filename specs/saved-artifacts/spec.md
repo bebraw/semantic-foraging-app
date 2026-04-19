@@ -22,6 +22,7 @@ The semantic-foraging workbench can turn promising leads into lightweight saved 
   - `spatialContext`
   - `savedAt`
   - `updatedAt`
+  - `revisions`
 
 ## Runtime Behavior
 
@@ -39,9 +40,11 @@ The semantic-foraging workbench can turn promising leads into lightweight saved 
 - Reusing a saved artifact may synthesize a typed completed intent state with explicit artifact-reuse provenance so the workbench can continue retrieval from the artifact's stored source intent and cues.
 - Refining a saved artifact must update the existing stored artifact through the repository boundary instead of creating a duplicate artifact record.
 - Refining a saved artifact should advance `updatedAt` so the workbench can show that the artifact has changed since it was first saved.
+- Saved artifacts should keep a lightweight revision log so bounded refinements remain inspectable instead of silently overwriting the previous title and summary.
 - Saved artifacts must remain serializable so they can move through the storage boundary without view-specific data massaging.
 - The home screen must render a bounded saved-artifacts section alongside transient candidate cards and recent sessions.
 - The saved-artifacts section may expose stored evidence notes and cue summaries directly so multiple artifacts can be compared without loading each one back into the workbench first.
+- The saved-artifacts section may expose recent revision entries inline so a user can compare the current artifact with its latest saved/refined states.
 
 ## Regression Guardrails
 

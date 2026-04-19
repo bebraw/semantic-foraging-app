@@ -395,9 +395,23 @@ describe("workbench actions", () => {
         title: "Refined chanterelle trail",
         summary: "Refined summary for the saved chanterelle route.",
         updatedAt: "2026-04-19T13:15:00.000Z",
+        revisions: [
+          expect.objectContaining({
+            kind: "saved",
+            title: "Saved chanterelle trail",
+          }),
+          expect.objectContaining({
+            kind: "refined",
+            title: "Refined chanterelle trail",
+            summary: "Refined summary for the saved chanterelle route.",
+            recordedAt: "2026-04-19T13:15:00.000Z",
+          }),
+        ],
       }),
     );
     expect(body).toContain("Updated 2026-04-19 13:15");
+    expect(body).toContain("Revision history");
+    expect(body).toContain("refined / Recorded 2026-04-19 13:15");
   });
 
   it("renders a validation alert when the intent form is empty", async () => {

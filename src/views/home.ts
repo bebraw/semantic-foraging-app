@@ -113,6 +113,29 @@ export function renderHomePage(screen: HomeScreenModel): string {
                 </dl>`
               : ""
           }
+          ${
+            artifact.revisions.length > 1
+              ? `<div class="grid gap-3 border-t border-app-line/80 pt-3">
+                  <p class="text-[11px] font-semibold uppercase tracking-[0.18em] text-app-text-soft">Revision history</p>
+                  <ul class="grid gap-3">
+                    ${artifact.revisions
+                      .slice(-3)
+                      .reverse()
+                      .map(
+                        (revision) =>
+                          `<li class="border-l-2 border-app-line pl-4">
+                            <p class="text-[11px] font-semibold uppercase tracking-[0.16em] text-app-text-soft">${escapeHtml(
+                              revision.kind,
+                            )} / ${escapeHtml(formatRecordedAtLabel(revision.recordedAt))}</p>
+                            <p class="mt-1 font-medium">${escapeHtml(revision.title)}</p>
+                            <p class="mt-1 text-sm leading-6 text-app-text-soft">${escapeHtml(revision.summary)}</p>
+                          </li>`,
+                      )
+                      .join("")}
+                  </ul>
+                </div>`
+              : ""
+          }
           <form class="grid gap-3 rounded-xl border border-app-line/80 bg-app-surface px-4 py-4" method="post" action="${escapeHtml(
             screen.artifactWorkbench.refineActionPath,
           )}">
@@ -442,6 +465,16 @@ function formatUpdatedAtLabel(updatedAt: string): string {
   }
 
   return `Updated ${date.toISOString().slice(0, 16).replace("T", " ")}`;
+}
+
+function formatRecordedAtLabel(recordedAt: string): string {
+  const date = new Date(recordedAt);
+
+  if (Number.isNaN(date.getTime())) {
+    return recordedAt;
+  }
+
+  return `Recorded ${date.toISOString().slice(0, 16).replace("T", " ")}`;
 }
 
 function renderMapFeature(

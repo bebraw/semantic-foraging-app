@@ -113,6 +113,15 @@ describe("InMemorySavedArtifactRepository", () => {
         season: [],
       },
       savedAt: "2026-04-19T10:00:00.000Z",
+      updatedAt: "2026-04-19T10:00:00.000Z",
+      revisions: [
+        {
+          kind: "saved",
+          title: "First trail",
+          summary: "First summary",
+          recordedAt: "2026-04-19T10:00:00.000Z",
+        },
+      ],
     });
     await repository.saveArtifact({
       artifactId: "trail-2",
@@ -135,6 +144,15 @@ describe("InMemorySavedArtifactRepository", () => {
         season: [],
       },
       savedAt: "2026-04-19T11:00:00.000Z",
+      updatedAt: "2026-04-19T11:00:00.000Z",
+      revisions: [
+        {
+          kind: "saved",
+          title: "Second trail",
+          summary: "Second summary",
+          recordedAt: "2026-04-19T11:00:00.000Z",
+        },
+      ],
     });
 
     await expect(repository.listArtifacts(5)).resolves.toEqual([
@@ -167,6 +185,15 @@ describe("InMemorySavedArtifactRepository", () => {
         season: [],
       },
       savedAt: "2026-04-19T10:00:00.000Z",
+      updatedAt: "2026-04-19T10:00:00.000Z",
+      revisions: [
+        {
+          kind: "saved",
+          title: "Saved trail",
+          summary: "Saved trail summary",
+          recordedAt: "2026-04-19T10:00:00.000Z",
+        },
+      ],
     });
 
     await expect(repository.getArtifact("trail-1")).resolves.toEqual(expect.objectContaining({ artifactId: "trail-1" }));
@@ -197,6 +224,15 @@ describe("InMemorySavedArtifactRepository", () => {
         season: [],
       },
       savedAt: "2026-04-19T10:00:00.000Z",
+      updatedAt: "2026-04-19T10:00:00.000Z",
+      revisions: [
+        {
+          kind: "saved",
+          title: "Saved trail",
+          summary: "Saved trail summary",
+          recordedAt: "2026-04-19T10:00:00.000Z",
+        },
+      ],
     });
 
     await repository.updateArtifact({
@@ -220,6 +256,15 @@ describe("InMemorySavedArtifactRepository", () => {
         season: [],
       },
       savedAt: "2026-04-19T10:00:00.000Z",
+      updatedAt: "2026-04-19T10:00:00.000Z",
+      revisions: [
+        {
+          kind: "refined",
+          title: "Refined trail",
+          summary: "Refined trail summary",
+          recordedAt: "2026-04-19T10:00:00.000Z",
+        },
+      ],
     });
 
     await expect(repository.getArtifact("trail-1")).resolves.toEqual(
@@ -255,6 +300,15 @@ describe("InMemorySavedArtifactRepository", () => {
           season: [],
         },
         savedAt: "2026-04-19T10:00:00.000Z",
+        updatedAt: "2026-04-19T10:00:00.000Z",
+        revisions: [
+          {
+            kind: "refined",
+            title: "Refined trail",
+            summary: "Refined trail summary",
+            recordedAt: "2026-04-19T10:00:00.000Z",
+          },
+        ],
       }),
     ).rejects.toThrow("Artifact missing was not found.");
   });

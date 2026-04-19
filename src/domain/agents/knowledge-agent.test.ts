@@ -138,6 +138,15 @@ describe("buildForagingCandidateCards", () => {
             season: ["autumn"],
           },
           savedAt: "2026-04-19T12:00:00.000Z",
+          updatedAt: "2026-04-19T12:00:00.000Z",
+          revisions: [
+            {
+              kind: "saved",
+              title: "Saved chanterelle trail",
+              summary: "A saved trail through wet spruce cover near Helsinki.",
+              recordedAt: "2026-04-19T12:00:00.000Z",
+            },
+          ],
         },
       ],
     );
