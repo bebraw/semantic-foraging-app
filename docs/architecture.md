@@ -36,6 +36,7 @@ The repo now implements the first application-layer slice from this document:
 - completed intent flows now persist lightweight recent-session snapshots through the storage boundary, and the workbench renders those snapshots as recent sessions.
 - the `resume-session` retrieval path now prefers persisted recent sessions over the static catalog when recent-session state exists.
 - the home screen now includes a typed server-rendered map fragment built from deterministic candidate and recent-session geometry rather than a client-owned map state loop.
+- the map fragment now supports lightweight progressive enhancement that changes focused map details from server-rendered typed feature data without moving retrieval or ranking into the browser.
 - `src/domain/agents/intent-workflow.ts` now defines the first serializable workflow-state contract and deterministic transition helper.
 - `src/domain/agents/ui-agent.ts` now owns the home/workbench screen model instead of leaving screen assembly inside the use case.
 - `src/infra/observability/trace.ts` now creates per-request traces and wraps model-provider calls with traced operations.
@@ -47,6 +48,7 @@ The repo now implements the first application-layer slice from this document:
 - `src/views/home.ts` now renders from a typed `HomeScreenModel` instead of route-local primitives.
 - the home screen now exposes the active runtime capability tier and provider summary from the same typed screen model returned by the app query surface.
 - the home page now behaves as a server-rendered semantic foraging workbench with manual intent, clarification, and explanation flows.
+- the view layer now allows minimal browser-side enhancement for typed fragments such as the map panel while keeping the server-rendered screen model as the source of truth.
 - `src/infra/llm/` now provides a typed model-provider boundary with deterministic fallback behavior plus a local OpenAI-compatible development path for Ollama- or LM Studio-style runtimes.
 
 The repo does not yet implement the full architecture described below. In particular:

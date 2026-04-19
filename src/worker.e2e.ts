@@ -165,11 +165,15 @@ test("supports the manual intent workbench flow", async ({ page }) => {
   await page.getByRole("button", { name: "Classify request" }).click();
 
   const latestIntentResult = page.locator("section").filter({ hasText: "Latest intent result" }).first();
+  const candidateLeadsSection = page
+    .locator("section")
+    .filter({ has: page.getByRole("heading", { level: 2, name: "Candidate leads" }) })
+    .first();
 
   await expect(latestIntentResult).toBeVisible();
   await expect(latestIntentResult.locator("dd").filter({ hasText: /^create-field-note$/ })).toBeVisible();
   await expect(latestIntentResult.getByText("species, region")).toBeVisible();
-  await expect(page.getByText("Field note scaffold")).toBeVisible();
+  await expect(candidateLeadsSection.getByRole("heading", { level: 3, name: "Field note scaffold" })).toBeVisible();
 });
 
 test("supports the manual clarification workbench flow", async ({ page }) => {
@@ -183,10 +187,33 @@ test("supports the manual clarification workbench flow", async ({ page }) => {
   await page.getByRole("button", { name: "Continue workflow" }).click();
 
   const latestIntentResult = page.locator("section").filter({ hasText: "Latest intent result" }).first();
+  const mapSection = page
+    .locator("section")
+    .filter({ has: page.getByRole("heading", { level: 2, name: "Foraging map" }) })
+    .first();
 
   await expect(latestIntentResult).toBeVisible();
   await expect(latestIntentResult.locator("dd").filter({ hasText: /^find-observations$/ })).toBeVisible();
-  await expect(page.getByText("Autumn chanterelle cluster")).toBeVisible();
+  await expect(mapSection.locator("[data-map-detail-label]")).toHaveText("Autumn chanterelle cluster");
+});
+
+test("progressively enhances the map detail panel without changing the server-rendered source of truth", async ({ page }) => {
+  await page.goto("/");
+
+  await page.getByLabel("What do you want to do?").fill("Find chanterelles near wet spruce in Helsinki");
+  await page.getByRole("button", { name: "Classify request" }).click();
+
+  const mapSection = page.locator("section").filter({ hasText: "Foraging map" }).first();
+  const detailLabel = mapSection.locator("[data-map-detail-label]");
+  const detailEvidence = mapSection.locator("[data-map-detail-evidence]");
+
+  await expect(detailLabel).toHaveText("Autumn chanterelle cluster");
+  await expect(detailEvidence).toContainText("Ranked for find-observations.");
+
+  await mapSection.locator('[data-map-item="candidate-patch-mossy-spruce-hollow"]').click();
+
+  await expect(detailLabel).toHaveText("Mossy spruce hollow");
+  await expect(detailEvidence).toContainText("Ranked for find-observations.");
 });
 
 test("uses persisted recent sessions in the manual resume flow", async ({ page }) => {
@@ -194,9 +221,12 @@ test("uses persisted recent sessions in the manual resume flow", async ({ page }
 
   await page.getByLabel("What do you want to do?").fill("Find chanterelles near wet spruce in Helsinki");
   await page.getByRole("button", { name: "Classify request" }).click();
-  const recentSessionsSection = page.locator("section").filter({ hasText: "Recent sessions" }).first();
+  const recentSessionsSection = page
+    .locator("section")
+    .filter({ has: page.getByRole("heading", { level: 2, name: "Recent sessions" }) })
+    .first();
 
-  await expect(recentSessionsSection.getByRole("heading", { name: "Find chanterelles near wet spruce in Helsinki" })).toBeVisible();
+  await expect(recentSessionsSection.getByText("Find chanterelles near wet spruce in Helsinki").first()).toBeVisible();
 
   await page.getByLabel("What do you want to do?").fill("Resume my chanterelle session");
   await page.getByRole("button", { name: "Classify request" }).click();
@@ -206,7 +236,7 @@ test("uses persisted recent sessions in the manual resume flow", async ({ page }
   await expect(latestIntentResult).toBeVisible();
   await expect(latestIntentResult.locator("dd").filter({ hasText: /^resume-session$/ })).toBeVisible();
   await expect(recentSessionsSection.getByText("Recent session").first()).toBeVisible();
-  await expect(recentSessionsSection.getByRole("heading", { name: "Find chanterelles near wet spruce in Helsinki" })).toBeVisible();
+  await expect(recentSessionsSection.getByText("Find chanterelles near wet spruce in Helsinki").first()).toBeVisible();
 });
 
 test("supports the manual explanation workbench flow", async ({ page }) => {

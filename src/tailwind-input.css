@@ -42,3 +42,41 @@
     border-color: var(--color-gray-200, currentcolor);
   }
 }
+
+@layer components {
+  [data-map-root][data-map-enhanced="true"] [data-map-feature],
+  [data-map-root][data-map-enhanced="true"] [data-map-item] {
+    transition:
+      opacity 160ms ease,
+      transform 160ms ease,
+      border-color 160ms ease,
+      background-color 160ms ease;
+  }
+
+  [data-map-root][data-map-enhanced="true"] [data-map-feature][data-map-active="false"] {
+    opacity: 0.45;
+  }
+
+  [data-map-root][data-map-enhanced="true"] [data-map-feature][data-map-active="true"] {
+    opacity: 1;
+  }
+
+  [data-map-root][data-map-enhanced="true"] [data-map-feature][data-map-active="true"] [data-map-marker-core],
+  [data-map-root][data-map-enhanced="true"] [data-map-feature][data-map-active="true"] [data-map-marker-ring],
+  [data-map-root][data-map-enhanced="true"] [data-map-feature][data-map-active="true"] [data-map-marker-path] {
+    transform-box: fill-box;
+    transform-origin: center;
+    transform: scale(1.08);
+  }
+
+  [data-map-root][data-map-enhanced="true"] [data-map-item][data-map-active="false"] {
+    opacity: 0.72;
+  }
+
+  [data-map-root][data-map-enhanced="true"] [data-map-item][data-map-active="true"] {
+    opacity: 1;
+    border-color: rgb(11 110 79 / 0.34);
+    background: rgb(11 110 79 / 0.1);
+    transform: translateY(-1px);
+  }
+}

@@ -28,16 +28,32 @@ export function renderHomePage(screen: HomeScreenModel): string {
   const latestIntent = screen.intentWorkbench.latestSubmission;
   const latestExplanation = screen.explanationWorkbench.latestSubmission;
   const clarificationWorkflow = latestIntent?.workflow.state === "awaiting_clarification" ? latestIntent.workflow : null;
+  const initialMapFeature = screen.mapView.features[0] ?? null;
   const mapMarkup = screen.mapView.features
-    .map((feature) => renderMapFeature(feature, screen.mapView.viewport.width, screen.mapView.viewport.height))
+    .map((feature) =>
+      renderMapFeature(feature, screen.mapView.viewport.width, screen.mapView.viewport.height, feature.id === initialMapFeature?.id),
+    )
     .join("");
   const mapLegendMarkup = screen.mapView.features
     .map(
       (feature) =>
-        `<li class="rounded-2xl border border-app-line/70 bg-app-canvas/45 px-4 py-3">
-          <p class="text-xs font-semibold uppercase tracking-[0.18em] text-app-text-soft">${escapeHtml(feature.kind)} / ${escapeHtml(feature.sourceSection)}</p>
-          <p class="mt-2 font-medium">${escapeHtml(feature.label)}</p>
-          <p class="mt-2 text-sm leading-6 text-app-text-soft">${escapeHtml(feature.evidenceSummary)}</p>
+        `<li>
+          <button
+            class="w-full rounded-2xl border border-app-line/70 bg-app-canvas/45 px-4 py-3 text-left"
+            type="button"
+            data-map-item="${escapeHtml(feature.id)}"
+            data-map-label="${escapeHtml(feature.label)}"
+            data-map-kind="${escapeHtml(feature.kind)}"
+            data-map-source="${escapeHtml(feature.sourceSection)}"
+            data-map-summary="${escapeHtml(feature.summary)}"
+            data-map-evidence="${escapeHtml(feature.evidenceSummary)}"
+            data-map-active="${feature.id === initialMapFeature?.id ? "true" : "false"}"
+            aria-pressed="${feature.id === initialMapFeature?.id ? "true" : "false"}"
+          >
+            <p class="text-xs font-semibold uppercase tracking-[0.18em] text-app-text-soft">${escapeHtml(feature.kind)} / ${escapeHtml(feature.sourceSection)}</p>
+            <p class="mt-2 font-medium">${escapeHtml(feature.label)}</p>
+            <p class="mt-2 text-sm leading-6 text-app-text-soft">${escapeHtml(feature.evidenceSummary)}</p>
+          </button>
         </li>`,
     )
     .join("");
@@ -145,6 +161,7 @@ export function renderHomePage(screen: HomeScreenModel): string {
   return renderPage({
     title: screen.title,
     traceId: screen.meta.traceId,
+    scripts: screen.mapView.features.length > 0 ? [renderMapEnhancementScript()] : [],
     body: `<main class="mx-auto w-[min(56rem,calc(100vw-2rem))] px-0 py-16">
       <article class="overflow-hidden rounded-[1.5rem] border border-app-line/80 bg-app-surface/95 shadow-panel backdrop-blur">
         <section class="border-b border-app-line/80 px-5 py-10 sm:px-8">
@@ -202,7 +219,7 @@ export function renderHomePage(screen: HomeScreenModel): string {
             <p class="leading-7 text-app-text-soft">${escapeHtml(screen.mapView.description)}</p>
             ${
               screen.mapView.features.length > 0
-                ? `<div class="mt-6 grid gap-5 lg:grid-cols-[minmax(0,1.4fr)_minmax(18rem,0.9fr)]">
+                ? `<div class="mt-6 grid gap-5 lg:grid-cols-[minmax(0,1.4fr)_minmax(18rem,0.9fr)]" data-map-root data-map-active-id="${escapeHtml(initialMapFeature?.id ?? "")}">
                     <figure class="overflow-hidden rounded-[1rem] border border-app-line/70 bg-[linear-gradient(180deg,rgba(11,110,79,0.09),rgba(255,255,255,0.6)),linear-gradient(135deg,rgba(255,255,255,0.75),rgba(245,239,230,0.95))] p-4">
                       <svg viewBox="0 0 ${screen.mapView.viewport.width} ${screen.mapView.viewport.height}" class="h-auto w-full rounded-[0.9rem] border border-app-line/60 bg-[linear-gradient(180deg,rgba(255,255,255,0.88),rgba(244,236,226,0.96))]" role="img" aria-label="${escapeHtml(screen.mapView.viewport.frameLabel)}">
                         <rect x="18" y="22" width="604" height="316" rx="26" fill="rgba(255,255,255,0.42)" stroke="rgba(30,26,22,0.08)"/>
@@ -226,6 +243,13 @@ export function renderHomePage(screen: HomeScreenModel): string {
                       </svg>
                     </figure>
                     <div class="grid gap-3">
+                      <section class="rounded-[1rem] border border-app-line/70 bg-white/80 p-4 shadow-[0_12px_30px_-26px_rgba(30,26,22,0.32)]">
+                        <p class="text-xs font-semibold uppercase tracking-[0.18em] text-app-text-soft">Focused lead</p>
+                        <p class="mt-2 text-xs font-semibold uppercase tracking-[0.18em] text-app-accent" data-map-detail-meta>${escapeHtml(`${initialMapFeature?.kind ?? ""} / ${initialMapFeature?.sourceSection ?? ""}`)}</p>
+                        <h3 class="mt-3 text-lg font-semibold tracking-[-0.02em]" data-map-detail-label>${escapeHtml(initialMapFeature?.label ?? "")}</h3>
+                        <p class="mt-3 leading-7 text-app-text-soft" data-map-detail-summary>${escapeHtml(initialMapFeature?.summary ?? "")}</p>
+                        <p class="mt-3 text-sm leading-6 text-app-text-soft" data-map-detail-evidence>${escapeHtml(initialMapFeature?.evidenceSummary ?? "")}</p>
+                      </section>
                       <h3 class="text-sm font-semibold uppercase tracking-[0.18em] text-app-text-soft">${escapeHtml(screen.mapView.legendTitle)}</h3>
                       <ul class="grid gap-3">${mapLegendMarkup}</ul>
                     </div>
@@ -328,17 +352,23 @@ function formatSavedAtLabel(savedAt: string): string {
   return `Saved ${date.toISOString().slice(0, 16).replace("T", " ")}`;
 }
 
-function renderMapFeature(feature: HomeScreenModel["mapView"]["features"][number], width: number, height: number): string {
+function renderMapFeature(
+  feature: HomeScreenModel["mapView"]["features"][number],
+  width: number,
+  height: number,
+  isActive: boolean,
+): string {
   const tone = feature.sourceSection === "recent-sessions" ? "#0b6e4f" : "#1e1a16";
+  const sharedAttributes = `tabindex="0" role="button" data-map-feature="${escapeHtml(feature.id)}" data-map-label="${escapeHtml(feature.label)}" data-map-kind="${escapeHtml(feature.kind)}" data-map-source="${escapeHtml(feature.sourceSection)}" data-map-summary="${escapeHtml(feature.summary)}" data-map-evidence="${escapeHtml(feature.evidenceSummary)}" data-map-active="${isActive ? "true" : "false"}"`;
 
   switch (feature.geometry.kind) {
     case "point": {
       const x = percentToFrame(feature.geometry.point.x, width);
       const y = percentToFrame(feature.geometry.point.y, height);
 
-      return `<g>
-        <circle cx="${x}" cy="${y}" r="14" fill="white" fill-opacity="0.82" stroke="${tone}" stroke-width="2"/>
-        <circle cx="${x}" cy="${y}" r="6" fill="${tone}"/>
+      return `<g ${sharedAttributes}>
+        <circle data-map-marker-ring cx="${x}" cy="${y}" r="14" fill="white" fill-opacity="0.82" stroke="${tone}" stroke-width="2"/>
+        <circle data-map-marker-core cx="${x}" cy="${y}" r="6" fill="${tone}"/>
         <text x="${x + 18}" y="${y - 10}" fill="rgba(30,26,22,0.8)" font-size="12">${escapeHtml(feature.label)}</text>
       </g>`;
     }
@@ -346,9 +376,9 @@ function renderMapFeature(feature: HomeScreenModel["mapView"]["features"][number
       const x = percentToFrame(feature.geometry.center.x, width);
       const y = percentToFrame(feature.geometry.center.y, height);
 
-      return `<g>
-        <circle cx="${x}" cy="${y}" r="${feature.geometry.radius}" fill="rgba(11,110,79,0.12)" stroke="${tone}" stroke-width="2"/>
-        <circle cx="${x}" cy="${y}" r="5" fill="${tone}"/>
+      return `<g ${sharedAttributes}>
+        <circle data-map-marker-ring cx="${x}" cy="${y}" r="${feature.geometry.radius}" fill="rgba(11,110,79,0.12)" stroke="${tone}" stroke-width="2"/>
+        <circle data-map-marker-core cx="${x}" cy="${y}" r="5" fill="${tone}"/>
         <text x="${x + 22}" y="${y - 14}" fill="rgba(30,26,22,0.8)" font-size="12">${escapeHtml(feature.label)}</text>
       </g>`;
     }
@@ -361,13 +391,85 @@ function renderMapFeature(feature: HomeScreenModel["mapView"]["features"][number
       const thirdX = percentToFrame(third.x, width);
       const thirdY = percentToFrame(third.y, height);
 
-      return `<g>
-        <path d="M ${firstX} ${firstY} Q ${secondX} ${secondY} ${thirdX} ${thirdY}" fill="none" stroke="${tone}" stroke-width="4" stroke-linecap="round"/>
-        <circle cx="${secondX}" cy="${secondY}" r="6" fill="${tone}"/>
+      return `<g ${sharedAttributes}>
+        <path data-map-marker-path d="M ${firstX} ${firstY} Q ${secondX} ${secondY} ${thirdX} ${thirdY}" fill="none" stroke="${tone}" stroke-width="4" stroke-linecap="round"/>
+        <circle data-map-marker-core cx="${secondX}" cy="${secondY}" r="6" fill="${tone}"/>
         <text x="${secondX + 16}" y="${secondY - 14}" fill="rgba(30,26,22,0.8)" font-size="12">${escapeHtml(feature.label)}</text>
       </g>`;
     }
   }
+}
+
+function renderMapEnhancementScript(): string {
+  return `
+(() => {
+  for (const root of document.querySelectorAll("[data-map-root]")) {
+    const featureNodes = Array.from(root.querySelectorAll("[data-map-feature]"));
+    const itemNodes = Array.from(root.querySelectorAll("[data-map-item]"));
+    const detailMeta = root.querySelector("[data-map-detail-meta]");
+    const detailLabel = root.querySelector("[data-map-detail-label]");
+    const detailSummary = root.querySelector("[data-map-detail-summary]");
+    const detailEvidence = root.querySelector("[data-map-detail-evidence]");
+    const activate = (id) => {
+      if (!id) return;
+
+      root.setAttribute("data-map-enhanced", "true");
+      root.setAttribute("data-map-active-id", id);
+
+      for (const node of featureNodes) {
+        const isActive = node.getAttribute("data-map-feature") === id;
+
+        node.setAttribute("data-map-active", isActive ? "true" : "false");
+      }
+
+      for (const node of itemNodes) {
+        const isActive = node.getAttribute("data-map-item") === id;
+
+        node.setAttribute("data-map-active", isActive ? "true" : "false");
+        node.setAttribute("aria-pressed", isActive ? "true" : "false");
+      }
+
+      const source =
+        featureNodes.find((node) => node.getAttribute("data-map-feature") === id) ??
+        itemNodes.find((node) => node.getAttribute("data-map-item") === id);
+
+      if (!source) return;
+
+      if (detailMeta) {
+        detailMeta.textContent = \`\${source.getAttribute("data-map-kind") ?? ""} / \${source.getAttribute("data-map-source") ?? ""}\`;
+      }
+
+      if (detailLabel) {
+        detailLabel.textContent = source.getAttribute("data-map-label") ?? "";
+      }
+
+      if (detailSummary) {
+        detailSummary.textContent = source.getAttribute("data-map-summary") ?? "";
+      }
+
+      if (detailEvidence) {
+        detailEvidence.textContent = source.getAttribute("data-map-evidence") ?? "";
+      }
+    };
+
+    for (const node of featureNodes) {
+      node.addEventListener("click", () => activate(node.getAttribute("data-map-feature")));
+      node.addEventListener("keydown", (event) => {
+        if (event.key === "Enter" || event.key === " ") {
+          event.preventDefault();
+          activate(node.getAttribute("data-map-feature"));
+        }
+      });
+    }
+
+    for (const node of itemNodes) {
+      node.addEventListener("click", () => activate(node.getAttribute("data-map-item")));
+    }
+
+    activate(root.getAttribute("data-map-active-id"));
+  }
+})();
+`.trim();
 }
 
 function percentToFrame(percent: number, frameSize: number): number {

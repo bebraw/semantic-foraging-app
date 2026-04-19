@@ -4,6 +4,7 @@ export type PageRenderInput = {
   title: string;
   body: string;
   traceId: string;
+  scripts?: string[];
 };
 
 export function renderPage(input: PageRenderInput): string {
@@ -20,6 +21,7 @@ export function renderPage(input: PageRenderInput): string {
     <footer class="mx-auto mt-4 w-[min(56rem,calc(100vw-2rem))] px-1 pb-8 text-xs uppercase tracking-[0.2em] text-app-text-soft">
       Trace ID: <span class="font-semibold text-app-accent-strong">${escapeHtml(input.traceId)}</span>
     </footer>
+    ${(input.scripts ?? []).map((script) => `<script>${script}</script>`).join("")}
   </body>
 </html>`;
 }
