@@ -173,8 +173,7 @@ export function renderHomePage(screen: HomeScreenModel): string {
     stylesheets: screen.mapView.features.length > 0 ? ["/vendor/leaflet.css"] : [],
     scriptUrls: screen.mapView.features.length > 0 ? ["/vendor/leaflet.js"] : [],
     scripts: screen.mapView.features.length > 0 ? [renderMapEnhancementScript()] : [],
-    body: `<main class="mx-auto w-[min(58rem,calc(100vw-2rem))] px-0 py-10 sm:py-12">
-      <article class="overflow-hidden rounded-2xl border border-app-line bg-app-surface shadow-panel">
+    body: `<main class="mx-auto w-[min(58rem,calc(100vw-2rem))] overflow-hidden rounded-2xl border border-app-line bg-app-surface shadow-panel py-10 sm:py-12">
         <section class="border-b border-app-line px-5 py-8 sm:px-8 sm:py-10">
           <p class="mb-3 text-[11px] font-semibold uppercase tracking-[0.24em] text-app-accent">${escapeHtml(screen.eyebrow)}</p>
           <h1 class="max-w-[14ch] text-4xl leading-tight font-semibold tracking-[-0.04em] sm:text-5xl">${escapeHtml(screen.title)}</h1>
@@ -190,41 +189,37 @@ export function renderHomePage(screen: HomeScreenModel): string {
         </section>
         <div class="grid gap-5 px-5 py-6 sm:px-8 sm:py-8">
           ${screen.alerts.length > 0 ? `<ul class="grid gap-3">${alertList}</ul>` : ""}
-          <section class="rounded-xl border border-app-line bg-app-surface p-6">
+          <section class="grid gap-5 rounded-xl border border-app-line bg-app-surface p-6">
             <p class="text-[11px] font-semibold uppercase tracking-[0.18em] text-app-accent">${escapeHtml(screen.workbenchTitle)}</p>
-            <div class="mt-4 grid gap-5">
-              <div>
-                <h2 class="text-2xl font-semibold tracking-[-0.03em]">${escapeHtml(screen.intentWorkbench.title)}</h2>
-                ${screen.workbenchBody ? `<p class="mt-2 max-w-3xl leading-7 text-app-text-soft">${escapeHtml(screen.workbenchBody)}</p>` : ""}
-                ${
-                  screen.intentWorkbench.description
-                    ? `<p class="${screen.workbenchBody ? "mt-3" : "mt-2"} max-w-3xl leading-7 text-app-text-soft">${escapeHtml(screen.intentWorkbench.description)}</p>`
-                    : ""
-                }
-              </div>
-              <form class="grid gap-4" method="post" action="${escapeHtml(screen.intentWorkbench.actionPath)}">
-                <label class="grid gap-2">
-                  <span class="text-sm font-semibold">${escapeHtml(screen.intentWorkbench.rawInputLabel)}</span>
-                  <textarea name="${escapeHtml(screen.intentWorkbench.rawInputName)}" class="min-h-32 rounded-xl border border-app-line bg-app-canvas px-4 py-4 leading-7 text-app-text" placeholder="${escapeHtml(screen.intentWorkbench.rawInputPlaceholder)}">${escapeHtml(screen.intentWorkbench.rawInputValue)}</textarea>
-                </label>
-                <div class="flex flex-wrap items-center gap-3">
-                  <button class="inline-flex w-fit items-center rounded-lg bg-app-ink px-4 py-2 text-sm font-semibold text-app-ink-text" type="submit">${escapeHtml(screen.intentWorkbench.submitLabel)}</button>
-                </div>
-              </form>
-              ${latestIntentMarkup}
-              ${clarificationMarkup}
+            <div>
+              <h2 class="text-2xl font-semibold tracking-[-0.03em]">${escapeHtml(screen.intentWorkbench.title)}</h2>
+              ${screen.workbenchBody ? `<p class="mt-2 max-w-3xl leading-7 text-app-text-soft">${escapeHtml(screen.workbenchBody)}</p>` : ""}
+              ${
+                screen.intentWorkbench.description
+                  ? `<p class="${screen.workbenchBody ? "mt-3" : "mt-2"} max-w-3xl leading-7 text-app-text-soft">${escapeHtml(screen.intentWorkbench.description)}</p>`
+                  : ""
+              }
             </div>
-          </section>
-          <section class="rounded-xl border border-app-line bg-app-surface p-6">
-            <div class="flex flex-wrap items-center justify-between gap-3">
-              <div>
-                <p class="text-[11px] font-semibold uppercase tracking-[0.18em] text-app-text-soft">${escapeHtml(screen.explanationWorkbench.title)}</p>
-                ${
-                  screen.explanationWorkbench.description
-                    ? `<p class="mt-2 max-w-3xl leading-7 text-app-text-soft">${escapeHtml(screen.explanationWorkbench.description)}</p>`
-                    : ""
-                }
+            <form class="grid gap-4" method="post" action="${escapeHtml(screen.intentWorkbench.actionPath)}">
+              <label class="grid gap-2">
+                <span class="text-sm font-semibold">${escapeHtml(screen.intentWorkbench.rawInputLabel)}</span>
+                <textarea name="${escapeHtml(screen.intentWorkbench.rawInputName)}" class="min-h-32 rounded-xl border border-app-line bg-app-canvas px-4 py-4 leading-7 text-app-text" placeholder="${escapeHtml(screen.intentWorkbench.rawInputPlaceholder)}">${escapeHtml(screen.intentWorkbench.rawInputValue)}</textarea>
+              </label>
+              <div class="flex flex-wrap items-center gap-3">
+                <button class="inline-flex w-fit items-center rounded-lg bg-app-ink px-4 py-2 text-sm font-semibold text-app-ink-text" type="submit">${escapeHtml(screen.intentWorkbench.submitLabel)}</button>
               </div>
+            </form>
+            ${latestIntentMarkup}
+            ${clarificationMarkup}
+          </section>
+          <section class="grid gap-5 rounded-xl border border-app-line bg-app-surface p-6">
+            <div>
+              <p class="text-[11px] font-semibold uppercase tracking-[0.18em] text-app-text-soft">${escapeHtml(screen.explanationWorkbench.title)}</p>
+              ${
+                screen.explanationWorkbench.description
+                  ? `<p class="mt-2 max-w-3xl leading-7 text-app-text-soft">${escapeHtml(screen.explanationWorkbench.description)}</p>`
+                  : ""
+              }
             </div>
             <form class="mt-5 grid gap-4" method="post" action="${escapeHtml(screen.explanationWorkbench.actionPath)}">
               <label class="grid gap-2">
@@ -331,7 +326,6 @@ export function renderHomePage(screen: HomeScreenModel): string {
             }
           </section>
         </div>
-      </article>
     </main>`,
   });
 }
