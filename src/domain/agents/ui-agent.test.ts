@@ -46,7 +46,7 @@ describe("ui-agent", () => {
       expect.objectContaining({
         kind: "home",
         title: "Foraging Workbench",
-        workbenchTitle: "Manual flow rehearsal",
+        workbenchTitle: "Intent workbench",
         mapView: expect.objectContaining({
           title: "Foraging map",
         }),

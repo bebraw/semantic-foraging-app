@@ -37,6 +37,7 @@ The home page is a server-rendered semantic foraging workbench that lets contrib
 - HTML action routes must stay thin adapters over existing typed app messages and results.
 - The home screen model must be assembled by a dedicated UI agent module instead of being hand-built inside the route or view layer.
 - The browser UI should stay workbench-first and avoid developer-facing route catalogs, runtime diagnostics, roadmap notes, or visible trace identifiers.
+- The browser UI should avoid seeded example text in placeholders and helper copy; forms should read as ready for real input rather than as mocked demos.
 - The intent clarification path must reuse the same stored workflow state used by the JSON clarification endpoint.
 - The workbench must make the semantic-foraging intent taxonomy visible instead of collapsing back to generic search/create/explain labels.
 - Completed intent submissions must feed the same recent-session view shown on the workbench without requiring client-side state management.

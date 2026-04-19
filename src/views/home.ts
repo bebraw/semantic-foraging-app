@@ -178,11 +178,15 @@ export function renderHomePage(screen: HomeScreenModel): string {
         <section class="border-b border-app-line px-5 py-8 sm:px-8 sm:py-10">
           <p class="mb-3 text-[11px] font-semibold uppercase tracking-[0.24em] text-app-accent">${escapeHtml(screen.eyebrow)}</p>
           <h1 class="max-w-[14ch] text-4xl leading-tight font-semibold tracking-[-0.04em] sm:text-5xl">${escapeHtml(screen.title)}</h1>
-          <p class="mt-4 max-w-3xl text-lg leading-8 text-app-text-soft">${escapeHtml(screen.description)}</p>
-          <div class="mt-6 border-l-2 border-app-accent pl-4">
-            <p class="text-[11px] font-semibold uppercase tracking-[0.18em] text-app-text-soft">${escapeHtml(screen.overviewTitle)}</p>
-            <p class="mt-2 max-w-3xl leading-7 text-app-text-soft">${escapeHtml(screen.overviewBody)}</p>
-          </div>
+          ${screen.description ? `<p class="mt-4 max-w-3xl text-lg leading-8 text-app-text-soft">${escapeHtml(screen.description)}</p>` : ""}
+          ${
+            screen.overviewTitle || screen.overviewBody
+              ? `<div class="mt-6 border-l-2 border-app-accent pl-4">
+            ${screen.overviewTitle ? `<p class="text-[11px] font-semibold uppercase tracking-[0.18em] text-app-text-soft">${escapeHtml(screen.overviewTitle)}</p>` : ""}
+            ${screen.overviewBody ? `<p class="mt-2 max-w-3xl leading-7 text-app-text-soft">${escapeHtml(screen.overviewBody)}</p>` : ""}
+          </div>`
+              : ""
+          }
         </section>
         <div class="grid gap-5 px-5 py-6 sm:px-8 sm:py-8">
           ${screen.alerts.length > 0 ? `<ul class="grid gap-3">${alertList}</ul>` : ""}
@@ -191,8 +195,12 @@ export function renderHomePage(screen: HomeScreenModel): string {
             <div class="mt-4 grid gap-5">
               <div>
                 <h2 class="text-2xl font-semibold tracking-[-0.03em]">${escapeHtml(screen.intentWorkbench.title)}</h2>
-                <p class="mt-2 max-w-3xl leading-7 text-app-text-soft">${escapeHtml(screen.workbenchBody)}</p>
-                <p class="mt-3 max-w-3xl leading-7 text-app-text-soft">${escapeHtml(screen.intentWorkbench.description)}</p>
+                ${screen.workbenchBody ? `<p class="mt-2 max-w-3xl leading-7 text-app-text-soft">${escapeHtml(screen.workbenchBody)}</p>` : ""}
+                ${
+                  screen.intentWorkbench.description
+                    ? `<p class="${screen.workbenchBody ? "mt-3" : "mt-2"} max-w-3xl leading-7 text-app-text-soft">${escapeHtml(screen.intentWorkbench.description)}</p>`
+                    : ""
+                }
               </div>
               <form class="grid gap-4" method="post" action="${escapeHtml(screen.intentWorkbench.actionPath)}">
                 <label class="grid gap-2">
@@ -201,7 +209,6 @@ export function renderHomePage(screen: HomeScreenModel): string {
                 </label>
                 <div class="flex flex-wrap items-center gap-3">
                   <button class="inline-flex w-fit items-center rounded-lg bg-app-ink px-4 py-2 text-sm font-semibold text-app-ink-text" type="submit">${escapeHtml(screen.intentWorkbench.submitLabel)}</button>
-                  <p class="text-sm text-app-text-soft">The manual workbench stays on the same typed intent, workflow, and provenance paths as the API surface.</p>
                 </div>
               </form>
               ${latestIntentMarkup}
@@ -212,7 +219,11 @@ export function renderHomePage(screen: HomeScreenModel): string {
             <div class="flex flex-wrap items-center justify-between gap-3">
               <div>
                 <p class="text-[11px] font-semibold uppercase tracking-[0.18em] text-app-text-soft">${escapeHtml(screen.explanationWorkbench.title)}</p>
-                <p class="mt-2 max-w-3xl leading-7 text-app-text-soft">${escapeHtml(screen.explanationWorkbench.description)}</p>
+                ${
+                  screen.explanationWorkbench.description
+                    ? `<p class="mt-2 max-w-3xl leading-7 text-app-text-soft">${escapeHtml(screen.explanationWorkbench.description)}</p>`
+                    : ""
+                }
               </div>
             </div>
             <form class="mt-5 grid gap-4" method="post" action="${escapeHtml(screen.explanationWorkbench.actionPath)}">
@@ -303,20 +314,20 @@ export function renderHomePage(screen: HomeScreenModel): string {
           </section>
           <section class="rounded-xl border border-app-line bg-app-surface p-6">
             <h2 class="mb-3 text-lg font-semibold tracking-[-0.02em]">${escapeHtml(screen.retrievalTitle)}</h2>
-            <p class="leading-7 text-app-text-soft">${escapeHtml(screen.retrievalBody)}</p>
+            ${screen.retrievalBody ? `<p class="leading-7 text-app-text-soft">${escapeHtml(screen.retrievalBody)}</p>` : ""}
             ${
               screen.candidateCards.length > 0
-                ? `<ul class="mt-4">${candidateMarkup}</ul>`
-                : `<p class="mt-4 rounded-xl border border-dashed border-app-line px-4 py-4 leading-7 text-app-text-soft">${escapeHtml(screen.retrievalEmptyState)}</p>`
+                ? `<ul class="${screen.retrievalBody ? "mt-4" : ""}">${candidateMarkup}</ul>`
+                : `<p class="${screen.retrievalBody ? "mt-4 " : ""}rounded-xl border border-dashed border-app-line px-4 py-4 leading-7 text-app-text-soft">${escapeHtml(screen.retrievalEmptyState)}</p>`
             }
           </section>
           <section class="rounded-xl border border-app-line bg-app-surface p-6">
             <h2 class="mb-3 text-lg font-semibold tracking-[-0.02em]">${escapeHtml(screen.recentSessionsTitle)}</h2>
-            <p class="leading-7 text-app-text-soft">${escapeHtml(screen.recentSessionsBody)}</p>
+            ${screen.recentSessionsBody ? `<p class="leading-7 text-app-text-soft">${escapeHtml(screen.recentSessionsBody)}</p>` : ""}
             ${
               screen.recentSessions.length > 0
-                ? `<ul class="mt-4">${recentSessionMarkup}</ul>`
-                : `<p class="mt-4 rounded-xl border border-dashed border-app-line px-4 py-4 leading-7 text-app-text-soft">${escapeHtml(screen.recentSessionsEmptyState)}</p>`
+                ? `<ul class="${screen.recentSessionsBody ? "mt-4" : ""}">${recentSessionMarkup}</ul>`
+                : `<p class="${screen.recentSessionsBody ? "mt-4 " : ""}rounded-xl border border-dashed border-app-line px-4 py-4 leading-7 text-app-text-soft">${escapeHtml(screen.recentSessionsEmptyState)}</p>`
             }
           </section>
         </div>
