@@ -66,6 +66,7 @@ describe("ui-agent", () => {
           saveActionPath: "/actions/artifact/save",
           useActionPath: "/actions/artifact/use",
           refineActionPath: "/actions/artifact/refine",
+          restoreActionPath: "/actions/artifact/restore",
         }),
         meta: {
           traceId: "trace-ui-agent",

@@ -309,6 +309,43 @@ export async function handleArtifactRefineActionRequest(request: Request, contex
   );
 }
 
+export async function handleArtifactRestoreActionRequest(request: Request, context: AppContext): Promise<Response> {
+  const formData = await request.formData();
+  const artifactId = readRequiredField(formData, "artifactId");
+  const recordedAt = readRequiredField(formData, "recordedAt");
+  const state = createInitialForagingWorkbenchState();
+
+  if (!artifactId.ok || !recordedAt.ok) {
+    return await renderWorkbenchResponse(
+      context,
+      withWorkbenchAlert(
+        state,
+        createWorkbenchAlert("Artifact restore failed", "Provide an artifact id and recorded revision timestamp before restoring."),
+      ),
+      400,
+    );
+  }
+
+  const result = await createAppBus(context).dispatch({
+    type: "RestoreSavedArtifactRevision",
+    artifactId: artifactId.value,
+    recordedAt: recordedAt.value,
+  });
+
+  if (result.kind === "error") {
+    return await renderWorkbenchErrorResponse(context, state, result, "Artifact restore failed");
+  }
+
+  if (result.kind !== "saved-artifact") {
+    throw new Error("Expected a saved-artifact result");
+  }
+
+  return await renderWorkbenchResponse(
+    context,
+    withWorkbenchAlert(state, createWorkbenchAlert("Artifact restored", `Restored ${result.payload.title} from revision history.`, "info")),
+  );
+}
+
 async function renderWorkbenchErrorResponse(
   context: AppContext,
   state: ReturnType<typeof createInitialForagingWorkbenchState>,

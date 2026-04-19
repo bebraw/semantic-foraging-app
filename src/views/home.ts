@@ -138,6 +138,11 @@ export function renderHomePage(screen: HomeScreenModel): string {
                             <p class="mt-1 font-medium">${escapeHtml(revision.title)}</p>
                             <p class="mt-1 text-sm leading-6 text-app-text-soft">${escapeHtml(revision.summary)}</p>
                             ${revision.notes ? `<p class="mt-2 text-sm leading-6 text-app-text-soft">${escapeHtml(revision.notes)}</p>` : ""}
+                            <form class="mt-3" method="post" action="${escapeHtml(screen.artifactWorkbench.restoreActionPath)}">
+                              <input type="hidden" name="artifactId" value="${escapeHtml(artifact.artifactId)}">
+                              <input type="hidden" name="recordedAt" value="${escapeHtml(revision.recordedAt)}">
+                              <button class="inline-flex w-fit items-center rounded-lg border border-app-line bg-white px-3 py-2 text-[11px] font-semibold uppercase tracking-[0.16em] text-app-text" type="submit">Restore revision</button>
+                            </form>
                           </li>`,
                       )
                       .join("")}

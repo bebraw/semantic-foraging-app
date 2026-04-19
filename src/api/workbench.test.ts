@@ -5,6 +5,7 @@ import { createRequestTrace } from "../infra/observability/trace";
 import type { WorkflowRepository } from "../infra/storage/repository";
 import {
   handleArtifactRefineActionRequest,
+  handleArtifactRestoreActionRequest,
   handleArtifactSaveActionRequest,
   handleArtifactUseActionRequest,
   handleExplanationActionRequest,
@@ -416,6 +417,128 @@ describe("workbench actions", () => {
     expect(body).toContain("Updated 2026-04-19 13:15");
     expect(body).toContain("Revision history");
     expect(body).toContain("refined / Recorded 2026-04-19 13:15");
+  });
+
+  it("restores a saved artifact revision through the server-rendered workbench", async () => {
+    const context = createAppContext(exampleRoutes);
+    vi.setSystemTime(new Date("2026-04-19T12:00:00.000Z"));
+    const saveFormData = new FormData();
+    saveFormData.set(
+      "candidate",
+      JSON.stringify({
+        id: "trail-north-ridge-wet-spruce-loop",
+        kind: "trail",
+        title: "Saved chanterelle trail",
+        summary: "A saved trail connecting damp spruce pockets and recent chanterelle signals.",
+        statusLabel: "Trail fragment",
+        evidence: [
+          {
+            label: "Intent fit",
+            detail: "Ranked for explain-suggestion.",
+          },
+        ],
+        spatialContext: {
+          species: ["chanterelle"],
+          habitat: ["spruce", "wet"],
+          region: ["helsinki"],
+          season: ["autumn"],
+        },
+      }),
+    );
+    saveFormData.set("sourceIntent", "explain-suggestion");
+    saveFormData.set(
+      "intentSubmission",
+      JSON.stringify({
+        input: "Explain this chanterelle trail",
+        classification: {
+          intent: "explain-suggestion",
+          confidence: 0.92,
+          needsClarification: false,
+          cues: {
+            species: ["chanterelle"],
+            habitat: ["spruce", "wet"],
+            region: ["helsinki"],
+            season: ["autumn"],
+          },
+          missing: [],
+        },
+        confidenceBand: "high",
+        provenance: {
+          source: "deterministic-fallback",
+          provider: null,
+          reason: "no-model-provider",
+        },
+        workflow: {
+          name: "intent-classification",
+          state: "completed",
+        },
+      }),
+    );
+
+    await handleArtifactSaveActionRequest(
+      new Request("http://example.com/actions/artifact/save", {
+        method: "POST",
+        body: saveFormData,
+      }),
+      context,
+    );
+
+    const artifacts = await context.savedArtifactRepository.listArtifacts(1);
+    const refineFormData = new FormData();
+    refineFormData.set("artifactId", artifacts[0].artifactId);
+    refineFormData.set("title", "Refined chanterelle trail");
+    refineFormData.set("summary", "Refined summary for the saved chanterelle route.");
+    refineFormData.set("notes", "Start near the wetter spruce edge and keep the old moss hollow in view.");
+
+    vi.setSystemTime(new Date("2026-04-19T13:15:00.000Z"));
+
+    await handleArtifactRefineActionRequest(
+      new Request("http://example.com/actions/artifact/refine", {
+        method: "POST",
+        body: refineFormData,
+      }),
+      context,
+    );
+
+    const restoreFormData = new FormData();
+    restoreFormData.set("artifactId", artifacts[0].artifactId);
+    restoreFormData.set("recordedAt", "2026-04-19T12:00:00.000Z");
+
+    vi.setSystemTime(new Date("2026-04-19T13:30:00.000Z"));
+
+    const response = await handleArtifactRestoreActionRequest(
+      new Request("http://example.com/actions/artifact/restore", {
+        method: "POST",
+        body: restoreFormData,
+      }),
+      context,
+    );
+
+    expect(response.status).toBe(200);
+    const body = await response.text();
+    expect(body).toContain("Artifact restored");
+    expect(body).toContain("Saved chanterelle trail");
+    expect(body).toContain("A saved trail connecting damp spruce pockets and recent chanterelle signals.");
+    expect(body).toContain("restored / Recorded 2026-04-19 13:30");
+
+    const restoredArtifact = await context.savedArtifactRepository.getArtifact(artifacts[0].artifactId);
+    expect(restoredArtifact).toEqual(
+      expect.objectContaining({
+        title: "Saved chanterelle trail",
+        summary: "A saved trail connecting damp spruce pockets and recent chanterelle signals.",
+        notes: "",
+        updatedAt: "2026-04-19T13:30:00.000Z",
+        revisions: expect.arrayContaining([
+          expect.objectContaining({
+            kind: "restored",
+            title: "Saved chanterelle trail",
+            summary: "A saved trail connecting damp spruce pockets and recent chanterelle signals.",
+            notes: "",
+            recordedAt: "2026-04-19T13:30:00.000Z",
+          }),
+        ]),
+      }),
+    );
   });
 
   it("renders a validation alert when the intent form is empty", async () => {

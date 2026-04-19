@@ -14,6 +14,7 @@ The home page is a server-rendered semantic foraging workbench that lets contrib
   - save-artifact forms for supported candidate cards that post to `POST /actions/artifact/save`
   - saved-artifact reuse forms that post to `POST /actions/artifact/use`
   - saved-artifact refinement forms that post to `POST /actions/artifact/refine`
+  - saved-artifact revision restore forms that post to `POST /actions/artifact/restore`
 - Successful intent submissions must render:
   - the latest input
   - classified intent
@@ -40,11 +41,16 @@ The home page is a server-rendered semantic foraging workbench that lets contrib
   - the updated artifact title and summary in the saved-artifacts section
   - updated artifact notes when provided
   - an updated timestamp when the refined artifact has changed since its original save
+- Successful saved-artifact revision restore must render:
+  - an informational alert that the artifact was restored
+  - the restored artifact title, summary, and notes in the saved-artifacts section
+  - a new revision-history entry showing that a restore occurred
 - The workbench may render a server-first map fragment when current leads or recent sessions have mappable spatial context.
 - The workbench must render a saved-artifacts section showing persisted field notes, trails, and patch inspections when available.
 - Saved artifacts may render stored evidence and cue summaries inline so the workbench supports lightweight comparison before reuse.
 - Saved artifacts may render inline refinement controls for bounded edits such as title, summary, and notes changes.
 - Saved artifacts may render recent revision entries inline so the workbench shows how an artifact changed over time without opening a separate editor.
+- Saved artifacts may render restore controls for recent revision entries so revision history is actionable rather than read-only.
 - The workbench must render a recent-sessions section showing persisted recent-session snapshots when available.
 - Invalid form input or typed app errors must render back into the workbench as user-visible alerts instead of raw JSON.
 

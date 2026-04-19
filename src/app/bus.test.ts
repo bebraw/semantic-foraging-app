@@ -589,6 +589,89 @@ describe("createAppBus", () => {
     });
   });
 
+  it("restores one saved artifact revision through the app bus", async () => {
+    const savedArtifactRepository = {
+      saveArtifact: vi.fn(),
+      updateArtifact: vi.fn(),
+      getArtifact: vi.fn().mockResolvedValue({
+        artifactId: "trail-1",
+        sourceCardId: "trail-card-1",
+        kind: "trail",
+        title: "Current trail",
+        summary: "Current summary",
+        notes: "Current notes",
+        sourceIntent: "explain-suggestion",
+        cues: {
+          species: ["chanterelle"],
+          habitat: [],
+          region: [],
+          season: [],
+        },
+        evidence: [],
+        spatialContext: {
+          species: ["chanterelle"],
+          habitat: [],
+          region: [],
+          season: [],
+        },
+        savedAt: "2026-04-19T12:00:00.000Z",
+        updatedAt: "2026-04-19T12:45:00.000Z",
+        revisions: [
+          {
+            kind: "saved",
+            title: "Saved trail",
+            summary: "Saved trail summary",
+            notes: "Original notes",
+            recordedAt: "2026-04-19T12:00:00.000Z",
+          },
+          {
+            kind: "refined",
+            title: "Current trail",
+            summary: "Current summary",
+            notes: "Current notes",
+            recordedAt: "2026-04-19T12:45:00.000Z",
+          },
+        ],
+      }),
+      listArtifacts: vi.fn().mockResolvedValue([]),
+    };
+    const bus = createAppBus(
+      createAppContext(exampleRoutes, null, createRequestTrace("unknown"), undefined, undefined, undefined, savedArtifactRepository),
+    );
+
+    const result = await bus.dispatch({
+      type: "RestoreSavedArtifactRevision",
+      artifactId: "trail-1",
+      recordedAt: "2026-04-19T12:00:00.000Z",
+    });
+
+    expect(savedArtifactRepository.updateArtifact).toHaveBeenCalledWith(
+      expect.objectContaining({
+        artifactId: "trail-1",
+        title: "Saved trail",
+        summary: "Saved trail summary",
+        notes: "Original notes",
+        revisions: expect.arrayContaining([
+          expect.objectContaining({
+            kind: "restored",
+            title: "Saved trail",
+            summary: "Saved trail summary",
+            notes: "Original notes",
+          }),
+        ]),
+      }),
+    );
+    expect(result).toEqual({
+      kind: "saved-artifact",
+      payload: expect.objectContaining({
+        artifactId: "trail-1",
+        title: "Saved trail",
+        summary: "Saved trail summary",
+        notes: "Original notes",
+      }),
+    });
+  });
+
   it("returns a typed error when refining a missing saved artifact", async () => {
     const bus = createAppBus(
       createAppContext(exampleRoutes, null, createRequestTrace("unknown"), undefined, undefined, undefined, {
@@ -612,6 +695,64 @@ describe("createAppBus", () => {
       error: {
         category: "validation_error",
         message: "Saved artifact was not found for the provided artifactId.",
+        status: 404,
+      },
+    });
+  });
+
+  it("returns a typed error when a saved artifact revision is missing", async () => {
+    const bus = createAppBus(
+      createAppContext(exampleRoutes, null, createRequestTrace("unknown"), undefined, undefined, undefined, {
+        saveArtifact: vi.fn(),
+        updateArtifact: vi.fn(),
+        getArtifact: vi.fn().mockResolvedValue({
+          artifactId: "trail-1",
+          sourceCardId: "trail-card-1",
+          kind: "trail",
+          title: "Saved trail",
+          summary: "Saved trail summary",
+          notes: "Current notes",
+          sourceIntent: "explain-suggestion",
+          cues: {
+            species: [],
+            habitat: [],
+            region: [],
+            season: [],
+          },
+          evidence: [],
+          spatialContext: {
+            species: [],
+            habitat: [],
+            region: [],
+            season: [],
+          },
+          savedAt: "2026-04-19T12:00:00.000Z",
+          updatedAt: "2026-04-19T12:00:00.000Z",
+          revisions: [
+            {
+              kind: "saved",
+              title: "Saved trail",
+              summary: "Saved trail summary",
+              notes: "Current notes",
+              recordedAt: "2026-04-19T12:00:00.000Z",
+            },
+          ],
+        }),
+        listArtifacts: vi.fn().mockResolvedValue([]),
+      }),
+    );
+
+    const result = await bus.dispatch({
+      type: "RestoreSavedArtifactRevision",
+      artifactId: "trail-1",
+      recordedAt: "missing",
+    });
+
+    expect(result).toEqual({
+      kind: "error",
+      error: {
+        category: "validation_error",
+        message: "Saved artifact revision was not found for the provided recordedAt.",
         status: 404,
       },
     });

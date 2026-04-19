@@ -188,6 +188,7 @@ export function createHomeScreenModel(input: CreateHomeScreenInput): HomeScreenM
       saveActionPath: "/actions/artifact/save",
       useActionPath: "/actions/artifact/use",
       refineActionPath: "/actions/artifact/refine",
+      restoreActionPath: "/actions/artifact/restore",
     },
     mapView,
     retrievalTitle: "Candidate leads",

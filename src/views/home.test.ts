@@ -18,12 +18,14 @@ describe("renderHomePage", () => {
     expect(html).toContain("Use in workbench");
     expect(html).toContain("Update artifact");
     expect(html).toContain('action="/actions/artifact/refine"');
+    expect(html).toContain('action="/actions/artifact/restore"');
     expect(html).toContain('name="summary"');
     expect(html).toContain('name="notes"');
     expect(html).toContain("Intent fit");
     expect(html).toContain("Ranked for explain-suggestion.");
     expect(html).toContain("Revision history");
     expect(html).toContain("refined / Recorded 2026-04-19 12:45");
+    expect(html).toContain("Restore revision");
     expect(html).toContain("Notes");
     expect(html).toContain("Start from the wetter moss pocket after rain.");
     expect(html).toContain("Foraging map");
@@ -321,6 +323,7 @@ function createHomeScreenModel(): HomeScreenModel {
       saveActionPath: "/actions/artifact/save",
       useActionPath: "/actions/artifact/use",
       refineActionPath: "/actions/artifact/refine",
+      restoreActionPath: "/actions/artifact/restore",
     },
     mapView: {
       title: "Foraging map",

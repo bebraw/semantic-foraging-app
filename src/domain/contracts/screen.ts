@@ -50,6 +50,7 @@ export type ArtifactWorkbenchModel = {
   saveActionPath: string;
   useActionPath: string;
   refineActionPath: string;
+  restoreActionPath: string;
 };
 
 export type HomeScreenModel = {

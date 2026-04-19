@@ -4,6 +4,7 @@ import { handleAppCommandRequest, handleIntentClarificationRequest, handleIntent
 import { handleAppQueryRequest, handleExplanationQueryRequest, handleHealthRequest, handleHomePageRequest } from "./api/app-query";
 import {
   handleArtifactRefineActionRequest,
+  handleArtifactRestoreActionRequest,
   handleArtifactUseActionRequest,
   handleArtifactSaveActionRequest,
   handleExplanationActionRequest,
@@ -119,6 +120,11 @@ export async function handleRequest(request: Request, env: Env = {}): Promise<Re
 
   if (url.pathname === "/actions/artifact/refine" && request.method === "POST") {
     response = await handleArtifactRefineActionRequest(request, context);
+    return finalizeResponse(response, trace);
+  }
+
+  if (url.pathname === "/actions/artifact/restore" && request.method === "POST") {
+    response = await handleArtifactRestoreActionRequest(request, context);
     return finalizeResponse(response, trace);
   }
 

@@ -7,6 +7,7 @@ import { handleUserIntent } from "./use-cases/handle-user-intent";
 import { inspectModelRuntime } from "./use-cases/inspect-model-runtime";
 import { requestExplanation } from "./use-cases/request-explanation";
 import { refineSavedArtifact } from "./use-cases/refine-saved-artifact";
+import { restoreSavedArtifactRevision } from "./use-cases/restore-saved-artifact-revision";
 import { renderScreen } from "./use-cases/render-screen";
 import { runHealthCheck } from "./use-cases/run-health-check";
 import { saveArtifact } from "./use-cases/save-artifact";
@@ -39,6 +40,8 @@ export function createAppBus(context: AppContext): AppBus {
             return await loadSavedArtifact(context, message);
           case "RefineSavedArtifact":
             return await refineSavedArtifact(context, message);
+          case "RestoreSavedArtifactRevision":
+            return await restoreSavedArtifactRevision(context, message);
         }
       });
     },

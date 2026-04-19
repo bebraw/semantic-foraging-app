@@ -4,7 +4,7 @@ import type { EvidenceNote, SpatialContext } from "./foraging-knowledge";
 export type SavedArtifactKind = "field-note" | "trail" | "patch-inspection";
 
 export type ArtifactRevision = {
-  kind: "saved" | "refined";
+  kind: "saved" | "refined" | "restored";
   title: string;
   summary: string;
   notes?: string;
