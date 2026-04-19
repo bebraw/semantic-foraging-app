@@ -16,10 +16,10 @@ This template is set up for the local Agent CI runner from `agent-ci.dev`.
 ### Prerequisites
 
 - Local development in this template targets macOS. The documented commands assume a macOS shell environment and are not maintained as a cross-platform baseline.
-- Run `nvm use` before `npm install` or any other development command so your shell uses the Node.js and npm versions pinned in `package.json`.
+- Run `nvm use` before `npm install` or any other development command so your shell uses the Node.js version pinned in `package.json` and a supported npm 11 release.
 - Install dependencies with `npm install`.
 - The exact Node.js version is pinned in `package.json`, and CI reads that value directly through `actions/setup-node`.
-- npm comes from that pinned Node release rather than a separate repo-level npm pin.
+- npm comes from that pinned Node release, with the accepted npm 11 range declared in `package.json`.
 - Copy `.dev.vars.example` to `.dev.vars` and replace placeholder values when a project needs local secrets.
 - Copy `.env.agent-ci.example` to `.env.agent-ci` when you need machine-local Agent CI overrides. Agent CI loads that file automatically.
 - If your clone has no `origin` remote, set `GITHUB_REPO=owner/repo` in `.env.agent-ci` to stop Agent CI from warning while inferring the repository name.
