@@ -1,5 +1,6 @@
 import type { ForagingIntentSubmissionState } from "../contracts/app-state";
 import type { ForagingCandidateCard } from "../contracts/foraging-knowledge";
+import type { StoredForagingSession } from "../contracts/session";
 import type { ForagingCues } from "./intent-agent";
 
 type CatalogCandidate = ForagingCandidateCard & {
@@ -67,7 +68,10 @@ const catalog: CatalogCandidate[] = [
   },
 ];
 
-export function buildForagingCandidateCards(submission?: ForagingIntentSubmissionState): ForagingCandidateCard[] {
+export function buildForagingCandidateCards(
+  submission?: ForagingIntentSubmissionState,
+  recentSessions: StoredForagingSession[] = [],
+): ForagingCandidateCard[] {
   if (!submission || submission.workflow.state !== "completed") {
     return [];
   }
@@ -80,7 +84,9 @@ export function buildForagingCandidateCards(submission?: ForagingIntentSubmissio
     case "explain-suggestion":
       return selectCatalogCards(submission, ["trail", "patch", "observation"], 3);
     case "resume-session":
-      return selectCatalogCards(submission, ["session", "trail", "observation"], 3);
+      return recentSessions.length > 0
+        ? buildRecentSessionCards(submission, recentSessions)
+        : selectCatalogCards(submission, ["session", "trail", "observation"], 3);
     case "create-field-note":
       return [createFieldNoteDraftCard(submission), ...selectCatalogCards(submission, ["observation", "patch"], 2)];
     case "clarify":
@@ -137,12 +143,44 @@ function selectCatalogCards(
     }));
 }
 
+function buildRecentSessionCards(
+  submission: ForagingIntentSubmissionState,
+  recentSessions: StoredForagingSession[],
+): ForagingCandidateCard[] {
+  return recentSessions
+    .map((session) => ({
+      session,
+      score:
+        scoreRecentSession(session, submission.classification.cues) +
+        (session.sourceIntent === "resume-session" ? 2 : 0) +
+        (session.sourceIntent === "find-observations" ? 1 : 0),
+    }))
+    .sort((left, right) => right.score - left.score)
+    .slice(0, 3)
+    .map(({ session }) => ({
+      kind: "session",
+      title: session.title,
+      summary: session.summary,
+      statusLabel: "Recent session",
+      evidence: buildRecentSessionEvidence(session, submission),
+    }));
+}
+
 function scoreCandidate(candidate: CatalogCandidate, cues: ForagingCues): number {
   return (
     countOverlap(candidate.species, cues.species) * 5 +
     countOverlap(candidate.habitat, cues.habitat) * 4 +
     countOverlap(candidate.region, cues.region) * 4 +
     countOverlap(candidate.season, cues.season) * 3
+  );
+}
+
+function scoreRecentSession(session: StoredForagingSession, cues: ForagingCues): number {
+  return (
+    countOverlap(session.cues.species, cues.species) * 5 +
+    countOverlap(session.cues.habitat, cues.habitat) * 4 +
+    countOverlap(session.cues.region, cues.region) * 4 +
+    countOverlap(session.cues.season, cues.season) * 3
   );
 }
 
@@ -198,6 +236,59 @@ function buildEvidenceNotes(candidate: CatalogCandidate, submission: ForagingInt
     notes.push({
       label: "Open questions",
       detail: submission.classification.missing.join(", "),
+    });
+  }
+
+  return notes;
+}
+
+function buildRecentSessionEvidence(
+  session: StoredForagingSession,
+  submission: ForagingIntentSubmissionState,
+): ForagingCandidateCard["evidence"] {
+  const notes: ForagingCandidateCard["evidence"] = [
+    {
+      label: "Recent session",
+      detail: `Stored from ${session.sourceIntent} at ${session.savedAt}.`,
+    },
+  ];
+  const species = collectOverlap(session.cues.species, submission.classification.cues.species);
+  const habitat = collectOverlap(session.cues.habitat, submission.classification.cues.habitat);
+  const region = collectOverlap(session.cues.region, submission.classification.cues.region);
+  const season = collectOverlap(session.cues.season, submission.classification.cues.season);
+
+  if (species.length > 0) {
+    notes.push({
+      label: "Species overlap",
+      detail: species.join(", "),
+    });
+  }
+
+  if (habitat.length > 0) {
+    notes.push({
+      label: "Habitat fit",
+      detail: habitat.join(", "),
+    });
+  }
+
+  if (region.length > 0) {
+    notes.push({
+      label: "Region fit",
+      detail: region.join(", "),
+    });
+  }
+
+  if (season.length > 0) {
+    notes.push({
+      label: "Season fit",
+      detail: season.join(", "),
+    });
+  }
+
+  if (notes.length === 1) {
+    notes.push({
+      label: "Fallback ranking",
+      detail: summarizeCueMatches(submission.classification.cues),
     });
   }
 

@@ -41,6 +41,7 @@ Local development in this repo targets macOS. Other platforms may need script an
 
 - `GET /` serves a server-rendered semantic foraging workbench for manual flow testing plus deterministic candidate retrieval cards.
 - Completed intents are persisted as lightweight in-memory recent sessions and rendered back into the workbench.
+- `resume-session` flows now reuse those persisted recent sessions instead of relying only on static demo session cards.
 - `GET /styles.css` serves the generated Tailwind stylesheet.
 - `GET /api/health` serves a JSON health response for smoke tests and tooling.
 - `POST /api/app/command` dispatches typed app commands through a generic JSON endpoint.

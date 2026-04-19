@@ -86,6 +86,36 @@ describe("workbench actions", () => {
     expect(body).toContain("Autumn chanterelle cluster");
   });
 
+  it("uses persisted recent sessions when resuming a saved search trail", async () => {
+    const context = createAppContext(exampleRoutes);
+    const initialFormData = new FormData();
+    initialFormData.set("input", "Find chanterelles near wet spruce in Helsinki");
+
+    await handleIntentActionRequest(
+      new Request("http://example.com/actions/intent", {
+        method: "POST",
+        body: initialFormData,
+      }),
+      context,
+    );
+
+    const resumeFormData = new FormData();
+    resumeFormData.set("input", "Resume my chanterelle session");
+
+    const response = await handleIntentActionRequest(
+      new Request("http://example.com/actions/intent", {
+        method: "POST",
+        body: resumeFormData,
+      }),
+      context,
+    );
+
+    expect(response.status).toBe(200);
+    const body = await response.text();
+    expect(body).toContain("Recent session");
+    expect(body).toContain("Find chanterelles near wet spruce in Helsinki");
+  });
+
   it("renders an explanation result back into the workbench page", async () => {
     const formData = new FormData();
     formData.set("title", "Suggested forage trail selected");

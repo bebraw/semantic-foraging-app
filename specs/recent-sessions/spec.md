@@ -23,6 +23,7 @@ Completed foraging intents are persisted as lightweight recent-session snapshots
 - Awaiting-clarification workflows must not create recent-session snapshots yet.
 - Recent-session load failures in the home-screen render path should degrade gracefully into an empty list plus a user-visible informational alert.
 - Recent-session write failures in completed intent flows must return the typed `storage_failure` app error category.
+- Resume-session retrieval should use persisted recent sessions when available instead of falling back immediately to static demo data.
 
 ## Regression Guardrails
 

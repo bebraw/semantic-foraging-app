@@ -95,7 +95,7 @@ export function withExplanationSubmission(state: ForagingWorkbenchState, submiss
 }
 
 export function createHomeScreenModel(input: CreateHomeScreenInput): HomeScreenModel {
-  const candidateCards = buildForagingCandidateCards(input.workbench.intent.latestSubmission);
+  const candidateCards = buildForagingCandidateCards(input.workbench.intent.latestSubmission, input.workbench.recentSessions);
 
   return {
     kind: "home",

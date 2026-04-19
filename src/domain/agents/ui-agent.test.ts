@@ -199,6 +199,72 @@ describe("ui-agent", () => {
     );
   });
 
+  it("prefers persisted recent sessions for resume-session candidate cards", () => {
+    const screen = createHomeScreenModel({
+      routes: exampleRoutes,
+      runtime: {
+        mode: "no-model",
+        provider: null,
+        available: false,
+        supportsStructuredOutput: false,
+        supportsStreaming: false,
+        maxContextClass: "unknown",
+      },
+      traceId: "trace-resume",
+      workbench: {
+        ...withIntentSubmission(createInitialForagingWorkbenchState(), {
+          input: "Resume my chanterelle session",
+          classification: {
+            intent: "resume-session",
+            confidence: 0.79,
+            needsClarification: false,
+            cues: {
+              species: ["chanterelle"],
+              habitat: ["spruce", "wet"],
+              region: ["helsinki"],
+              season: ["autumn"],
+            },
+            missing: [],
+          },
+          confidenceBand: "high",
+          provenance: {
+            source: "deterministic-fallback",
+            provider: null,
+            reason: "no-model-provider",
+          },
+          workflow: {
+            name: "intent-classification",
+            state: "completed",
+          },
+        }),
+        recentSessions: [
+          {
+            sessionId: "session-1",
+            input: "Find chanterelles",
+            title: "Find chanterelles",
+            summary: "Intent: find-observations",
+            sourceIntent: "find-observations",
+            cues: {
+              species: ["chanterelle"],
+              habitat: ["spruce", "wet"],
+              region: ["helsinki"],
+              season: ["autumn"],
+            },
+            savedAt: "2026-04-19T12:00:00.000Z",
+          },
+        ],
+      },
+    });
+
+    expect(screen.candidateCards).toEqual([
+      expect.objectContaining({
+        kind: "session",
+        title: "Find chanterelles",
+        statusLabel: "Recent session",
+      }),
+    ]);
+  });
+
   it("preserves recent sessions in the home screen model", () => {
     const screen = createHomeScreenModel({
       routes: exampleRoutes,

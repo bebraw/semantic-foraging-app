@@ -188,6 +188,24 @@ test("supports the manual clarification workbench flow", async ({ page }) => {
   await expect(page.getByText("Autumn chanterelle cluster")).toBeVisible();
 });
 
+test("uses persisted recent sessions in the manual resume flow", async ({ page }) => {
+  await page.goto("/");
+
+  await page.getByLabel("What do you want to do?").fill("Find chanterelles near wet spruce in Helsinki");
+  await page.getByRole("button", { name: "Classify request" }).click();
+  await expect(page.getByText("Find chanterelles near wet spruce in Helsinki")).toBeVisible();
+
+  await page.getByLabel("What do you want to do?").fill("Resume my chanterelle session");
+  await page.getByRole("button", { name: "Classify request" }).click();
+
+  const latestIntentResult = page.locator("section").filter({ hasText: "Latest intent result" }).first();
+
+  await expect(latestIntentResult).toBeVisible();
+  await expect(latestIntentResult.locator("dd").filter({ hasText: /^resume-session$/ })).toBeVisible();
+  await expect(page.getByText("Recent session")).toBeVisible();
+  await expect(page.getByText("Find chanterelles near wet spruce in Helsinki")).toBeVisible();
+});
+
 test("supports the manual explanation workbench flow", async ({ page }) => {
   await page.goto("/");
 

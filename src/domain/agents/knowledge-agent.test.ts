@@ -112,4 +112,64 @@ describe("buildForagingCandidateCards", () => {
       }),
     ).toEqual([]);
   });
+
+  it("uses persisted recent sessions for resume-session intents when available", () => {
+    const cards = buildForagingCandidateCards(
+      {
+        input: "Resume my chanterelle session",
+        classification: {
+          intent: "resume-session",
+          confidence: 0.79,
+          needsClarification: false,
+          cues: {
+            species: ["chanterelle"],
+            habitat: ["spruce", "wet"],
+            region: ["helsinki"],
+            season: ["autumn"],
+          },
+          missing: [],
+        },
+        confidenceBand: "high",
+        provenance: {
+          source: "deterministic-fallback",
+          provider: null,
+          reason: "no-model-provider",
+        },
+        workflow: {
+          name: "intent-classification",
+          state: "completed",
+        },
+      },
+      [
+        {
+          sessionId: "session-1",
+          input: "Find chanterelles",
+          title: "Find chanterelles",
+          summary: "Intent: find-observations | species: chanterelle | habitat: spruce, wet | region: helsinki",
+          sourceIntent: "find-observations",
+          cues: {
+            species: ["chanterelle"],
+            habitat: ["spruce", "wet"],
+            region: ["helsinki"],
+            season: ["autumn"],
+          },
+          savedAt: "2026-04-19T12:00:00.000Z",
+        },
+      ],
+    );
+
+    expect(cards).toEqual([
+      expect.objectContaining({
+        kind: "session",
+        title: "Find chanterelles",
+        statusLabel: "Recent session",
+      }),
+    ]);
+    expect(cards[0].evidence).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ label: "Recent session", detail: expect.stringContaining("find-observations") }),
+        expect.objectContaining({ label: "Species overlap", detail: "chanterelle" }),
+      ]),
+    );
+  });
 });
