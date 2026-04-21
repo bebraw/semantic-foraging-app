@@ -38,23 +38,25 @@ function renderSearchSurface(screen: HomeScreenModel): string {
   return `<section class="max-w-4xl">
     <div class="sticky top-0 z-10 rounded-[1.5rem] border border-app-line bg-app-canvas/92 px-3 py-3 shadow-[var(--shadow-panel)] supports-[backdrop-filter]:bg-app-canvas/72 backdrop-blur-xl">
       <form method="post" action="${escapeHtml(screen.searchPrompt.actionPath)}" class="grid gap-2.5">
-        <label class="block" for="semantic-query">
-          <span class="sr-only">${escapeHtml(screen.searchPrompt.rawInputLabel)}</span>
-          <input
-            id="semantic-query"
-            name="${escapeHtml(screen.searchPrompt.rawInputName)}"
-            type="search"
-            autocomplete="off"
-            spellcheck="false"
-            placeholder="${escapeHtml(screen.searchPrompt.rawInputPlaceholder)}"
-            value="${escapeHtml(screen.searchPrompt.rawInputValue)}"
-            class="w-full rounded-[1.25rem] bg-app-surface px-4 py-3 text-lg text-app-text outline-none ring-1 ring-app-line transition placeholder:text-app-text-soft/72 focus:bg-app-canvas focus:ring-2 focus:ring-app-accent/35"
-          >
-        </label>
-        <div class="flex flex-wrap items-center gap-2">
-          <button class="rounded-full bg-app-ink px-4 py-2 text-sm font-semibold text-app-ink-text" type="submit">${escapeHtml(
+        <div class="flex flex-col gap-2 sm:flex-row sm:items-center">
+          <label class="block min-w-0 flex-1" for="semantic-query">
+            <span class="sr-only">${escapeHtml(screen.searchPrompt.rawInputLabel)}</span>
+            <input
+              id="semantic-query"
+              name="${escapeHtml(screen.searchPrompt.rawInputName)}"
+              type="search"
+              autocomplete="off"
+              spellcheck="false"
+              placeholder="${escapeHtml(screen.searchPrompt.rawInputPlaceholder)}"
+              value="${escapeHtml(screen.searchPrompt.rawInputValue)}"
+              class="w-full rounded-[1.25rem] bg-app-surface px-4 py-3 text-lg text-app-text outline-none ring-1 ring-app-line transition placeholder:text-app-text-soft/72 focus:bg-app-canvas focus:ring-2 focus:ring-app-accent/35"
+            >
+          </label>
+          <button class="rounded-full bg-app-ink px-4 py-3 text-sm font-semibold text-app-ink-text sm:shrink-0" type="submit">${escapeHtml(
             screen.searchPrompt.submitLabel,
           )}</button>
+        </div>
+        <div class="flex flex-wrap items-center gap-2">
           ${screen.searchPrompt.examples
             .map(
               (example) =>
