@@ -45,6 +45,26 @@ export function renderHomePage(screen: HomeScreenModel): string {
 
 function renderSearchSurface(screen: HomeScreenModel): string {
   const exampleFieldName = `${screen.searchPrompt.rawInputName}Example`;
+  const exampleCount = screen.searchPrompt.examples.length;
+  const examplesLabel = exampleCount === 1 ? "Show sample query" : `Show sample queries (${exampleCount})`;
+  const examples = exampleCount
+    ? `<details class="group">
+            <summary class="inline-flex cursor-pointer list-none items-center gap-2 rounded-full border border-app-line bg-app-surface px-3 py-2 text-sm font-medium text-app-text-soft transition hover:border-app-accent/30 hover:text-app-text">
+              <span>${escapeHtml(examplesLabel)}</span>
+              <span class="text-xs transition group-open:rotate-45">+</span>
+            </summary>
+            <div class="mt-2 flex flex-wrap items-center gap-2">
+              ${screen.searchPrompt.examples
+                .map(
+                  (example) =>
+                    `<button class="rounded-full border border-app-line bg-app-surface px-3 py-2 text-sm text-app-text-soft" type="submit" name="${escapeHtml(
+                      exampleFieldName,
+                    )}" value="${escapeHtml(example)}">${escapeHtml(example)}</button>`,
+                )
+                .join("")}
+            </div>
+          </details>`
+    : "";
 
   return `<section class="max-w-4xl">
     <div class="sticky top-0 z-10 rounded-[1.5rem] border border-app-line bg-app-canvas/92 px-3 py-3 shadow-[var(--shadow-panel)] supports-[backdrop-filter]:bg-app-canvas/72 backdrop-blur-xl">
@@ -67,16 +87,7 @@ function renderSearchSurface(screen: HomeScreenModel): string {
             screen.searchPrompt.submitLabel,
           )}</button>
         </div>
-        <div class="flex flex-wrap items-center gap-2">
-          ${screen.searchPrompt.examples
-            .map(
-              (example) =>
-                `<button class="rounded-full border border-app-line bg-app-surface px-3 py-2 text-sm text-app-text-soft" type="submit" name="${escapeHtml(
-                  exampleFieldName,
-                )}" value="${escapeHtml(example)}">${escapeHtml(example)}</button>`,
-            )
-            .join("")}
-        </div>
+        ${examples}
       </form>
     </div>
   </section>`;

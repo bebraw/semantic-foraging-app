@@ -72,7 +72,7 @@ The home page is a server-rendered semantic-foraging search surface that lets co
 - The home screen model must be assembled by a dedicated UI agent module instead of being hand-built inside the route or view layer.
 - The browser UI should stay search-first and avoid developer-facing route catalogs, runtime diagnostics, roadmap notes, or visible trace identifiers.
 - Result headers and supporting copy should stay query-first and avoid explanatory metatext about why a particular result view was selected.
-- The primary search affordance may include example queries when those examples clarify supported semantic result shapes.
+- The primary search affordance may include example queries when those examples clarify supported semantic result shapes, but they should stay behind a compact on-demand control instead of rendering expanded by default.
 - Clicking an example query must submit the clicked example even when the visible text input still contains a previous search.
 - The empty state should not repeat the example queries as inert content elsewhere on the page.
 - The intent clarification path must reuse the same stored workflow state used by the JSON clarification endpoint.
