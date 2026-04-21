@@ -234,10 +234,10 @@ function renderMapPresentation(screen: HomeScreenModel): string {
   const overlayMarkup =
     overlay?.status === "ready" ? overlay.points.map((point) => renderOverlayPoint(point, width, height, bounds)).join("") : "";
 
-  return `<div class="grid gap-6 lg:grid-cols-[minmax(0,1.35fr)_22rem]" data-map-root data-map-location="idle" data-map-state="${escapeHtml(
+  return `<div class="grid items-start gap-6 lg:grid-cols-[minmax(0,1.35fr)_22rem]" data-map-root data-map-location="idle" data-map-state="${escapeHtml(
     serializedMapState,
   )}" data-map-active-id="${escapeHtml(initialFeature?.id ?? "")}">
-    <div class="grid gap-4 rounded-[1.8rem] border border-app-line bg-app-surface p-4">
+    <div class="grid content-start gap-4 self-start rounded-[1.8rem] border border-app-line bg-app-surface p-4">
       <div class="flex flex-wrap items-center justify-between gap-3 px-1">
         <div>
           <p class="text-[0.72rem] font-semibold uppercase tracking-[0.3em] text-app-text-soft">${escapeHtml(screen.mapView.title)}</p>
@@ -249,7 +249,7 @@ function renderMapPresentation(screen: HomeScreenModel): string {
           <span class="rounded-full border border-app-line bg-app-canvas px-3 py-2 text-sm text-app-text-soft" data-map-browser-zoom></span>
         </div>
       </div>
-      <div class="grid gap-3">
+      <div class="grid content-start gap-3">
         <div class="relative hidden overflow-hidden rounded-[1.4rem] border border-app-line bg-app-canvas" data-map-browser-frame data-map-mode="fallback" hidden>
           <div class="flex items-center justify-between gap-3 border-b border-app-line px-4 py-3" data-map-browser-chrome>
             <p class="text-sm font-medium text-app-text" data-map-browser-source>${escapeHtml(screen.mapView.basemap.label)}</p>
