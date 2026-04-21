@@ -17,7 +17,8 @@ describe("renderHomePage", () => {
     expect(html).toContain('data-layout-column="results"');
     expect(html).not.toContain('data-layout-column="observation"');
     expect(html).toContain("<details");
-    expect(html).toContain("Show sample queries (3)");
+    expect(html).toContain('aria-label="Show sample queries (3)"');
+    expect(html).toContain(">Samples<");
     expect(html).toContain("Nearby berry spots");
     expect(html).toContain("Recent searches");
     expect(html).not.toContain("Saved artifacts");

@@ -48,12 +48,12 @@ function renderSearchSurface(screen: HomeScreenModel): string {
   const exampleCount = screen.searchPrompt.examples.length;
   const examplesLabel = exampleCount === 1 ? "Show sample query" : `Show sample queries (${exampleCount})`;
   const examples = exampleCount
-    ? `<details class="group">
-            <summary class="inline-flex cursor-pointer list-none items-center gap-2 rounded-full border border-app-line bg-app-surface px-3 py-2 text-sm font-medium text-app-text-soft transition hover:border-app-accent/30 hover:text-app-text">
-              <span>${escapeHtml(examplesLabel)}</span>
+    ? `<details class="group relative shrink-0">
+            <summary aria-label="${escapeHtml(examplesLabel)}" class="inline-flex min-h-11 cursor-pointer list-none items-center gap-2 rounded-full border border-transparent px-3 py-2 text-sm font-medium text-app-text-soft transition hover:border-app-accent/20 hover:bg-app-surface hover:text-app-text">
+              <span>Samples</span>
               <span class="text-xs transition group-open:rotate-45">+</span>
             </summary>
-            <div class="mt-2 flex flex-wrap items-center gap-2">
+            <div class="absolute right-0 top-[calc(100%+0.65rem)] z-20 flex w-[min(24rem,calc(100vw-3.5rem))] flex-wrap justify-end gap-2 rounded-[1.25rem] border border-app-line bg-app-canvas/96 p-3 shadow-[var(--shadow-panel)] supports-[backdrop-filter]:bg-app-canvas/80 backdrop-blur-xl">
               ${screen.searchPrompt.examples
                 .map(
                   (example) =>
@@ -69,7 +69,7 @@ function renderSearchSurface(screen: HomeScreenModel): string {
   return `<section class="max-w-4xl">
     <div class="sticky top-0 z-10 rounded-[1.5rem] border border-app-line bg-app-canvas/92 px-3 py-3 shadow-[var(--shadow-panel)] supports-[backdrop-filter]:bg-app-canvas/72 backdrop-blur-xl">
       <form method="post" action="${escapeHtml(screen.searchPrompt.actionPath)}" class="grid gap-2.5">
-        <div class="flex flex-col gap-2 sm:flex-row sm:items-center">
+        <div class="flex items-center gap-2">
           <label class="block min-w-0 flex-1" for="semantic-query">
             <span class="sr-only">${escapeHtml(screen.searchPrompt.rawInputLabel)}</span>
             <input
@@ -83,11 +83,11 @@ function renderSearchSurface(screen: HomeScreenModel): string {
               class="w-full rounded-[1.25rem] bg-app-surface px-4 py-3 text-lg text-app-text outline-none ring-1 ring-app-line transition placeholder:text-app-text-soft/72 focus:bg-app-canvas focus:ring-2 focus:ring-app-accent/35"
             >
           </label>
+          ${examples}
           <button class="rounded-full bg-app-ink px-4 py-3 text-sm font-semibold text-app-ink-text sm:shrink-0" type="submit">${escapeHtml(
             screen.searchPrompt.submitLabel,
           )}</button>
         </div>
-        ${examples}
       </form>
     </div>
   </section>`;
