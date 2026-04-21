@@ -167,7 +167,7 @@ export function createHomeScreenModel(input: CreateHomeScreenInput): HomeScreenM
     kind: "home",
     eyebrow: "Semantic Foraging",
     title: "Foraging Search",
-    description: "A minimal semantic-foraging search surface that maps each query to an appropriate result view.",
+    description: "",
     overviewTitle: "",
     overviewBody: "",
     runtimeTitle: "Model runtime",
