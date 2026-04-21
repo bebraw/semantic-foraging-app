@@ -93,6 +93,21 @@ test("uses map presentation and browser enhancement for nearby berry spots", asy
   await expect(page.locator("[data-map-location-status]")).toContainText("Using current location to orient the map.");
 });
 
+test("supports clicking a premade query button from the empty search state", async ({ page, context }) => {
+  await context.grantPermissions(["geolocation"]);
+  await context.setGeolocation({
+    latitude: 61.65,
+    longitude: 28.1,
+  });
+
+  await page.goto("/");
+  await page.getByRole("button", { name: "Nearby berry spots" }).click();
+
+  await expect(page.locator("[data-presentation-kind='map']")).toBeVisible();
+  await expect(page.locator("[data-map-detail-label]")).toHaveText("Bilberry lakeshore pocket");
+  await expect(page.getByLabel("Search the landscape")).toHaveValue("Nearby berry spots");
+});
+
 test("saves an artifact and reloads it into the prepared explanation panel", async ({ page }) => {
   await page.goto("/");
 

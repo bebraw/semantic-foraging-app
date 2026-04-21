@@ -70,7 +70,7 @@ const CompletedIntentSubmissionSchema = z.object({
 
 export async function handleIntentActionRequest(request: Request, context: AppContext): Promise<Response> {
   const formData = await request.formData();
-  const rawInput = readRequiredField(formData, "input");
+  const rawInput = readFirstRequiredField(formData, ["input", "inputExample"]);
   let state = withIntentInput(createInitialForagingWorkbenchState(), rawInput.value);
 
   if (!rawInput.ok) {
@@ -403,6 +403,21 @@ function readRequiredField(formData: FormData, name: string): { ok: true; value:
   return {
     ok: true,
     value,
+  };
+}
+
+function readFirstRequiredField(formData: FormData, names: string[]): { ok: true; value: string } | { ok: false; value: string } {
+  for (const name of names) {
+    const field = readRequiredField(formData, name);
+
+    if (field.ok) {
+      return field;
+    }
+  }
+
+  return {
+    ok: false,
+    value: "",
   };
 }
 

@@ -57,6 +57,26 @@ describe("workbench actions", () => {
     expect(body).toContain("Continue search");
   });
 
+  it("accepts a premade search query button submission when the text field is empty", async () => {
+    const formData = new FormData();
+    formData.set("input", "   ");
+    formData.set("inputExample", "Nearby berry spots");
+
+    const response = await handleIntentActionRequest(
+      new Request("http://example.com/actions/intent", {
+        method: "POST",
+        body: formData,
+      }),
+      createAppContext(exampleRoutes),
+    );
+
+    expect(response.status).toBe(200);
+    const body = await response.text();
+    expect(body).toContain('data-presentation-kind="map"');
+    expect(body).toContain("Nearby berry spots");
+    expect(body).not.toContain("Intent input required");
+  });
+
   it("continues a clarification workflow through the server-rendered workbench", async () => {
     const context = createAppContext(exampleRoutes);
     const initialFormData = new FormData();

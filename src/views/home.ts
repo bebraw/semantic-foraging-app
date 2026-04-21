@@ -31,6 +31,7 @@ export function renderHomePage(screen: HomeScreenModel): string {
 
 function renderSearchSurface(screen: HomeScreenModel): string {
   const statusCopy = screen.presentation.primaryKind === "empty" ? screen.presentation.emptyState : screen.presentation.summary;
+  const exampleFieldName = `${screen.searchPrompt.rawInputName}Example`;
 
   return `<section class="max-w-4xl">
     <div class="sticky top-0 z-10 -mx-3 rounded-[1.9rem] border border-app-line bg-app-canvas/92 px-3 py-3 shadow-[var(--shadow-panel)] supports-[backdrop-filter]:bg-app-canvas/72 backdrop-blur-xl">
@@ -56,7 +57,7 @@ function renderSearchSurface(screen: HomeScreenModel): string {
             .map(
               (example) =>
                 `<button class="rounded-full border border-app-line bg-app-surface px-3 py-2 text-sm text-app-text-soft" type="submit" name="${escapeHtml(
-                  screen.searchPrompt.rawInputName,
+                  exampleFieldName,
                 )}" value="${escapeHtml(example)}">${escapeHtml(example)}</button>`,
             )
             .join("")}
