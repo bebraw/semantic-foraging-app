@@ -5,6 +5,8 @@ import { renderPage } from "./render-page";
 
 export function renderHomePage(screen: HomeScreenModel): string {
   const supportsMapEnhancement = screen.mapView.features.length > 0;
+  const hasObservationContent = hasObservationColumnContent(screen);
+  const layoutClass = hasObservationContent ? "xl:grid-cols-[16rem_minmax(0,1.45fr)_19rem]" : "xl:grid-cols-[16rem_minmax(0,1fr)]";
   const heading = screen.title
     ? `<h1 class="mt-2 text-[clamp(1.85rem,5vw,3.1rem)] leading-[0.94] font-semibold tracking-[-0.05em]">${escapeHtml(screen.title)}</h1>`
     : "";
@@ -17,7 +19,7 @@ export function renderHomePage(screen: HomeScreenModel): string {
         </div>
         <p class="max-w-xl text-sm leading-6 text-app-text-soft">${escapeHtml(screen.description)}</p>
       </header>
-      <div class="grid gap-6 xl:grid-cols-[16rem_minmax(0,1.45fr)_22rem] xl:items-start">
+      <div class="grid gap-6 xl:items-start ${layoutClass}">
         <aside data-layout-column="recent" class="order-2 grid gap-4 xl:order-1 xl:sticky xl:top-5">
           ${renderRecentSessionsColumn(screen)}
         </aside>
@@ -26,9 +28,7 @@ export function renderHomePage(screen: HomeScreenModel): string {
           ${renderAlerts(screen.alerts)}
           ${renderPresentationSection(screen)}
         </div>
-        <aside data-layout-column="observation" class="order-3 grid gap-4">
-          ${renderObservationColumn(screen)}
-        </aside>
+        ${hasObservationContent ? `<aside data-layout-column="observation" class="order-3 grid gap-4">${renderObservationColumn(screen)}</aside>` : ""}
       </div>
     </div>
   </main>`;
@@ -683,6 +683,10 @@ function renderObservationColumn(screen: HomeScreenModel): string {
 }
 
 function renderSavedArtifactsSection(screen: HomeScreenModel): string {
+  if (screen.savedArtifacts.length === 0) {
+    return "";
+  }
+
   return `<section class="grid gap-4">
     <div class="flex items-center justify-between gap-3">
       <div>
@@ -690,14 +694,17 @@ function renderSavedArtifactsSection(screen: HomeScreenModel): string {
         <h2 class="mt-2 text-2xl font-semibold tracking-[-0.04em] text-app-text">Saved artifacts</h2>
       </div>
     </div>
-    ${
-      screen.savedArtifacts.length > 0
-        ? renderSavedArtifacts(screen)
-        : `<p class="rounded-[1.8rem] border border-app-line bg-app-surface p-5 text-sm text-app-text-soft">${escapeHtml(
-            screen.savedArtifactsEmptyState,
-          )}</p>`
-    }
+    ${renderSavedArtifacts(screen)}
   </section>`;
+}
+
+function hasObservationColumnContent(screen: HomeScreenModel): boolean {
+  return (
+    screen.savedArtifacts.length > 0 ||
+    screen.explanationWorkbench.latestSubmission !== undefined ||
+    screen.explanationWorkbench.titleValue.length > 0 ||
+    screen.explanationWorkbench.factsValue.length > 0
+  );
 }
 
 function renderSavedArtifacts(screen: HomeScreenModel): string {

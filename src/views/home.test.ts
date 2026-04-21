@@ -15,10 +15,10 @@ describe("renderHomePage", () => {
     expect(html).toContain("Semantic Foraging");
     expect(html).toContain('data-layout-column="recent"');
     expect(html).toContain('data-layout-column="results"');
-    expect(html).toContain('data-layout-column="observation"');
+    expect(html).not.toContain('data-layout-column="observation"');
     expect(html).toContain("Nearby berry spots");
     expect(html).toContain("Recent searches");
-    expect(html).toContain("Saved artifacts");
+    expect(html).not.toContain("Saved artifacts");
     expect(html).toContain('data-presentation-kind="empty"');
     expect(html).not.toContain('aria-label="Semantic result components"');
     expect(html).not.toContain('id="search-status"');
@@ -308,6 +308,8 @@ describe("renderHomePage", () => {
     expect(html).toContain("Restore revision");
     expect(html).toContain("Use revision in workbench");
     expect(html).toContain("Recent searches");
+    expect(html).toContain('data-layout-column="observation"');
+    expect(html).toContain("Saved artifacts");
     expect(html).toContain("Run search");
     expect(html).toContain('value="Find chanterelles"');
   });
