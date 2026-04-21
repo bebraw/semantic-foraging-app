@@ -59,6 +59,9 @@ describe("renderHomePage", () => {
     expect(html).toContain('data-map-item="candidate-observation-bilberry-lakeshore-pocket"');
     expect(html).toContain('rel="stylesheet" href="/vendor/leaflet.css"');
     expect(html).toContain('<script src="/vendor/leaflet.js"></script>');
+    expect(html).toContain("data-debug-panel");
+    expect(html).toContain("Debug details");
+    expect(html).not.toContain("data-debug-panel open");
   });
 
   it("renders a table when the query explicitly asks for one", () => {

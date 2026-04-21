@@ -94,6 +94,28 @@ test("uses map presentation and browser enhancement for nearby berry spots", asy
   await expect(page.locator("[data-map-location-status]")).toContainText("Using current location to orient the map.");
 });
 
+test("keeps debug details hidden by default and reveals them behind a toggle", async ({ page, context }) => {
+  await context.grantPermissions(["geolocation"]);
+  await context.setGeolocation({
+    latitude: 61.65,
+    longitude: 28.1,
+  });
+
+  await page.goto("/");
+  await page.getByRole("button", { name: "Nearby berry spots" }).click();
+
+  const debugPanel = page.locator("[data-debug-panel]");
+
+  await expect(debugPanel).toBeVisible();
+  await expect(debugPanel.getByText("missing: region")).toBeHidden();
+  await expect(debugPanel.getByText("intent: find-observations")).toBeHidden();
+
+  await debugPanel.locator("[data-debug-toggle]").click();
+
+  await expect(debugPanel.getByText("missing: region")).toBeVisible();
+  await expect(debugPanel.getByText("intent: find-observations")).toBeVisible();
+});
+
 test("supports clicking a premade query button from the empty search state", async ({ page, context }) => {
   await context.grantPermissions(["geolocation"]);
   await context.setGeolocation({

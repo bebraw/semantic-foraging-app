@@ -65,7 +65,6 @@ function renderSearchSurface(screen: HomeScreenModel): string {
       </form>
       <div id="search-status" class="mt-3 flex flex-wrap items-center gap-3 text-sm leading-6 text-app-text-soft">
         <span>${escapeHtml(statusCopy)}</span>
-        ${renderSearchMeta(screen)}
       </div>
     </div>
   </section>`;
@@ -115,7 +114,7 @@ function renderPresentationSection(screen: HomeScreenModel): string {
       </div>
       ${renderComponentPalette(screen)}
     </div>
-    ${renderSignalList(screen.presentation.signals)}
+    ${renderDebugPanel(screen)}
     ${renderPrimaryPresentation(screen)}
   </section>`;
 }
@@ -276,8 +275,24 @@ function renderViewSwitchScript(): string {
 `.trim();
 }
 
+function renderDebugPanel(screen: HomeScreenModel): string {
+  if (!screen.intentWorkbench.latestSubmission) {
+    return "";
+  }
+
+  return `<details class="max-w-4xl rounded-[1.5rem] border border-app-line bg-app-surface px-4 py-3 text-sm text-app-text-soft" data-debug-panel>
+    <summary class="cursor-pointer list-none font-medium text-app-text" data-debug-toggle>Debug details</summary>
+    <div class="mt-3 grid gap-3">
+      <div class="flex flex-wrap gap-2" data-debug-search-meta>
+        ${renderSearchMeta(screen)}
+      </div>
+      ${renderSignalList(screen.presentation.signals)}
+    </div>
+  </details>`;
+}
+
 function renderSignalList(signals: HomeScreenModel["presentation"]["signals"]): string {
-  return `<ul class="flex flex-wrap gap-2 text-sm text-app-text-soft">
+  return `<ul class="flex flex-wrap gap-2 text-sm text-app-text-soft" data-debug-signal-list>
     ${signals
       .map(
         (signal) =>
