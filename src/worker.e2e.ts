@@ -54,7 +54,7 @@ test("supports the semantic search flow for card-oriented results", async ({ pag
   await expect(resultSection).toBeVisible();
   await expect(resultSection).toContainText("create-field-note");
   await expect(page.getByRole("heading", { level: 3, name: "Field note scaffold" })).toBeVisible();
-  await expect(page).toHaveURL(/\/$/);
+  await expect(page).toHaveURL(/\/\?input=Create\+a\+new\+field\+note$/);
 });
 
 test("supports clarification and continuation through the search surface", async ({ page }) => {

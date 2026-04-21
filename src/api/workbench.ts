@@ -98,6 +98,11 @@ export async function handleIntentActionRequest(request: Request, context: AppCo
   }
 
   state = withIntentSubmission(state, result.payload);
+
+  if (new URL(request.url).pathname === "/") {
+    return redirectToSearchQuery(result.payload.input);
+  }
+
   return await renderWorkbenchResponse(context, state);
 }
 
@@ -372,7 +377,7 @@ async function renderWorkbenchErrorResponse(
   );
 }
 
-async function renderWorkbenchResponse(
+export async function renderWorkbenchResponse(
   context: AppContext,
   workbench: ReturnType<typeof createInitialForagingWorkbenchState>,
   status = 200,
@@ -387,6 +392,18 @@ async function renderWorkbenchResponse(
   }
 
   return htmlResponse(renderHomePage(result.screen), status);
+}
+
+function redirectToSearchQuery(rawInput: string): Response {
+  const destination = new URL("http://local/");
+  destination.searchParams.set("input", rawInput);
+
+  return new Response(null, {
+    status: 303,
+    headers: {
+      location: destination.pathname + destination.search,
+    },
+  });
 }
 
 function readRequiredField(formData: FormData, name: string): { ok: true; value: string } | { ok: false; value: string } {

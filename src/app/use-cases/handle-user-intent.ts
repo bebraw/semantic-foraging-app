@@ -8,6 +8,7 @@ import type { SubmitUserIntentMessage } from "../message";
 export async function handleUserIntent(context: AppContext, message: SubmitUserIntentMessage): Promise<IntentResult | AppErrorResult> {
   const result = await classifyIntent(context.modelProvider, message.rawInput);
   const workflow = createIntentWorkflow(message.rawInput, result.classification);
+  const shouldPersistSession = message.persistSession ?? true;
 
   if (workflow.state === "awaiting_clarification") {
     try {
@@ -23,7 +24,7 @@ export async function handleUserIntent(context: AppContext, message: SubmitUserI
     }
   }
 
-  if (workflow.state === "completed") {
+  if (workflow.state === "completed" && shouldPersistSession) {
     const session = createStoredForagingSession(message.rawInput, result.classification, result.confidenceBand);
 
     if (session) {
@@ -46,7 +47,7 @@ export async function handleUserIntent(context: AppContext, message: SubmitUserI
     messageType: message.type,
     notes: [
       `intent:${result.classification.intent}`,
-      ...(workflow.state === "completed" ? ["session:stored"] : []),
+      ...(workflow.state === "completed" ? [`session:${shouldPersistSession ? "stored" : "skipped"}`] : []),
       `missing:${result.classification.missing.join("|") || "none"}`,
       `confidence:${result.classification.confidence.toFixed(2)}`,
       `confidence-band:${result.confidenceBand}`,

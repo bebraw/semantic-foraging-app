@@ -3,8 +3,16 @@ import type { AppContext } from "../app/context";
 import { createAppErrorResult } from "../domain/contracts/result";
 import { renderHomePage } from "../views/home";
 import { htmlResponse } from "../views/shared";
+import {
+  createInitialForagingWorkbenchState,
+  createWorkbenchAlert,
+  withIntentInput,
+  withIntentSubmission,
+  withWorkbenchAlert,
+} from "../domain/agents/ui-agent";
 import { z } from "zod";
 import { createErrorResponse } from "./error-response";
+import { renderWorkbenchResponse } from "./workbench";
 
 const AppExplanationQuerySchema = z.object({
   type: z.literal("RequestExplanation"),
@@ -30,7 +38,33 @@ const AppQuerySchema = z.discriminatedUnion("type", [
   AppExplanationQuerySchema,
 ]);
 
-export async function handleHomePageRequest(context: AppContext): Promise<Response> {
+export async function handleHomePageRequest(request: Request, context: AppContext): Promise<Response> {
+  const rawInput = new URL(request.url).searchParams.get("input")?.trim() ?? "";
+
+  if (rawInput.length > 0) {
+    let workbench = withIntentInput(createInitialForagingWorkbenchState(), rawInput);
+    const result = await createAppBus(context).dispatch({
+      type: "SubmitUserIntent",
+      rawInput,
+      persistSession: false,
+    });
+
+    if (result.kind === "error") {
+      return await renderWorkbenchResponse(
+        context,
+        withWorkbenchAlert(workbench, createWorkbenchAlert("Intent request failed", result.error.message)),
+        result.error.status,
+      );
+    }
+
+    if (result.kind !== "intent") {
+      throw new Error("Expected an intent result");
+    }
+
+    workbench = withIntentSubmission(workbench, result.payload);
+    return await renderWorkbenchResponse(context, workbench);
+  }
+
   const result = await createAppBus(context).dispatch({ type: "RenderHomeScreen" });
 
   if (result.kind !== "screen" || result.screen.kind !== "home") {

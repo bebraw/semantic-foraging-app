@@ -18,6 +18,7 @@ export type InspectModelRuntimeMessage = {
 export type SubmitUserIntentMessage = {
   type: "SubmitUserIntent";
   rawInput: string;
+  persistSession?: boolean;
 };
 
 export type ClarifyUserIntentMessage = {

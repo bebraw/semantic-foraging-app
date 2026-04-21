@@ -22,7 +22,18 @@ describe("worker", () => {
     expect(body).toContain('data-presentation-kind="empty"');
   });
 
-  it("handles the initial search on the home route without leaving the page", async () => {
+  it("renders an initial query from the browser query parameter", async () => {
+    const response = await handleRequest(new Request("http://example.com/?input=Create+a+new+field+note"));
+
+    expect(response.status).toBe(200);
+    expect(response.headers.get("content-type")).toContain("text/html");
+
+    const body = await response.text();
+    expect(body).toContain("Create a new field note");
+    expect(body).toContain("Field note scaffold");
+  });
+
+  it("redirects the initial home-route search to the persisted query URL", async () => {
     const formData = new FormData();
     formData.set("input", "Create a new field note");
 
@@ -33,12 +44,8 @@ describe("worker", () => {
       }),
     );
 
-    expect(response.status).toBe(200);
-    expect(response.headers.get("content-type")).toContain("text/html");
-
-    const body = await response.text();
-    expect(body).toContain("Field note scaffold");
-    expect(body).toContain("Create a new field note");
+    expect(response.status).toBe(303);
+    expect(response.headers.get("location")).toBe("/?input=Create+a+new+field+note");
   });
 
   it("returns a JSON health response", async () => {

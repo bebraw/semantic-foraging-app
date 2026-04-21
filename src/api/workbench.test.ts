@@ -39,6 +39,22 @@ describe("workbench actions", () => {
     expect(body).toContain("Create a new field note");
   });
 
+  it("redirects home-route search submissions to the persisted query URL", async () => {
+    const formData = new FormData();
+    formData.set("input", "Create a new field note");
+
+    const response = await handleIntentActionRequest(
+      new Request("http://example.com/", {
+        method: "POST",
+        body: formData,
+      }),
+      createAppContext(exampleRoutes),
+    );
+
+    expect(response.status).toBe(303);
+    expect(response.headers.get("location")).toBe("/?input=Create+a+new+field+note");
+  });
+
   it("renders a clarification prompt back into the workbench page", async () => {
     const formData = new FormData();
     formData.set("input", "Help");

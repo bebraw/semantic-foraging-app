@@ -64,7 +64,7 @@ export async function handleRequest(request: Request, env: Env = {}): Promise<Re
   }
 
   if (url.pathname === "/") {
-    response = await handleHomePageRequest(context);
+    response = await handleHomePageRequest(request, context);
     return finalizeResponse(response, trace);
   }
 
