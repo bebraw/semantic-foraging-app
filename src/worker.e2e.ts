@@ -94,7 +94,7 @@ test("uses map presentation and browser enhancement for nearby berry spots", asy
   await expect(page.locator("[data-map-location-status]")).toContainText("Using current location to orient the map.");
 });
 
-test("keeps debug details hidden by default and reveals them behind a toggle", async ({ page, context }) => {
+test("keeps debug details hidden in a foldable sidebar and reveals them behind a toggle", async ({ page, context }) => {
   await context.grantPermissions(["geolocation"]);
   await context.setGeolocation({
     latitude: 61.65,
@@ -109,6 +109,7 @@ test("keeps debug details hidden by default and reveals them behind a toggle", a
   await expect(debugPanel).toBeVisible();
   await expect(debugPanel.getByText("missing: region")).toBeHidden();
   await expect(debugPanel.getByText("intent: find-observations")).toBeHidden();
+  await expect(debugPanel.locator("[data-debug-toggle]")).toHaveText("Debug");
 
   await debugPanel.locator("[data-debug-toggle]").click();
 

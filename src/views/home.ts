@@ -285,13 +285,17 @@ function renderDebugPanel(screen: HomeScreenModel): string {
     return "";
   }
 
-  return `<details class="max-w-4xl rounded-[1.5rem] border border-app-line bg-app-surface px-4 py-3 text-sm text-app-text-soft" data-debug-panel>
-    <summary class="cursor-pointer list-none font-medium text-app-text" data-debug-toggle>Debug details</summary>
-    <div class="mt-3 grid gap-3">
+  return `<details class="fixed top-24 right-0 z-30 flex max-w-[min(22rem,calc(100vw-1rem))] flex-row-reverse items-start" data-debug-panel>
+    <summary class="mt-5 rounded-l-[1rem] border border-app-line border-r-0 bg-app-surface/96 px-2 py-3 text-[0.7rem] font-semibold uppercase tracking-[0.2em] text-app-text shadow-[var(--shadow-panel)] backdrop-blur-xl [writing-mode:vertical-rl]" data-debug-toggle>Debug</summary>
+    <div class="w-[min(20rem,calc(100vw-3rem))] rounded-l-[1.3rem] border border-app-line bg-app-surface/96 px-4 py-4 text-sm text-app-text-soft shadow-[var(--shadow-panel)] backdrop-blur-xl">
+      <p class="text-[0.68rem] font-semibold uppercase tracking-[0.22em] text-app-text">Debug details</p>
+      <p class="mt-2 text-xs leading-5 text-app-text-soft">Intent, confidence, and semantic mapping signals.</p>
+      <div class="mt-3 grid gap-3">
       <div class="flex flex-wrap gap-2" data-debug-search-meta>
         ${renderSearchMeta(screen)}
       </div>
       ${renderSignalList(screen.presentation.signals)}
+      </div>
     </div>
   </details>`;
 }

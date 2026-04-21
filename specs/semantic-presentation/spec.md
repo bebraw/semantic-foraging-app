@@ -31,7 +31,7 @@ The home page is a search-first semantic-foraging surface that maps each query t
 - Presentation selection must happen before the HTML view layer so the same decision remains visible through the JSON screen-model query route.
 - The home page should keep the primary surface minimal and search-led, while saved artifacts, recent sessions, and explanation drafting remain secondary support surfaces.
 - Component metadata must stay explicit enough that a contributor can inspect why the UI chose one presentation over another.
-- Debug-oriented presentation metadata should be hidden by default in the HTML UI and only revealed through an explicit toggle.
+- Debug-oriented presentation metadata should be hidden by default in the HTML UI and only revealed through an explicit foldable sidebar toggle.
 - The semantic mapping layer may use deterministic heuristics today, but the contract should remain typed so the mapping strategy can evolve later without hiding behavior in templates.
 
 ## Regression Guardrails
