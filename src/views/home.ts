@@ -1,480 +1,670 @@
-import type { HomeScreenModel } from "../domain/contracts/screen";
 import { describeArtifactRevisionChanges } from "../domain/agents/artifact-agent";
+import type { HomeScreenModel, SemanticTableColumn } from "../domain/contracts/screen";
 import { escapeHtml } from "./shared";
 import { renderPage } from "./render-page";
 
 export function renderHomePage(screen: HomeScreenModel): string {
-  const alertList = screen.alerts
-    .map(
-      (alert) =>
-        `<li class="rounded-xl border px-4 py-3 ${alert.tone === "error" ? "border-rose-200 bg-rose-50/70 text-rose-950" : "border-sky-200 bg-sky-50/70 text-sky-950"}">
-          <p class="text-[11px] font-semibold uppercase tracking-[0.18em]">${escapeHtml(alert.title)}</p>
-          <p class="mt-2 leading-7">${escapeHtml(alert.body)}</p>
-        </li>`,
-    )
-    .join("");
-  const latestIntent = screen.intentWorkbench.latestSubmission;
-  const latestExplanation = screen.explanationWorkbench.latestSubmission;
-  const completedIntent = latestIntent?.workflow.state === "completed" ? latestIntent : null;
-  const clarificationWorkflow = latestIntent?.workflow.state === "awaiting_clarification" ? latestIntent.workflow : null;
-  const initialMapFeature = screen.mapView.features[0] ?? null;
-  const overlay = screen.mapView.overlays[0];
-  const serializedMapState = serializeMapClientState(screen.mapView);
-  const mapMarkup = screen.mapView.features
-    .map((feature) =>
-      renderMapFeature(
-        feature,
-        screen.mapView.viewport.width,
-        screen.mapView.viewport.height,
-        screen.mapView.viewport.bounds,
-        feature.id === initialMapFeature?.id,
-      ),
-    )
-    .join("");
-  const overlayMarkup =
-    overlay?.status === "ready"
-      ? overlay.points
-          .map((point) =>
-            renderOverlayPoint(point, screen.mapView.viewport.width, screen.mapView.viewport.height, screen.mapView.viewport.bounds),
-          )
-          .join("")
-      : "";
-  const mapLegendMarkup = screen.mapView.features
-    .map(
-      (feature) =>
-        `<li>
-          <button
-            class="w-full rounded-xl border border-app-line/80 bg-app-surface px-4 py-3 text-left"
-            type="button"
-            data-map-item="${escapeHtml(feature.id)}"
-            data-map-label="${escapeHtml(feature.label)}"
-            data-map-kind="${escapeHtml(feature.kind)}"
-            data-map-source="${escapeHtml(feature.sourceSection)}"
-            data-map-summary="${escapeHtml(feature.summary)}"
-            data-map-evidence="${escapeHtml(feature.evidenceSummary)}"
-            data-map-active="${feature.id === initialMapFeature?.id ? "true" : "false"}"
-            aria-pressed="${feature.id === initialMapFeature?.id ? "true" : "false"}"
-          >
-            <p class="text-[11px] font-semibold uppercase tracking-[0.18em] text-app-text-soft">${escapeHtml(feature.kind)} / ${escapeHtml(feature.sourceSection)}</p>
-            <p class="mt-2 font-medium">${escapeHtml(feature.label)}</p>
-            <p class="mt-2 text-sm leading-6 text-app-text-soft">${escapeHtml(feature.evidenceSummary)}</p>
-          </button>
-        </li>`,
-    )
-    .join("");
-  const overlayStatusMarkup = overlay
-    ? `<div class="border-t border-app-line/80 pt-3">
-        <p class="text-[11px] font-semibold uppercase tracking-[0.18em] text-app-text-soft">${escapeHtml(overlay.label)} / ${escapeHtml(overlay.provider)}</p>
-        <p class="mt-2 text-sm leading-6 text-app-text-soft">${escapeHtml(overlay.note)}</p>
-      </div>`
-    : "";
-  const recentSessionMarkup = screen.recentSessions
-    .map(
-      (session) =>
-        `<li class="grid gap-3 border-b border-app-line/80 py-4 last:border-b-0 last:pb-0 first:pt-0">
-          <div class="flex flex-wrap items-center gap-3">
-            <p class="rounded-full bg-app-accent-ghost px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-app-accent-strong">${escapeHtml(session.sourceIntent)}</p>
-            <p class="text-sm text-app-text-soft">${escapeHtml(formatSavedAtLabel(session.savedAt))}</p>
-          </div>
-          <div>
-            <h3 class="text-lg font-semibold tracking-[-0.02em]">${escapeHtml(session.title)}</h3>
-            <p class="mt-2 leading-7 text-app-text-soft">${escapeHtml(session.summary)}</p>
-          </div>
-          <p class="text-sm text-app-text-soft">Detected cues: ${escapeHtml(formatCueSummary(session.cues))}</p>
-        </li>`,
-    )
-    .join("");
-  const savedArtifactMarkup = screen.savedArtifacts
-    .map(
-      (artifact) =>
-        `<li class="grid gap-3 border-b border-app-line/80 py-4 last:border-b-0 last:pb-0 first:pt-0">
-          <div class="flex flex-wrap items-center gap-3">
-            <p class="rounded-full bg-app-accent-ghost px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-app-accent-strong">${escapeHtml(artifact.kind)}</p>
-            <p class="text-[11px] font-semibold uppercase tracking-[0.18em] text-app-text-soft">${escapeHtml(artifact.sourceIntent)}</p>
-            <p class="text-sm text-app-text-soft">${escapeHtml(formatSavedAtLabel(artifact.savedAt))}</p>
-            ${artifact.updatedAt && artifact.updatedAt !== artifact.savedAt ? `<p class="text-sm text-app-text-soft">${escapeHtml(formatUpdatedAtLabel(artifact.updatedAt))}</p>` : ""}
-          </div>
-          <div>
-            <h3 class="text-lg font-semibold tracking-[-0.02em]">${escapeHtml(artifact.title)}</h3>
-            <p class="mt-2 leading-7 text-app-text-soft">${escapeHtml(artifact.summary)}</p>
-          </div>
-          ${
-            artifact.notes
-              ? `<div class="grid gap-2">
-                  <p class="text-[11px] font-semibold uppercase tracking-[0.16em] text-app-text-soft">Notes</p>
-                  <p class="leading-7 text-app-text-soft">${escapeHtml(artifact.notes)}</p>
-                </div>`
-              : ""
-          }
-          <p class="text-sm text-app-text-soft">Detected cues: ${escapeHtml(formatCueSummary(artifact.cues))}</p>
-          ${
-            artifact.evidence.length > 0
-              ? `<dl class="grid gap-3">
-                  ${artifact.evidence
-                    .map(
-                      (note) =>
-                        `<div class="border-l-2 border-app-line pl-4">
-                          <dt class="text-[11px] font-semibold uppercase tracking-[0.16em] text-app-text-soft">${escapeHtml(note.label)}</dt>
-                          <dd class="mt-1 leading-7">${escapeHtml(note.detail)}</dd>
-                        </div>`,
-                    )
-                    .join("")}
-                </dl>`
-              : ""
-          }
-          ${
-            artifact.revisions.length > 1
-              ? `<div class="grid gap-3 border-t border-app-line/80 pt-3">
-                  <p class="text-[11px] font-semibold uppercase tracking-[0.18em] text-app-text-soft">Revision history</p>
-                  <ul class="grid gap-3">
-                    ${artifact.revisions
-                      .slice(-3)
-                      .reverse()
-                      .map(
-                        (revision) =>
-                          `<li class="border-l-2 border-app-line pl-4">
-                            <p class="text-[11px] font-semibold uppercase tracking-[0.16em] text-app-text-soft">${escapeHtml(
-                              revision.kind,
-                            )} / ${escapeHtml(formatRecordedAtLabel(revision.recordedAt))}</p>
-                            <p class="mt-1 font-medium">${escapeHtml(revision.title)}</p>
-                            <p class="mt-1 text-sm leading-6 text-app-text-soft">${escapeHtml(revision.summary)}</p>
-                            ${revision.notes ? `<p class="mt-2 text-sm leading-6 text-app-text-soft">${escapeHtml(revision.notes)}</p>` : ""}
-                            <p class="mt-2 text-[11px] font-semibold uppercase tracking-[0.16em] text-app-text-soft">${escapeHtml(
-                              `Diff to current: ${describeArtifactRevisionChanges(artifact, revision).join(", ")}`,
-                            )}</p>
-                            <form class="mt-3" method="post" action="${escapeHtml(screen.artifactWorkbench.restoreActionPath)}">
-                              <input type="hidden" name="artifactId" value="${escapeHtml(artifact.artifactId)}">
-                              <input type="hidden" name="recordedAt" value="${escapeHtml(revision.recordedAt)}">
-                              <div class="flex flex-wrap items-center gap-3">
-                                <button class="inline-flex w-fit items-center rounded-lg border border-app-line bg-white px-3 py-2 text-[11px] font-semibold uppercase tracking-[0.16em] text-app-text" type="submit">Restore revision</button>
-                                <button class="inline-flex w-fit items-center rounded-lg border border-app-line bg-white px-3 py-2 text-[11px] font-semibold uppercase tracking-[0.16em] text-app-text" type="submit" formaction="${escapeHtml(
-                                  screen.artifactWorkbench.useActionPath,
-                                )}" formmethod="post">Use revision in workbench</button>
-                              </div>
-                            </form>
-                          </li>`,
-                      )
-                      .join("")}
-                  </ul>
-                </div>`
-              : ""
-          }
-          <form class="grid gap-3 rounded-xl border border-app-line/80 bg-app-surface px-4 py-4" method="post" action="${escapeHtml(
-            screen.artifactWorkbench.refineActionPath,
-          )}">
-            <input type="hidden" name="artifactId" value="${escapeHtml(artifact.artifactId)}">
-            <label class="grid gap-2">
-              <span class="text-[11px] font-semibold uppercase tracking-[0.16em] text-app-text-soft">Title</span>
-              <input
-                class="rounded-xl border border-app-line bg-white px-4 py-3 text-sm text-app-text"
-                type="text"
-                name="title"
-                value="${escapeHtml(artifact.title)}"
-              >
-            </label>
-            <label class="grid gap-2">
-              <span class="text-[11px] font-semibold uppercase tracking-[0.16em] text-app-text-soft">Summary</span>
-              <textarea
-                class="min-h-24 rounded-xl border border-app-line bg-white px-4 py-3 text-sm leading-7 text-app-text"
-                name="summary"
-              >${escapeHtml(artifact.summary)}</textarea>
-            </label>
-            <label class="grid gap-2">
-              <span class="text-[11px] font-semibold uppercase tracking-[0.16em] text-app-text-soft">Notes</span>
-              <textarea
-                class="min-h-24 rounded-xl border border-app-line bg-white px-4 py-3 text-sm leading-7 text-app-text"
-                name="notes"
-              >${escapeHtml(artifact.notes ?? "")}</textarea>
-            </label>
-            <div class="flex flex-wrap items-center gap-3">
-              <button class="inline-flex w-fit items-center rounded-lg bg-app-ink px-4 py-2 text-xs font-semibold uppercase tracking-[0.16em] text-app-ink-text" type="submit">Update artifact</button>
-              <button class="inline-flex w-fit items-center rounded-lg border border-app-line bg-white px-4 py-2 text-xs font-semibold uppercase tracking-[0.16em] text-app-text" type="submit" formaction="${escapeHtml(
-                screen.artifactWorkbench.useActionPath,
-              )}" formmethod="post">Use in workbench</button>
-            </div>
-          </form>
-        </li>`,
-    )
-    .join("");
-  const candidateMarkup = screen.candidateCards
-    .map(
-      (card) =>
-        `<li class="grid gap-4 border-b border-app-line/80 py-4 last:border-b-0 last:pb-0 first:pt-0">
-          <div class="flex flex-wrap items-center gap-3">
-            <p class="rounded-full bg-app-accent-ghost px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-app-accent-strong">${escapeHtml(card.kind)}</p>
-            <p class="text-sm font-semibold text-app-text-soft">${escapeHtml(card.statusLabel)}</p>
-          </div>
-          <div>
-            <h3 class="text-lg font-semibold tracking-[-0.02em]">${escapeHtml(card.title)}</h3>
-            <p class="mt-2 leading-7 text-app-text-soft">${escapeHtml(card.summary)}</p>
-          </div>
-          <dl class="grid gap-3">
-            ${card.evidence
-              .map(
-                (note) =>
-                  `<div class="border-l-2 border-app-line pl-4">
-                    <dt class="text-[11px] font-semibold uppercase tracking-[0.16em] text-app-text-soft">${escapeHtml(note.label)}</dt>
-                    <dd class="mt-1 leading-7">${escapeHtml(note.detail)}</dd>
-                  </div>`,
-              )
-              .join("")}
-          </dl>
-          ${renderArtifactSaveForm(card, completedIntent, screen.artifactWorkbench.saveActionPath)}
-        </li>`,
-    )
-    .join("");
-  const latestIntentMarkup = latestIntent
-    ? `<div class="grid gap-3 border-t border-app-line/80 pt-4">
-        <h3 class="text-[11px] font-semibold uppercase tracking-[0.18em] text-app-text-soft">Latest intent result</h3>
-        <dl class="grid gap-3 sm:grid-cols-2">
-          <div>
-            <dt class="text-[11px] font-semibold uppercase tracking-[0.16em] text-app-text-soft">Input</dt>
-            <dd class="mt-1 font-medium">${escapeHtml(latestIntent.input)}</dd>
-          </div>
-          <div>
-            <dt class="text-[11px] font-semibold uppercase tracking-[0.16em] text-app-text-soft">Intent</dt>
-            <dd class="mt-1 font-medium">${escapeHtml(latestIntent.classification.intent)}</dd>
-          </div>
-          <div>
-            <dt class="text-[11px] font-semibold uppercase tracking-[0.16em] text-app-text-soft">Confidence</dt>
-            <dd class="mt-1 font-medium">${escapeHtml(`${latestIntent.confidenceBand} (${latestIntent.classification.confidence.toFixed(2)})`)}</dd>
-          </div>
-          <div>
-            <dt class="text-[11px] font-semibold uppercase tracking-[0.16em] text-app-text-soft">Workflow</dt>
-            <dd class="mt-1 font-medium">${escapeHtml(latestIntent.workflow.state)}</dd>
-          </div>
-          <div class="sm:col-span-2">
-            <dt class="text-[11px] font-semibold uppercase tracking-[0.16em] text-app-text-soft">Provenance</dt>
-            <dd class="mt-1 font-medium">${escapeHtml(`${latestIntent.provenance.source} / ${latestIntent.provenance.reason ?? "n/a"}`)}</dd>
-          </div>
-          <div class="sm:col-span-2">
-            <dt class="text-[11px] font-semibold uppercase tracking-[0.16em] text-app-text-soft">Detected cues</dt>
-            <dd class="mt-1 font-medium">${escapeHtml(formatCueSummary(latestIntent.classification.cues))}</dd>
-          </div>
-          <div class="sm:col-span-2">
-            <dt class="text-[11px] font-semibold uppercase tracking-[0.16em] text-app-text-soft">Clarification focus</dt>
-            <dd class="mt-1 font-medium">${escapeHtml(formatMissingSummary(latestIntent.classification.missing))}</dd>
-          </div>
-        </dl>
-      </div>`
-    : "";
-  const clarificationMarkup = clarificationWorkflow
-    ? `<div class="grid gap-3 border-l-2 border-amber-300 pl-4">
-        <h3 class="text-[11px] font-semibold uppercase tracking-[0.18em] text-amber-950">Clarification needed</h3>
-        <p class="leading-7 text-amber-950">${escapeHtml(clarificationWorkflow.question)}</p>
-        <p class="text-sm text-amber-900">Allowed intents: ${clarificationWorkflow.options.map((option) => escapeHtml(option)).join(", ")}</p>
-        <form class="grid gap-4" method="post" action="${escapeHtml(screen.intentWorkbench.clarificationActionPath)}">
-          <input type="hidden" name="${escapeHtml(screen.intentWorkbench.clarificationWorkflowIdName)}" value="${escapeHtml(clarificationWorkflow.workflowId)}">
-          <label class="grid gap-2">
-            <span class="text-sm font-semibold">${escapeHtml(screen.intentWorkbench.clarificationLabel)}</span>
-            <textarea name="${escapeHtml(screen.intentWorkbench.clarificationName)}" class="min-h-24 rounded-xl border border-amber-200 bg-white px-4 py-3 leading-7 text-app-text" placeholder="${escapeHtml(screen.intentWorkbench.clarificationPlaceholder)}">${escapeHtml(screen.intentWorkbench.clarificationValue)}</textarea>
-          </label>
-          <button class="inline-flex w-fit items-center rounded-lg bg-app-ink px-4 py-2 text-sm font-semibold text-app-ink-text" type="submit">Continue workflow</button>
-        </form>
-      </div>`
-    : "";
-  const latestExplanationMarkup = latestExplanation
-    ? `<div class="grid gap-3 border-t border-app-line/80 pt-4">
-        <h3 class="text-[11px] font-semibold uppercase tracking-[0.18em] text-app-text-soft">Latest explanation</h3>
-        <p class="font-medium">${escapeHtml(latestExplanation.title)}</p>
-        <p class="leading-7 text-app-text-soft">${escapeHtml(latestExplanation.explanation)}</p>
-        <p class="text-sm text-app-text-soft">Provenance: ${escapeHtml(`${latestExplanation.provenance.source} / ${latestExplanation.provenance.reason ?? "n/a"}`)}</p>
-      </div>`
-    : "";
+  const needsMapEnhancement = screen.presentation.primaryKind === "map" && screen.mapView.features.length > 0;
+  const body = `<main class="min-h-screen px-6 py-8 sm:px-10 sm:py-12 lg:px-14">
+    <div class="mx-auto flex max-w-6xl flex-col gap-8 sm:gap-10">
+      <header class="max-w-3xl pb-2 sm:pb-4">
+        <p class="text-[0.72rem] font-semibold uppercase tracking-[0.3em] text-app-accent">${escapeHtml(screen.eyebrow)}</p>
+        <h1 class="mt-3 max-w-4xl text-[clamp(2.9rem,8vw,5.8rem)] leading-[0.92] font-semibold tracking-[-0.07em]">${escapeHtml(screen.title)}</h1>
+        <p class="mt-4 max-w-2xl text-base leading-7 text-app-text-soft sm:text-lg">${escapeHtml(screen.description)}</p>
+      </header>
+      ${renderSearchSurface(screen)}
+      ${renderAlerts(screen.alerts)}
+      ${renderPresentationSection(screen)}
+      ${renderSupportRail(screen)}
+    </div>
+  </main>`;
 
   return renderPage({
     title: screen.title,
+    body,
     traceId: screen.meta.traceId,
-    stylesheets: screen.mapView.features.length > 0 ? ["/vendor/leaflet.css"] : [],
-    scriptUrls: screen.mapView.features.length > 0 ? ["/vendor/leaflet.js"] : [],
-    scripts: screen.mapView.features.length > 0 ? [renderMapEnhancementScript()] : [],
-    body: `<main class="mx-auto w-[min(58rem,calc(100vw-2rem))] overflow-hidden rounded-2xl border border-app-line bg-app-surface shadow-panel py-10 sm:py-12">
-        <section class="border-b border-app-line px-5 py-8 sm:px-8 sm:py-10">
-          <p class="mb-3 text-[11px] font-semibold uppercase tracking-[0.24em] text-app-accent">${escapeHtml(screen.eyebrow)}</p>
-          <h1 class="max-w-[14ch] text-4xl leading-tight font-semibold tracking-[-0.04em] sm:text-5xl">${escapeHtml(screen.title)}</h1>
-          ${screen.description ? `<p class="mt-4 max-w-3xl text-lg leading-8 text-app-text-soft">${escapeHtml(screen.description)}</p>` : ""}
-          ${
-            screen.overviewTitle || screen.overviewBody
-              ? `<div class="mt-6 border-l-2 border-app-accent pl-4">
-            ${screen.overviewTitle ? `<p class="text-[11px] font-semibold uppercase tracking-[0.18em] text-app-text-soft">${escapeHtml(screen.overviewTitle)}</p>` : ""}
-            ${screen.overviewBody ? `<p class="mt-2 max-w-3xl leading-7 text-app-text-soft">${escapeHtml(screen.overviewBody)}</p>` : ""}
-          </div>`
-              : ""
-          }
-        </section>
-        <div class="grid gap-5 px-5 py-6 sm:px-8 sm:py-8">
-          ${screen.alerts.length > 0 ? `<ul class="grid gap-3">${alertList}</ul>` : ""}
-          <section class="grid gap-5">
-            <p class="text-[11px] font-semibold uppercase tracking-[0.18em] text-app-accent">${escapeHtml(screen.workbenchTitle)}</p>
-            <div>
-              <h2 class="text-2xl font-semibold tracking-[-0.03em]">${escapeHtml(screen.intentWorkbench.title)}</h2>
-              ${screen.workbenchBody ? `<p class="mt-2 max-w-3xl leading-7 text-app-text-soft">${escapeHtml(screen.workbenchBody)}</p>` : ""}
-              ${
-                screen.intentWorkbench.description
-                  ? `<p class="${screen.workbenchBody ? "mt-3" : "mt-2"} max-w-3xl leading-7 text-app-text-soft">${escapeHtml(screen.intentWorkbench.description)}</p>`
-                  : ""
-              }
-            </div>
-            <form class="grid gap-4" method="post" action="${escapeHtml(screen.intentWorkbench.actionPath)}">
-              <label class="grid gap-2">
-                <span class="text-sm font-semibold">${escapeHtml(screen.intentWorkbench.rawInputLabel)}</span>
-                <textarea name="${escapeHtml(screen.intentWorkbench.rawInputName)}" class="min-h-32 rounded-xl border border-app-line bg-app-canvas px-4 py-4 leading-7 text-app-text" placeholder="${escapeHtml(screen.intentWorkbench.rawInputPlaceholder)}">${escapeHtml(screen.intentWorkbench.rawInputValue)}</textarea>
-              </label>
-              <div class="flex flex-wrap items-center gap-3">
-                <button class="inline-flex w-fit items-center rounded-lg bg-app-ink px-4 py-2 text-sm font-semibold text-app-ink-text" type="submit">${escapeHtml(screen.intentWorkbench.submitLabel)}</button>
-              </div>
-            </form>
-            ${latestIntentMarkup}
-            ${clarificationMarkup}
-          </section>
-          <section class="grid gap-5 border-t border-app-line pt-6">
-            <div>
-              <p class="text-[11px] font-semibold uppercase tracking-[0.18em] text-app-text-soft">${escapeHtml(screen.explanationWorkbench.title)}</p>
-              ${
-                screen.explanationWorkbench.description
-                  ? `<p class="mt-2 max-w-3xl leading-7 text-app-text-soft">${escapeHtml(screen.explanationWorkbench.description)}</p>`
-                  : ""
-              }
-            </div>
-            <form class="mt-5 grid gap-4" method="post" action="${escapeHtml(screen.explanationWorkbench.actionPath)}">
-              <label class="grid gap-2">
-                <span class="text-sm font-semibold">${escapeHtml(screen.explanationWorkbench.titleLabel)}</span>
-                <input name="${escapeHtml(screen.explanationWorkbench.titleName)}" class="rounded-xl border border-app-line bg-app-canvas px-4 py-3 text-app-text" placeholder="${escapeHtml(screen.explanationWorkbench.titlePlaceholder)}" value="${escapeHtml(screen.explanationWorkbench.titleValue)}">
-              </label>
-              <label class="grid gap-2">
-                <span class="text-sm font-semibold">${escapeHtml(screen.explanationWorkbench.factsLabel)}</span>
-                <textarea name="${escapeHtml(screen.explanationWorkbench.factsName)}" class="min-h-28 rounded-xl border border-app-line bg-app-canvas px-4 py-3 leading-7 text-app-text" placeholder="${escapeHtml(screen.explanationWorkbench.factsPlaceholder)}">${escapeHtml(screen.explanationWorkbench.factsValue)}</textarea>
-              </label>
-              <button class="inline-flex w-fit items-center rounded-lg bg-app-ink px-4 py-2 text-sm font-semibold text-app-ink-text" type="submit">${escapeHtml(screen.explanationWorkbench.submitLabel)}</button>
-            </form>
-            <div class="mt-5">
-              ${latestExplanationMarkup}
-            </div>
-          </section>
-          <section class="border-t border-app-line pt-6">
-            <h2 class="mb-3 text-lg font-semibold tracking-[-0.02em]">${escapeHtml(screen.mapView.title)}</h2>
-            <p class="leading-7 text-app-text-soft">${escapeHtml(screen.mapView.description)}</p>
-            ${
-              screen.mapView.features.length > 0
-                ? `<div class="mt-6 grid gap-5" data-map-root data-map-active-id="${escapeHtml(initialMapFeature?.id ?? "")}" data-map-state="${escapeHtml(serializedMapState)}">
-                    <figure class="overflow-hidden rounded-xl border border-app-line bg-app-canvas p-4">
-                      <div class="relative aspect-[16/9]">
-                        <div class="absolute inset-0 hidden overflow-hidden rounded-[0.9rem] border border-app-line bg-[#edf4fb]" data-map-browser-frame aria-hidden="true">
-                          <div class="absolute inset-0" data-map-leaflet></div>
-                          <div class="pointer-events-none absolute inset-x-3 bottom-3 flex flex-wrap items-end justify-between gap-3" data-map-browser-chrome>
-                            <p class="max-w-[18rem] rounded-full border border-app-line bg-white/96 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-app-text-soft" data-map-browser-source></p>
-                            <p class="rounded-full border border-app-line bg-white/96 px-3 py-1 text-[11px] font-semibold text-app-text-soft" data-map-browser-attribution></p>
-                            <p class="rounded-full border border-app-line bg-white/96 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-app-text-soft" data-map-browser-zoom></p>
-                          </div>
-                        </div>
-                        <svg viewBox="0 0 ${screen.mapView.viewport.width} ${screen.mapView.viewport.height}" class="absolute inset-0 h-full w-full rounded-[0.9rem] border border-app-line bg-app-canvas" role="img" aria-label="${escapeHtml(screen.mapView.viewport.frameLabel)}" data-map-fallback>
-                          <rect x="18" y="22" width="604" height="316" rx="26" fill="rgba(255,255,255,0.42)" stroke="rgba(30,26,22,0.08)"/>
-                          ${renderMapGraticule(screen.mapView.viewport.width, screen.mapView.viewport.height, screen.mapView.viewport.bounds)}
-                          ${overlayMarkup}
-                          ${mapMarkup}
-                        </svg>
-                        <div class="absolute right-3 top-3 hidden gap-2" data-map-zoom-controls>
-                          <button class="rounded-full border border-app-line bg-white/96 px-3 py-2 text-xs font-semibold uppercase tracking-[0.16em] text-app-text" type="button" data-map-zoom-out aria-label="Zoom out">-</button>
-                          <button class="rounded-full border border-app-line bg-white/96 px-3 py-2 text-xs font-semibold uppercase tracking-[0.16em] text-app-text" type="button" data-map-zoom-in aria-label="Zoom in">+</button>
-                        </div>
-                      </div>
-                    </figure>
-                    <div class="grid gap-3 lg:grid-cols-[minmax(0,1fr)_minmax(18rem,0.72fr)]">
-                      <div class="grid gap-3">
-                        <div class="border-t border-app-line/80 pt-3">
-                          <p class="text-[11px] font-semibold uppercase tracking-[0.18em] text-app-text-soft">Focused lead</p>
-                          <p class="mt-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-app-accent" data-map-detail-meta>${escapeHtml(formatMapDetailMeta(initialMapFeature))}</p>
-                          <h3 class="mt-3 text-lg font-semibold tracking-[-0.02em]" data-map-detail-label>${escapeHtml(initialMapFeature?.label ?? "")}</h3>
-                          <p class="mt-3 leading-7 text-app-text-soft" data-map-detail-summary>${escapeHtml(initialMapFeature?.summary ?? "")}</p>
-                          <p class="mt-3 text-sm leading-6 text-app-text-soft" data-map-detail-evidence>${escapeHtml(initialMapFeature?.evidenceSummary ?? "")}</p>
-                        </div>
-                        <div class="border-t border-app-line/80 pt-3">
-                          <h3 class="text-[11px] font-semibold uppercase tracking-[0.18em] text-app-text-soft">${escapeHtml(screen.mapView.legendTitle)}</h3>
-                          <ul class="mt-3 grid gap-3">${mapLegendMarkup}</ul>
-                        </div>
-                      </div>
-                      <div class="grid gap-3">
-                      <div class="border-t border-app-line/80 pt-3">
-                        <p class="text-[11px] font-semibold uppercase tracking-[0.18em] text-app-text-soft">${escapeHtml(screen.mapView.basemap.label)}</p>
-                        <p class="mt-2 text-sm leading-6 text-app-text-soft">${escapeHtml(screen.mapView.basemap.note)}</p>
-                        <p class="mt-3 text-[11px] uppercase tracking-[0.16em] text-app-text-soft">Bounds: ${escapeHtml(formatBoundsLabel(screen.mapView.viewport.bounds))}</p>
-                      </div>
-                      <div class="border-t border-app-line/80 pt-3">
-                        <div class="flex flex-wrap items-center justify-between gap-3">
-                          <p class="text-[11px] font-semibold uppercase tracking-[0.18em] text-app-text-soft">${escapeHtml(
-                            screen.mapView.locationControl.title,
-                          )}</p>
-                          <button class="inline-flex items-center rounded-lg bg-app-ink px-4 py-2 text-xs font-semibold uppercase tracking-[0.16em] text-app-ink-text" type="button" data-map-locate>
-                            ${escapeHtml(screen.mapView.locationControl.actionLabel)}
-                          </button>
-                        </div>
-                        <p class="mt-3 text-sm leading-6 text-app-text-soft" role="status" aria-live="polite" data-map-location-status>${escapeHtml(
-                          screen.mapView.locationControl.idleLabel,
-                        )}</p>
-                        <p class="mt-3 text-xs leading-5 text-app-text-soft" data-map-location-privacy>${escapeHtml(
-                          screen.mapView.locationControl.privacyNote,
-                        )}</p>
-                      </div>
-                      ${overlayStatusMarkup}
-                      </div>
-                    </div>
-                  </div>`
-                : `<p class="mt-4 rounded-xl border border-dashed border-app-line px-4 py-4 leading-7 text-app-text-soft">${escapeHtml(screen.mapView.emptyState)}</p>`
-            }
-          </section>
-          <section class="border-t border-app-line pt-6">
-            <h2 class="mb-3 text-lg font-semibold tracking-[-0.02em]">${escapeHtml(screen.retrievalTitle)}</h2>
-            ${screen.retrievalBody ? `<p class="leading-7 text-app-text-soft">${escapeHtml(screen.retrievalBody)}</p>` : ""}
-            ${
-              screen.candidateCards.length > 0
-                ? `<ul class="${screen.retrievalBody ? "mt-4" : ""}">${candidateMarkup}</ul>`
-                : `<p class="${screen.retrievalBody ? "mt-4 " : ""}rounded-xl border border-dashed border-app-line px-4 py-4 leading-7 text-app-text-soft">${escapeHtml(screen.retrievalEmptyState)}</p>`
-            }
-          </section>
-          <section class="border-t border-app-line pt-6">
-            <h2 class="mb-3 text-lg font-semibold tracking-[-0.02em]">${escapeHtml(screen.savedArtifactsTitle)}</h2>
-            ${screen.savedArtifactsBody ? `<p class="leading-7 text-app-text-soft">${escapeHtml(screen.savedArtifactsBody)}</p>` : ""}
-            ${
-              screen.savedArtifacts.length > 0
-                ? `<ul class="${screen.savedArtifactsBody ? "mt-4" : ""}">${savedArtifactMarkup}</ul>`
-                : `<p class="${screen.savedArtifactsBody ? "mt-4 " : ""}rounded-xl border border-dashed border-app-line px-4 py-4 leading-7 text-app-text-soft">${escapeHtml(screen.savedArtifactsEmptyState)}</p>`
-            }
-          </section>
-          <section class="border-t border-app-line pt-6">
-            <h2 class="mb-3 text-lg font-semibold tracking-[-0.02em]">${escapeHtml(screen.recentSessionsTitle)}</h2>
-            ${screen.recentSessionsBody ? `<p class="leading-7 text-app-text-soft">${escapeHtml(screen.recentSessionsBody)}</p>` : ""}
-            ${
-              screen.recentSessions.length > 0
-                ? `<ul class="${screen.recentSessionsBody ? "mt-4" : ""}">${recentSessionMarkup}</ul>`
-                : `<p class="${screen.recentSessionsBody ? "mt-4 " : ""}rounded-xl border border-dashed border-app-line px-4 py-4 leading-7 text-app-text-soft">${escapeHtml(screen.recentSessionsEmptyState)}</p>`
-            }
-          </section>
-        </div>
-    </main>`,
+    stylesheets: needsMapEnhancement ? ["/vendor/leaflet.css"] : [],
+    scriptUrls: needsMapEnhancement ? ["/vendor/leaflet.js"] : [],
+    scripts: needsMapEnhancement ? [renderMapEnhancementScript()] : [],
   });
 }
 
-function formatCueSummary(cues: { species: string[]; habitat: string[]; region: string[]; season: string[] }): string {
-  const segments = [
-    formatCueGroup("species", cues.species),
-    formatCueGroup("habitat", cues.habitat),
-    formatCueGroup("region", cues.region),
-    formatCueGroup("season", cues.season),
-  ].filter(Boolean);
+function renderSearchSurface(screen: HomeScreenModel): string {
+  const statusCopy = screen.presentation.primaryKind === "empty" ? screen.presentation.emptyState : screen.presentation.summary;
 
-  return segments.join(" | ") || "No grounded cues detected yet.";
+  return `<section class="max-w-4xl">
+    <div class="sticky top-0 z-10 -mx-3 rounded-[1.9rem] border border-app-line bg-app-canvas/92 px-3 py-3 shadow-[var(--shadow-panel)] supports-[backdrop-filter]:bg-app-canvas/72 backdrop-blur-xl">
+      <form method="post" action="${escapeHtml(screen.searchPrompt.actionPath)}" class="grid gap-3">
+        <label class="block" for="semantic-query">
+          <span class="sr-only">${escapeHtml(screen.searchPrompt.rawInputLabel)}</span>
+          <input
+            id="semantic-query"
+            name="${escapeHtml(screen.searchPrompt.rawInputName)}"
+            type="search"
+            autocomplete="off"
+            spellcheck="false"
+            placeholder="${escapeHtml(screen.searchPrompt.rawInputPlaceholder)}"
+            value="${escapeHtml(screen.searchPrompt.rawInputValue)}"
+            class="w-full rounded-[1.55rem] bg-app-surface px-5 py-4 text-xl text-app-text outline-none ring-1 ring-app-line transition placeholder:text-app-text-soft/72 focus:bg-app-canvas focus:ring-2 focus:ring-app-accent/35"
+          >
+        </label>
+        <div class="flex flex-wrap items-center gap-2">
+          <button class="rounded-full bg-app-ink px-4 py-2 text-sm font-semibold text-app-ink-text" type="submit">${escapeHtml(
+            screen.searchPrompt.submitLabel,
+          )}</button>
+          ${screen.searchPrompt.examples
+            .map(
+              (example) =>
+                `<button class="rounded-full border border-app-line bg-app-surface px-3 py-2 text-sm text-app-text-soft" type="submit" name="${escapeHtml(
+                  screen.searchPrompt.rawInputName,
+                )}" value="${escapeHtml(example)}">${escapeHtml(example)}</button>`,
+            )
+            .join("")}
+        </div>
+      </form>
+      <div id="search-status" class="mt-3 flex flex-wrap items-center gap-3 text-sm leading-6 text-app-text-soft">
+        <span>${escapeHtml(statusCopy)}</span>
+        ${renderSearchMeta(screen)}
+      </div>
+    </div>
+  </section>`;
 }
 
-function formatCueGroup(label: string, values: string[]): string {
-  if (values.length === 0) {
+function renderSearchMeta(screen: HomeScreenModel): string {
+  const submission = screen.intentWorkbench.latestSubmission;
+
+  if (!submission) {
     return "";
   }
 
-  return `${label}: ${values.join(", ")}`;
+  const cueSummary = summarizeCues(submission.classification.cues);
+  const missing = submission.classification.missing.join(", ") || "none";
+
+  return `<span class="rounded-full border border-app-line bg-app-surface px-3 py-1">${escapeHtml(submission.classification.intent)}</span>
+    <span class="rounded-full border border-app-line bg-app-surface px-3 py-1">${escapeHtml(submission.confidenceBand)}</span>
+    <span class="rounded-full border border-app-line bg-app-surface px-3 py-1">${escapeHtml(`missing: ${missing}`)}</span>
+    ${cueSummary.length > 0 ? `<span class="rounded-full border border-app-line bg-app-surface px-3 py-1">${escapeHtml(cueSummary)}</span>` : ""}`;
 }
 
-function formatMissingSummary(missing: string[]): string {
-  return missing.length > 0 ? missing.join(", ") : "No clarification needed.";
+function renderAlerts(alerts: HomeScreenModel["alerts"]): string {
+  if (alerts.length === 0) {
+    return "";
+  }
+
+  return `<ul class="grid gap-3 max-w-4xl">
+    ${alerts
+      .map(
+        (alert) =>
+          `<li class="rounded-[1.4rem] border px-4 py-3 ${alert.tone === "error" ? "border-rose-200 bg-rose-50/80 text-rose-950" : "border-sky-200 bg-sky-50/80 text-sky-950"}">
+            <p class="text-[11px] font-semibold uppercase tracking-[0.18em]">${escapeHtml(alert.title)}</p>
+            <p class="mt-2 leading-7">${escapeHtml(alert.body)}</p>
+          </li>`,
+      )
+      .join("")}
+  </ul>`;
+}
+
+function renderPresentationSection(screen: HomeScreenModel): string {
+  return `<section class="grid gap-5" data-presentation-kind="${escapeHtml(screen.presentation.primaryKind)}">
+    <div class="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+      <div class="max-w-3xl">
+        <p class="text-[0.72rem] font-semibold uppercase tracking-[0.3em] text-app-text-soft">Result mapping</p>
+        <h2 class="mt-2 text-[clamp(1.8rem,5vw,3rem)] leading-[0.96] font-semibold tracking-[-0.05em]">${escapeHtml(screen.presentation.title)}</h2>
+        <p class="mt-3 max-w-2xl text-base leading-7 text-app-text-soft">${escapeHtml(screen.presentation.summary)}</p>
+      </div>
+      ${renderComponentPalette(screen)}
+    </div>
+    ${renderSignalList(screen.presentation.signals)}
+    ${renderPrimaryPresentation(screen)}
+  </section>`;
+}
+
+function renderComponentPalette(screen: HomeScreenModel): string {
+  return `<ul class="flex flex-wrap gap-2" aria-label="Semantic result components">
+    ${screen.presentation.components
+      .map(
+        (component) =>
+          `<li
+            class="rounded-full border px-3 py-2 text-sm ${component.selected ? "border-app-accent bg-app-accent-ghost text-app-accent-strong" : "border-app-line bg-app-surface text-app-text-soft"}"
+            title="${escapeHtml(component.reason)}"
+            data-semantic-component="${escapeHtml(component.kind)}"
+            data-component-selected="${component.selected ? "true" : "false"}"
+            data-component-signals="${escapeHtml(component.signals.join(","))}"
+          >
+            <span class="font-medium">${escapeHtml(component.title)}</span>
+          </li>`,
+      )
+      .join("")}
+  </ul>`;
+}
+
+function renderSignalList(signals: HomeScreenModel["presentation"]["signals"]): string {
+  return `<ul class="flex flex-wrap gap-2 text-sm text-app-text-soft">
+    ${signals
+      .map(
+        (signal) =>
+          `<li class="rounded-full border border-app-line bg-app-surface px-3 py-2" title="${escapeHtml(signal.reason)}">${escapeHtml(
+            `${signal.kind}: ${signal.value}`,
+          )}</li>`,
+      )
+      .join("")}
+  </ul>`;
+}
+
+function renderPrimaryPresentation(screen: HomeScreenModel): string {
+  switch (screen.presentation.primaryKind) {
+    case "empty":
+      return renderEmptyState(screen);
+    case "clarification":
+      return renderClarificationPanel(screen);
+    case "map":
+      return renderMapPresentation(screen);
+    case "cards":
+      return renderCardsPresentation(screen);
+    case "table":
+      return renderTablePresentation(screen);
+    case "prose":
+      return renderProsePresentation(screen);
+  }
+}
+
+function renderEmptyState(screen: HomeScreenModel): string {
+  return `<div class="grid gap-4 rounded-[1.8rem] border border-app-line bg-app-surface p-6">
+    <p class="max-w-2xl text-base leading-7 text-app-text-soft">${escapeHtml(screen.presentation.emptyState)}</p>
+    <ul class="grid gap-3 md:grid-cols-3">
+      ${screen.searchPrompt.examples
+        .map(
+          (example) =>
+            `<li class="rounded-[1.3rem] border border-app-line bg-app-canvas px-4 py-4 text-sm leading-6 text-app-text-soft">${escapeHtml(example)}</li>`,
+        )
+        .join("")}
+    </ul>
+  </div>`;
+}
+
+function renderClarificationPanel(screen: HomeScreenModel): string {
+  const workflow = screen.intentWorkbench.latestSubmission?.workflow;
+
+  if (!workflow || workflow.state !== "awaiting_clarification") {
+    return renderEmptyState(screen);
+  }
+
+  return `<div class="grid gap-5 rounded-[1.8rem] border border-app-line bg-app-surface p-6">
+    <div>
+      <p class="text-[0.72rem] font-semibold uppercase tracking-[0.3em] text-app-text-soft">Clarification</p>
+      <p class="mt-3 max-w-2xl text-lg leading-8 text-app-text">${escapeHtml(workflow.question)}</p>
+    </div>
+    <ul class="flex flex-wrap gap-2 text-sm text-app-text-soft">
+      ${workflow.options.map((option) => `<li class="rounded-full border border-app-line bg-app-canvas px-3 py-2">${escapeHtml(option)}</li>`).join("")}
+    </ul>
+    <form class="grid gap-3 max-w-2xl" method="post" action="${escapeHtml(screen.intentWorkbench.clarificationActionPath)}">
+      <input type="hidden" name="${escapeHtml(screen.intentWorkbench.clarificationWorkflowIdName)}" value="${escapeHtml(workflow.workflowId)}">
+      <label class="grid gap-2">
+        <span class="text-sm font-medium text-app-text">${escapeHtml(screen.intentWorkbench.clarificationLabel)}</span>
+        <input
+          class="rounded-[1.2rem] border border-app-line bg-app-canvas px-4 py-3 text-base text-app-text"
+          type="text"
+          name="${escapeHtml(screen.intentWorkbench.clarificationName)}"
+          value="${escapeHtml(screen.intentWorkbench.clarificationValue)}"
+          placeholder="${escapeHtml(screen.intentWorkbench.clarificationPlaceholder)}"
+        >
+      </label>
+      <div>
+        <button class="rounded-full bg-app-ink px-4 py-2 text-sm font-semibold text-app-ink-text" type="submit">Continue search</button>
+      </div>
+    </form>
+  </div>`;
+}
+
+function renderMapPresentation(screen: HomeScreenModel): string {
+  if (screen.mapView.features.length === 0) {
+    return renderEmptyState(screen);
+  }
+
+  const initialFeature = screen.mapView.features[0] ?? null;
+  const overlay = screen.mapView.overlays[0];
+  const width = screen.mapView.viewport.width;
+  const height = screen.mapView.viewport.height;
+  const bounds = screen.mapView.viewport.bounds;
+  const serializedMapState = serializeMapClientState(screen.mapView);
+  const mapMarkup = screen.mapView.features
+    .map((feature) => renderMapFeature(feature, width, height, bounds, feature.id === initialFeature?.id))
+    .join("");
+  const overlayMarkup =
+    overlay?.status === "ready" ? overlay.points.map((point) => renderOverlayPoint(point, width, height, bounds)).join("") : "";
+
+  return `<div class="grid gap-6 lg:grid-cols-[minmax(0,1.35fr)_22rem]" data-map-root data-map-location="idle" data-map-state="${escapeHtml(
+    serializedMapState,
+  )}" data-map-active-id="${escapeHtml(initialFeature?.id ?? "")}">
+    <div class="grid gap-4 rounded-[1.8rem] border border-app-line bg-app-surface p-4">
+      <div class="flex flex-wrap items-center justify-between gap-3 px-1">
+        <div>
+          <p class="text-[0.72rem] font-semibold uppercase tracking-[0.3em] text-app-text-soft">${escapeHtml(screen.mapView.title)}</p>
+          <p class="mt-2 text-sm leading-6 text-app-text-soft">${escapeHtml(screen.mapView.viewport.frameLabel)}</p>
+        </div>
+        <div class="flex items-center gap-2" data-map-zoom-controls hidden>
+          <button class="rounded-full border border-app-line bg-app-canvas px-3 py-2 text-sm text-app-text" type="button" data-map-zoom-out aria-label="Zoom out">-</button>
+          <button class="rounded-full border border-app-line bg-app-canvas px-3 py-2 text-sm text-app-text" type="button" data-map-zoom-in aria-label="Zoom in">+</button>
+          <span class="rounded-full border border-app-line bg-app-canvas px-3 py-2 text-sm text-app-text-soft" data-map-browser-zoom></span>
+        </div>
+      </div>
+      <div class="grid gap-3">
+        <div class="relative hidden overflow-hidden rounded-[1.4rem] border border-app-line bg-app-canvas" data-map-browser-frame data-map-mode="fallback" hidden>
+          <div class="flex items-center justify-between gap-3 border-b border-app-line px-4 py-3" data-map-browser-chrome>
+            <p class="text-sm font-medium text-app-text" data-map-browser-source>${escapeHtml(screen.mapView.basemap.label)}</p>
+            <p class="text-xs text-app-text-soft" data-map-browser-attribution>${escapeHtml(screen.mapView.basemap.attribution)}</p>
+          </div>
+          <div class="h-[420px] w-full" data-map-leaflet></div>
+        </div>
+        <div class="overflow-hidden rounded-[1.4rem] border border-app-line bg-app-canvas" data-map-fallback>
+          <svg viewBox="0 0 ${width} ${height}" class="h-auto w-full" role="img" aria-label="${escapeHtml(screen.mapView.viewport.frameLabel)}">
+            <rect width="${width}" height="${height}" fill="rgb(247 250 254)"/>
+            ${renderMapGraticule(width, height, bounds)}
+            ${overlayMarkup}
+            ${mapMarkup}
+          </svg>
+        </div>
+        <div class="flex flex-wrap items-center gap-3 px-1">
+          <button class="rounded-full border border-app-line bg-app-canvas px-4 py-2 text-sm font-medium text-app-text" type="button" data-map-locate>${escapeHtml(
+            screen.mapView.locationControl.actionLabel,
+          )}</button>
+          <p class="text-sm leading-6 text-app-text-soft" data-map-location-status>${escapeHtml(screen.mapView.locationControl.idleLabel)}</p>
+        </div>
+      </div>
+    </div>
+    <aside class="grid gap-4 rounded-[1.8rem] border border-app-line bg-app-surface p-5">
+      <div class="grid gap-2 rounded-[1.3rem] border border-app-line bg-app-canvas px-4 py-4">
+        <p class="text-[0.72rem] font-semibold uppercase tracking-[0.3em] text-app-text-soft" data-map-detail-meta>${escapeHtml(
+          formatMapDetailMeta(initialFeature),
+        )}</p>
+        <h3 class="text-xl font-semibold tracking-[-0.03em]" data-map-detail-label>${escapeHtml(initialFeature?.label ?? "")}</h3>
+        <p class="text-sm leading-7 text-app-text-soft" data-map-detail-summary>${escapeHtml(initialFeature?.summary ?? "")}</p>
+        <p class="text-sm leading-7 text-app-text" data-map-detail-evidence>${escapeHtml(initialFeature?.evidenceSummary ?? "")}</p>
+      </div>
+      <div>
+        <p class="text-[0.72rem] font-semibold uppercase tracking-[0.3em] text-app-text-soft">${escapeHtml(screen.mapView.legendTitle)}</p>
+        <ul class="mt-3 grid gap-3">
+          ${screen.mapView.features
+            .map(
+              (feature) =>
+                `<li>
+                  <button
+                    class="w-full rounded-[1.3rem] border border-app-line bg-app-canvas px-4 py-4 text-left"
+                    type="button"
+                    data-map-item="${escapeHtml(feature.id)}"
+                    data-map-label="${escapeHtml(feature.label)}"
+                    data-map-kind="${escapeHtml(feature.kind)}"
+                    data-map-source="${escapeHtml(feature.sourceSection)}"
+                    data-map-summary="${escapeHtml(feature.summary)}"
+                    data-map-evidence="${escapeHtml(feature.evidenceSummary)}"
+                    data-map-active="${feature.id === initialFeature?.id ? "true" : "false"}"
+                    aria-pressed="${feature.id === initialFeature?.id ? "true" : "false"}"
+                  >
+                    <p class="text-[0.72rem] font-semibold uppercase tracking-[0.3em] text-app-text-soft">${escapeHtml(
+                      `${feature.kind} / ${feature.sourceSection}`,
+                    )}</p>
+                    <p class="mt-2 font-medium text-app-text">${escapeHtml(feature.label)}</p>
+                    <p class="mt-2 text-sm leading-6 text-app-text-soft">${escapeHtml(feature.evidenceSummary)}</p>
+                  </button>
+                </li>`,
+            )
+            .join("")}
+        </ul>
+      </div>
+      <div class="rounded-[1.3rem] border border-app-line bg-app-canvas px-4 py-4">
+        <p class="text-[0.72rem] font-semibold uppercase tracking-[0.3em] text-app-text-soft">${escapeHtml(screen.mapView.basemap.label)}</p>
+        <p class="mt-2 text-sm leading-6 text-app-text-soft">${escapeHtml(formatBoundsLabel(screen.mapView.viewport.bounds))}</p>
+        ${
+          overlay
+            ? `<p class="mt-3 text-sm leading-6 text-app-text-soft">${escapeHtml(`${overlay.label} / ${overlay.provider}: ${overlay.note}`)}</p>`
+            : ""
+        }
+      </div>
+      ${renderCompactCandidateCards(screen, 2)}
+    </aside>
+  </div>`;
+}
+
+function renderCardsPresentation(screen: HomeScreenModel): string {
+  if (screen.candidateCards.length === 0) {
+    return renderEmptyState(screen);
+  }
+
+  return `<div class="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+    ${screen.candidateCards.map((card) => renderCandidateCard(card, screen)).join("")}
+  </div>`;
+}
+
+function renderTablePresentation(screen: HomeScreenModel): string {
+  if (!screen.presentation.table) {
+    return renderCardsPresentation(screen);
+  }
+
+  return `<div class="grid gap-5">
+    <div class="overflow-hidden rounded-[1.8rem] border border-app-line bg-app-surface">
+      <div class="border-b border-app-line px-5 py-4">
+        <p class="text-[0.72rem] font-semibold uppercase tracking-[0.3em] text-app-text-soft">${escapeHtml(screen.presentation.table.title)}</p>
+        <p class="mt-2 max-w-3xl text-sm leading-6 text-app-text-soft">${escapeHtml(screen.presentation.table.description)}</p>
+      </div>
+      <div class="overflow-x-auto">
+        <table class="min-w-full text-left">
+          <thead>
+            <tr class="border-b border-app-line text-[0.72rem] uppercase tracking-[0.24em] text-app-text-soft">
+              <th class="px-5 py-4 font-semibold">Species</th>
+              ${screen.presentation.table.columns.map((column) => renderTableHeaderCell(column)).join("")}
+            </tr>
+          </thead>
+          <tbody>
+            ${screen.presentation.table.rows
+              .map(
+                (row) =>
+                  `<tr class="border-b border-app-line last:border-b-0" data-table-row="${escapeHtml(row.id)}">
+                    <th class="px-5 py-4 text-sm font-semibold text-app-text">${escapeHtml(row.label)}</th>
+                    ${screen.presentation.table?.columns.map((column) => renderTableValueCell(column, row.cells[column.key] ?? "")).join("")}
+                  </tr>`,
+              )
+              .join("")}
+          </tbody>
+        </table>
+      </div>
+    </div>
+    ${renderCompactCandidateCards(screen, 3)}
+  </div>`;
+}
+
+function renderTableHeaderCell(column: SemanticTableColumn): string {
+  return `<th class="px-5 py-4 font-semibold ${column.align === "end" ? "text-right" : "text-left"}">${escapeHtml(column.label)}</th>`;
+}
+
+function renderTableValueCell(column: SemanticTableColumn, value: string): string {
+  return `<td class="px-5 py-4 text-sm leading-6 text-app-text-soft ${column.align === "end" ? "text-right" : "text-left"}">${escapeHtml(
+    value,
+  )}</td>`;
+}
+
+function renderProsePresentation(screen: HomeScreenModel): string {
+  return `<div class="grid gap-5 lg:grid-cols-[minmax(0,1.15fr)_22rem]">
+    <div class="grid gap-4 rounded-[1.8rem] border border-app-line bg-app-surface p-6">
+      ${screen.presentation.prose
+        .map((paragraph) => `<p class="max-w-3xl text-base leading-8 text-app-text-soft">${escapeHtml(paragraph)}</p>`)
+        .join("")}
+    </div>
+    <aside class="grid gap-4">
+      ${renderCompactCandidateCards(screen, 3)}
+    </aside>
+  </div>`;
+}
+
+function renderCompactCandidateCards(screen: HomeScreenModel, limit: number): string {
+  if (screen.candidateCards.length === 0) {
+    return "";
+  }
+
+  return `<div class="grid gap-3">
+    ${screen.candidateCards
+      .slice(0, limit)
+      .map((card) => renderCandidateCard(card, screen, true))
+      .join("")}
+  </div>`;
+}
+
+function renderCandidateCard(card: HomeScreenModel["candidateCards"][number], screen: HomeScreenModel, compact = false): string {
+  const completedIntent =
+    screen.intentWorkbench.latestSubmission?.workflow.state === "completed" ? screen.intentWorkbench.latestSubmission : null;
+
+  return `<article class="grid gap-4 rounded-[1.5rem] border border-app-line bg-app-surface p-5" data-card-id="${escapeHtml(card.id)}">
+    <div class="flex flex-wrap items-center gap-2 text-sm">
+      <span class="rounded-full bg-app-accent-ghost px-3 py-1 font-medium text-app-accent-strong">${escapeHtml(card.kind)}</span>
+      <span class="text-app-text-soft">${escapeHtml(card.statusLabel)}</span>
+    </div>
+    <div>
+      <h3 class="text-xl font-semibold tracking-[-0.03em]">${escapeHtml(card.title)}</h3>
+      <p class="mt-2 text-sm leading-7 text-app-text-soft">${escapeHtml(card.summary)}</p>
+    </div>
+    ${compact ? "" : renderEvidenceList(card.evidence)}
+    ${renderArtifactSaveForm(card, completedIntent, screen.artifactWorkbench.saveActionPath)}
+  </article>`;
+}
+
+function renderEvidenceList(evidence: HomeScreenModel["candidateCards"][number]["evidence"]): string {
+  if (evidence.length === 0) {
+    return "";
+  }
+
+  return `<dl class="grid gap-3">
+    ${evidence
+      .map(
+        (note) =>
+          `<div class="border-l-2 border-app-line pl-4">
+            <dt class="text-[0.72rem] font-semibold uppercase tracking-[0.24em] text-app-text-soft">${escapeHtml(note.label)}</dt>
+            <dd class="mt-1 text-sm leading-7 text-app-text">${escapeHtml(note.detail)}</dd>
+          </div>`,
+      )
+      .join("")}
+  </dl>`;
+}
+
+function renderSupportRail(screen: HomeScreenModel): string {
+  if (
+    screen.savedArtifacts.length === 0 &&
+    screen.recentSessions.length === 0 &&
+    screen.explanationWorkbench.latestSubmission === undefined &&
+    screen.explanationWorkbench.titleValue.length === 0 &&
+    screen.explanationWorkbench.factsValue.length === 0
+  ) {
+    return "";
+  }
+
+  return `<section class="grid gap-5 lg:grid-cols-[minmax(0,1.15fr)_22rem]">
+    <div class="grid gap-4">
+      <div class="flex items-center justify-between gap-3">
+        <div>
+          <p class="text-[0.72rem] font-semibold uppercase tracking-[0.3em] text-app-text-soft">${escapeHtml(screen.savedArtifactsTitle)}</p>
+          <h2 class="mt-2 text-2xl font-semibold tracking-[-0.04em] text-app-text">Saved artifacts</h2>
+        </div>
+      </div>
+      ${screen.savedArtifacts.length > 0 ? renderSavedArtifacts(screen) : `<p class="text-sm text-app-text-soft">${escapeHtml(screen.savedArtifactsEmptyState)}</p>`}
+      ${renderExplanationWorkbench(screen)}
+    </div>
+    <aside class="grid gap-4 rounded-[1.8rem] border border-app-line bg-app-surface p-5">
+      <div>
+        <p class="text-[0.72rem] font-semibold uppercase tracking-[0.3em] text-app-text-soft">${escapeHtml(screen.recentSessionsTitle)}</p>
+        <h2 class="mt-2 text-2xl font-semibold tracking-[-0.04em] text-app-text">Recent searches</h2>
+      </div>
+      ${
+        screen.recentSessions.length > 0
+          ? `<ul class="grid gap-3">
+              ${screen.recentSessions
+                .map(
+                  (session) =>
+                    `<li class="rounded-[1.3rem] border border-app-line bg-app-canvas px-4 py-4">
+                      <p class="text-sm font-medium text-app-text">${escapeHtml(session.title)}</p>
+                      <p class="mt-2 text-sm leading-6 text-app-text-soft">${escapeHtml(session.summary)}</p>
+                      <p class="mt-3 text-xs uppercase tracking-[0.22em] text-app-text-soft">${escapeHtml(formatSavedAtLabel(session.savedAt))}</p>
+                    </li>`,
+                )
+                .join("")}
+            </ul>`
+          : `<p class="text-sm text-app-text-soft">${escapeHtml(screen.recentSessionsEmptyState)}</p>`
+      }
+    </aside>
+  </section>`;
+}
+
+function renderSavedArtifacts(screen: HomeScreenModel): string {
+  return `<div class="grid gap-4">
+    ${screen.savedArtifacts
+      .map(
+        (artifact) =>
+          `<details class="rounded-[1.5rem] border border-app-line bg-app-surface p-5" ${artifact === screen.savedArtifacts[0] ? "open" : ""}>
+            <summary class="cursor-pointer list-none">
+              <div class="flex flex-wrap items-center gap-2 text-sm">
+                <span class="rounded-full bg-app-accent-ghost px-3 py-1 font-medium text-app-accent-strong">${escapeHtml(artifact.kind)}</span>
+                <span class="text-app-text-soft">${escapeHtml(artifact.sourceIntent)}</span>
+                <span class="text-app-text-soft">${escapeHtml(formatSavedAtLabel(artifact.savedAt))}</span>
+                ${artifact.updatedAt && artifact.updatedAt !== artifact.savedAt ? `<span class="text-app-text-soft">${escapeHtml(formatUpdatedAtLabel(artifact.updatedAt))}</span>` : ""}
+              </div>
+              <h3 class="mt-3 text-xl font-semibold tracking-[-0.03em]">${escapeHtml(artifact.title)}</h3>
+              <p class="mt-2 max-w-3xl text-sm leading-7 text-app-text-soft">${escapeHtml(artifact.summary)}</p>
+            </summary>
+            <div class="mt-4 grid gap-4">
+              ${artifact.notes ? `<p class="text-sm leading-7 text-app-text">${escapeHtml(artifact.notes)}</p>` : ""}
+              ${artifact.evidence.length > 0 ? renderEvidenceList(artifact.evidence) : ""}
+              <div class="flex flex-wrap items-center gap-3">
+                <form method="post" action="${escapeHtml(screen.artifactWorkbench.useActionPath)}">
+                  <input type="hidden" name="artifactId" value="${escapeHtml(artifact.artifactId)}">
+                  <button class="rounded-full border border-app-line bg-app-canvas px-4 py-2 text-sm font-medium text-app-text" type="submit">Use in workbench</button>
+                </form>
+              </div>
+              <form class="grid gap-3 rounded-[1.3rem] border border-app-line bg-app-canvas px-4 py-4" method="post" action="${escapeHtml(
+                screen.artifactWorkbench.refineActionPath,
+              )}">
+                <input type="hidden" name="artifactId" value="${escapeHtml(artifact.artifactId)}">
+                <label class="grid gap-2">
+                  <span class="text-[0.72rem] font-semibold uppercase tracking-[0.24em] text-app-text-soft">Title</span>
+                  <input class="rounded-[1rem] border border-app-line bg-app-surface px-4 py-3 text-sm text-app-text" type="text" name="title" value="${escapeHtml(
+                    artifact.title,
+                  )}">
+                </label>
+                <label class="grid gap-2">
+                  <span class="text-[0.72rem] font-semibold uppercase tracking-[0.24em] text-app-text-soft">Summary</span>
+                  <textarea class="min-h-24 rounded-[1rem] border border-app-line bg-app-surface px-4 py-3 text-sm leading-7 text-app-text" name="summary">${escapeHtml(
+                    artifact.summary,
+                  )}</textarea>
+                </label>
+                <label class="grid gap-2">
+                  <span class="text-[0.72rem] font-semibold uppercase tracking-[0.24em] text-app-text-soft">Notes</span>
+                  <textarea class="min-h-24 rounded-[1rem] border border-app-line bg-app-surface px-4 py-3 text-sm leading-7 text-app-text" name="notes">${escapeHtml(
+                    artifact.notes ?? "",
+                  )}</textarea>
+                </label>
+                <div>
+                  <button class="rounded-full bg-app-ink px-4 py-2 text-sm font-semibold text-app-ink-text" type="submit">Update artifact</button>
+                </div>
+              </form>
+              ${
+                artifact.revisions.length > 1
+                  ? `<div class="grid gap-3">
+                      <p class="text-[0.72rem] font-semibold uppercase tracking-[0.3em] text-app-text-soft">Revision history</p>
+                      <ul class="grid gap-3">
+                        ${artifact.revisions
+                          .slice(-3)
+                          .reverse()
+                          .map(
+                            (revision) =>
+                              `<li class="rounded-[1.2rem] border border-app-line bg-app-canvas px-4 py-4">
+                                <p class="text-[0.72rem] font-semibold uppercase tracking-[0.24em] text-app-text-soft">${escapeHtml(
+                                  `${revision.kind} / ${formatRecordedAtLabel(revision.recordedAt)}`,
+                                )}</p>
+                                <p class="mt-2 font-medium text-app-text">${escapeHtml(revision.title)}</p>
+                                <p class="mt-2 text-sm leading-6 text-app-text-soft">${escapeHtml(revision.summary)}</p>
+                                ${
+                                  revision.notes
+                                    ? `<p class="mt-2 text-sm leading-6 text-app-text-soft">${escapeHtml(revision.notes)}</p>`
+                                    : ""
+                                }
+                                <p class="mt-3 text-xs uppercase tracking-[0.22em] text-app-text-soft">${escapeHtml(
+                                  `Diff to current: ${describeArtifactRevisionChanges(artifact, revision).join(", ")}`,
+                                )}</p>
+                                <div class="mt-3 flex flex-wrap gap-3">
+                                  <form method="post" action="${escapeHtml(screen.artifactWorkbench.restoreActionPath)}">
+                                    <input type="hidden" name="artifactId" value="${escapeHtml(artifact.artifactId)}">
+                                    <input type="hidden" name="recordedAt" value="${escapeHtml(revision.recordedAt)}">
+                                    <button class="rounded-full border border-app-line bg-app-surface px-4 py-2 text-sm font-medium text-app-text" type="submit">Restore revision</button>
+                                  </form>
+                                  <form method="post" action="${escapeHtml(screen.artifactWorkbench.useActionPath)}">
+                                    <input type="hidden" name="artifactId" value="${escapeHtml(artifact.artifactId)}">
+                                    <input type="hidden" name="recordedAt" value="${escapeHtml(revision.recordedAt)}">
+                                    <button class="rounded-full border border-app-line bg-app-surface px-4 py-2 text-sm font-medium text-app-text" type="submit">Use revision in workbench</button>
+                                  </form>
+                                </div>
+                              </li>`,
+                          )
+                          .join("")}
+                      </ul>
+                    </div>`
+                  : ""
+              }
+            </div>
+          </details>`,
+      )
+      .join("")}
+  </div>`;
+}
+
+function renderExplanationWorkbench(screen: HomeScreenModel): string {
+  const hasSeededValues =
+    screen.explanationWorkbench.titleValue.length > 0 ||
+    screen.explanationWorkbench.factsValue.length > 0 ||
+    screen.explanationWorkbench.latestSubmission !== undefined;
+
+  if (!hasSeededValues) {
+    return "";
+  }
+
+  const latest = screen.explanationWorkbench.latestSubmission;
+
+  return `<div class="grid gap-4 rounded-[1.5rem] border border-app-line bg-app-surface p-5">
+    <div>
+      <p class="text-[0.72rem] font-semibold uppercase tracking-[0.3em] text-app-text-soft">Prepared explanation</p>
+      <h3 class="mt-2 text-xl font-semibold tracking-[-0.03em] text-app-text">Explanation draft</h3>
+    </div>
+    <form class="grid gap-3" method="post" action="${escapeHtml(screen.explanationWorkbench.actionPath)}">
+      <label class="grid gap-2">
+        <span class="text-[0.72rem] font-semibold uppercase tracking-[0.24em] text-app-text-soft">${escapeHtml(
+          screen.explanationWorkbench.titleLabel,
+        )}</span>
+        <input
+          class="rounded-[1rem] border border-app-line bg-app-canvas px-4 py-3 text-sm text-app-text"
+          type="text"
+          name="${escapeHtml(screen.explanationWorkbench.titleName)}"
+          value="${escapeHtml(screen.explanationWorkbench.titleValue)}"
+          placeholder="${escapeHtml(screen.explanationWorkbench.titlePlaceholder)}"
+        >
+      </label>
+      <label class="grid gap-2">
+        <span class="text-[0.72rem] font-semibold uppercase tracking-[0.24em] text-app-text-soft">${escapeHtml(
+          screen.explanationWorkbench.factsLabel,
+        )}</span>
+        <textarea
+          class="min-h-24 rounded-[1rem] border border-app-line bg-app-canvas px-4 py-3 text-sm leading-7 text-app-text"
+          name="${escapeHtml(screen.explanationWorkbench.factsName)}"
+          placeholder="${escapeHtml(screen.explanationWorkbench.factsPlaceholder)}"
+        >${escapeHtml(screen.explanationWorkbench.factsValue)}</textarea>
+      </label>
+      <div>
+        <button class="rounded-full bg-app-ink px-4 py-2 text-sm font-semibold text-app-ink-text" type="submit">${escapeHtml(
+          screen.explanationWorkbench.submitLabel,
+        )}</button>
+      </div>
+    </form>
+    ${
+      latest
+        ? `<div class="rounded-[1.2rem] border border-app-line bg-app-canvas px-4 py-4">
+            <p class="text-[0.72rem] font-semibold uppercase tracking-[0.24em] text-app-text-soft">Latest explanation</p>
+            <p class="mt-2 font-medium text-app-text">${escapeHtml(latest.title)}</p>
+            <p class="mt-2 text-sm leading-7 text-app-text-soft">${escapeHtml(latest.explanation)}</p>
+          </div>`
+        : ""
+    }
+  </div>`;
+}
+
+function summarizeCues(
+  cues: HomeScreenModel["intentWorkbench"]["latestSubmission"] extends infer T
+    ? T extends { classification: { cues: infer C } }
+      ? C
+      : never
+    : never,
+): string {
+  const parts = [
+    cues.species.length > 0 ? `species ${cues.species.join(", ")}` : "",
+    cues.habitat.length > 0 ? `habitat ${cues.habitat.join(", ")}` : "",
+    cues.region.length > 0 ? `region ${cues.region.join(", ")}` : "",
+    cues.season.length > 0 ? `season ${cues.season.join(", ")}` : "",
+  ].filter(Boolean);
+
+  return parts.join(" · ");
 }
 
 function formatSavedAtLabel(savedAt: string): string {
@@ -622,7 +812,9 @@ function renderArtifactSaveForm(
     <input type="hidden" name="candidate" value="${escapeHtml(JSON.stringify(card))}">
     <input type="hidden" name="sourceIntent" value="${escapeHtml(completedIntent.classification.intent)}">
     <input type="hidden" name="intentSubmission" value="${escapeHtml(JSON.stringify(completedIntent))}">
-    <button class="inline-flex w-fit items-center rounded-lg bg-app-ink px-4 py-2 text-xs font-semibold uppercase tracking-[0.16em] text-app-ink-text" type="submit">${escapeHtml(getArtifactSaveLabel(card.kind))}</button>
+    <button class="rounded-full bg-app-ink px-4 py-2 text-sm font-semibold text-app-ink-text" type="submit">${escapeHtml(
+      getArtifactSaveLabel(card.kind),
+    )}</button>
   </form>`;
 }
 
@@ -665,16 +857,6 @@ function renderMapEnhancementScript(): string {
   const formatLocationMessage = (control, point) =>
     \`\${control.activeLabel} \${formatCoordinate(point.latitude, "N", "S")}, \${formatCoordinate(point.longitude, "E", "W")}\`;
   const toLatLng = (point) => [point.latitude, point.longitude];
-  const featureAnchor = (feature) => {
-    switch (feature.geometry.kind) {
-      case "point":
-        return feature.geometry.point;
-      case "area":
-        return feature.geometry.center;
-      case "trail":
-        return feature.geometry.points[1];
-    }
-  };
   const featureStyle = (feature, active) => {
     const tone = feature.sourceSection === "recent-sessions" ? "#005bbb" : "#10253f";
 

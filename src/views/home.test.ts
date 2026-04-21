@@ -1,281 +1,165 @@
 import { describe, expect, it } from "vitest";
 import { exampleRoutes } from "../app-routes";
-import type { HomeScreenModel } from "../domain/contracts/screen";
+import {
+  createHomeScreenModel,
+  createInitialForagingWorkbenchState,
+  withExplanationSubmission,
+  withIntentSubmission,
+} from "../domain/agents/ui-agent";
 import { renderHomePage } from "./home";
 
 describe("renderHomePage", () => {
-  it("renders the foraging workbench and map enhancement wiring without developer-only sections", () => {
-    const html = renderHomePage(createHomeScreenModel());
+  it("renders the minimal search surface before a query is submitted", () => {
+    const html = renderHomePage(createScreen());
 
-    expect(html).toContain("Foraging Workbench");
-    expect(html).toContain("Manual flow rehearsal");
-    expect(html).toContain("Intent input required");
-    expect(html).toContain("Clarification needed");
-    expect(html).toContain("Suggested forage trail selected");
-    expect(html).toContain("Detected cues");
-    expect(html).toContain("Candidate leads");
-    expect(html).toContain("Saved artifacts");
-    expect(html).toContain("Use in workbench");
-    expect(html).toContain("Update artifact");
-    expect(html).toContain('action="/actions/artifact/refine"');
-    expect(html).toContain('action="/actions/artifact/restore"');
-    expect(html).toContain('name="summary"');
-    expect(html).toContain('name="notes"');
-    expect(html).toContain("Intent fit");
-    expect(html).toContain("Ranked for explain-suggestion.");
-    expect(html).toContain("Revision history");
-    expect(html).toContain("refined / Recorded 2026-04-19 12:45");
-    expect(html).toContain("Restore revision");
-    expect(html).toContain("Use revision in workbench");
-    expect(html).toContain("Diff to current: Notes added later");
-    expect(html).toContain("Diff to current: Matches current state");
-    expect(html).toContain("Notes");
-    expect(html).toContain("Start from the wetter moss pocket after rain.");
-    expect(html).toContain("Foraging map");
-    expect(html).toContain("Mapped leads");
-    expect(html).toContain("Focused lead");
-    expect(html).toContain("Geographic preview of current leads");
-    expect(html).toContain("OpenStreetMap standard tiles");
-    expect(html).toContain("Current location");
-    expect(html).toContain("Use current location");
-    expect(html).toContain("FinBIF observations / finbif");
-    expect(html).toContain("Autumn chanterelle cluster");
-    expect(html).toContain("data-map-root");
-    expect(html).toContain('data-map-item="candidate-observation-autumn-chanterelle-cluster"');
-    expect(html).toContain('data-map-feature="candidate-observation-autumn-chanterelle-cluster"');
-    expect(html).toContain("Species overlap");
-    expect(html).toContain("Recent sessions");
-    expect(html).toContain("Saved chanterelle trail");
-    expect(html).toContain("Find chanterelles");
-    expect(html).toContain("Saved 2026-04-19 12:00");
-    expect(html).toContain("Updated 2026-04-19 12:45");
-    expect(html).toContain("Clarification focus");
-    expect(html).toContain("artifact_scope");
-    expect(html).toContain('rel="stylesheet" href="/styles.css"');
-    expect(html).toContain('rel="stylesheet" href="/vendor/leaflet.css"');
-    expect(html).toContain("data-map-detail-label");
-    expect(html).toContain("data-map-browser-frame");
-    expect(html).toContain("data-map-browser-attribution");
-    expect(html).toContain("data-map-state=");
-    expect(html).toContain('<script src="/vendor/leaflet.js"></script>');
-    expect(html).toContain("<script>");
-    expect(html).toContain('data-trace-id="trace-home-test"');
+    expect(html).toContain("Foraging Search");
+    expect(html).toContain("Search-ready surface");
+    expect(html).toContain("Nearby berry spots");
+    expect(html).toContain('data-presentation-kind="empty"');
+    expect(html).toContain('data-component-selected="true"');
     expect(html).not.toContain("Programmatic routes");
     expect(html).not.toContain("Model runtime");
-    expect(html).not.toContain("Roadmap focus");
-    expect(html).not.toContain("Trace ID:");
   });
 
-  it("serializes tile-backed basemap state for browser enhancement", () => {
-    const screen = createHomeScreenModel();
+  it("renders a map-first presentation for nearby spot searches", () => {
+    const html = renderHomePage(
+      createScreen(
+        withIntentSubmission(createInitialForagingWorkbenchState(), {
+          input: "Nearby berry spots",
+          classification: {
+            intent: "find-observations",
+            confidence: 0.69,
+            needsClarification: false,
+            cues: {
+              species: ["berry"],
+              habitat: [],
+              region: [],
+              season: [],
+            },
+            missing: ["region"],
+          },
+          confidenceBand: "medium",
+          provenance: {
+            source: "deterministic-fallback",
+            provider: null,
+            reason: "no-model-provider",
+          },
+          workflow: {
+            name: "intent-classification",
+            state: "completed",
+          },
+        }),
+      ),
+    );
 
-    screen.mapView.basemap = {
-      ...screen.mapView.basemap,
-      available: true,
-      note: "Tile preview is active.",
-      tileTemplateUrl: "https://tiles.example.test/topographic/{z}/{x}/{y}.png",
-    };
-
-    const html = renderHomePage(screen);
-
-    expect(html).toContain("https://tiles.example.test/topographic/{z}/{x}/{y}.png");
-    expect(html).toContain('data-map-zoom-in aria-label="Zoom in"');
-    expect(html).toContain('data-map-zoom-out aria-label="Zoom out"');
-    expect(html).toContain("data-map-leaflet");
-    expect(html).toContain("data-map-fallback");
+    expect(html).toContain('data-presentation-kind="map"');
+    expect(html).toContain("Mapped results for");
+    expect(html).toContain("Bilberry lakeshore pocket");
+    expect(html).toContain("data-map-root");
+    expect(html).toContain('data-map-item="candidate-observation-bilberry-lakeshore-pocket"');
+    expect(html).toContain('rel="stylesheet" href="/vendor/leaflet.css"');
+    expect(html).toContain('<script src="/vendor/leaflet.js"></script>');
   });
 
-  it("renders save controls for supported candidate cards from completed intents", () => {
-    const screen = createHomeScreenModel();
+  it("renders a table when the query explicitly asks for one", () => {
+    const html = renderHomePage(
+      createScreen(
+        withIntentSubmission(createInitialForagingWorkbenchState(), {
+          input: "Give me a table of the most prevalent mushrooms in Finland at the lake district.",
+          classification: {
+            intent: "find-observations",
+            confidence: 0.69,
+            needsClarification: false,
+            cues: {
+              species: ["mushroom"],
+              habitat: [],
+              region: ["finland", "lake district"],
+              season: [],
+            },
+            missing: [],
+          },
+          confidenceBand: "medium",
+          provenance: {
+            source: "deterministic-fallback",
+            provider: null,
+            reason: "no-model-provider",
+          },
+          workflow: {
+            name: "intent-classification",
+            state: "completed",
+          },
+        }),
+      ),
+    );
 
-    screen.intentWorkbench.latestSubmission = {
-      input: "Create a field note about chanterelles",
-      classification: {
-        intent: "create-field-note",
-        confidence: 0.74,
-        needsClarification: false,
-        cues: {
-          species: ["chanterelle"],
-          habitat: ["spruce"],
-          region: ["helsinki"],
-          season: ["autumn"],
-        },
-        missing: [],
-      },
-      confidenceBand: "medium",
-      provenance: {
-        source: "deterministic-fallback",
-        provider: null,
-        reason: "no-model-provider",
-      },
-      workflow: {
-        name: "intent-classification",
-        state: "completed",
-      },
-    };
-    screen.candidateCards = [
-      {
-        id: "field-note-scaffold",
-        kind: "field-note",
-        title: "Field note scaffold",
-        summary: "A starter note seeded from the current request.",
-        statusLabel: "Draft note",
-        evidence: [
+    expect(html).toContain('data-presentation-kind="table"');
+    expect(html).toContain("Derived prevalence table");
+    expect(html).toContain('<th class="px-5 py-4 font-semibold">Species</th>');
+    expect(html).toContain('data-table-row="row-chanterelle"');
+    expect(html).toContain('data-semantic-component="table"');
+  });
+
+  it("renders clarification in the result area when the workflow is awaiting input", () => {
+    const html = renderHomePage(
+      createScreen(
+        withIntentSubmission(
+          createInitialForagingWorkbenchState(),
           {
-            label: "Intent fit",
-            detail: "The request was classified as create-field-note.",
+            input: "Help",
+            classification: {
+              intent: "clarify",
+              confidence: 0.31,
+              needsClarification: true,
+              cues: {
+                species: [],
+                habitat: [],
+                region: [],
+                season: [],
+              },
+              missing: ["artifact_scope"],
+            },
+            confidenceBand: "low",
+            provenance: {
+              source: "deterministic-fallback",
+              provider: null,
+              reason: "no-model-provider",
+            },
+            workflow: {
+              name: "intent-classification",
+              state: "awaiting_clarification",
+              workflowId: "workflow-123",
+              question: 'What kind of foraging task does "Help" describe?',
+              options: ["find-observations", "create-field-note"],
+            },
           },
-        ],
-        spatialContext: {
-          species: ["chanterelle"],
-          habitat: ["spruce"],
-          region: ["helsinki"],
-          season: ["autumn"],
-        },
-      },
-    ];
+          "Search for similar observations",
+        ),
+      ),
+    );
 
-    const html = renderHomePage(screen);
-
-    expect(html).toContain("Save field note");
-    expect(html).toContain('action="/actions/artifact/save"');
-    expect(html).toContain('name="candidate"');
-    expect(html).toContain('name="intentSubmission"');
+    expect(html).toContain('data-presentation-kind="clarification"');
+    expect(html).toContain("What kind of foraging task does &quot;Help&quot; describe?");
+    expect(html).toContain('action="/actions/intent/clarify"');
+    expect(html).toContain("Continue search");
   });
 
-  it("renders area and trail map geometries plus unparsed saved timestamps", () => {
-    const screen = createHomeScreenModel();
-
-    screen.mapView.features = [
-      {
-        id: "candidate-patch-mossy-spruce-hollow",
-        label: "Mossy spruce hollow",
-        kind: "patch",
-        summary: "A compact patch with repeated chanterelle and trumpet signals in wet mossy spruce cover.",
-        evidenceSummary: "Ranked for inspect-patch.",
-        sourceSection: "candidate-leads",
-        coordinateSource: "region-anchor",
-        geometry: {
-          kind: "area",
-          center: {
-            longitude: 24.98,
-            latitude: 60.21,
-          },
-          ring: [
-            { longitude: 24.9, latitude: 60.24 },
-            { longitude: 25.04, latitude: 60.24 },
-            { longitude: 25.02, latitude: 60.12 },
-            { longitude: 24.88, latitude: 60.12 },
-            { longitude: 24.9, latitude: 60.24 },
-          ],
-        },
-      },
-      {
-        id: "candidate-trail-north-ridge-wet-spruce-loop",
-        label: "North ridge wet-spruce loop",
-        kind: "trail",
-        summary: "A trail fragment linking a mossy ridge, older notes, and a recent wet-spruce observation pocket.",
-        evidenceSummary: "Ranked for inspect-patch.",
-        sourceSection: "candidate-leads",
-        coordinateSource: "region-anchor",
-        geometry: {
-          kind: "trail",
-          points: [
-            { longitude: 24.7, latitude: 60.3 },
-            { longitude: 24.95, latitude: 60.22 },
-            { longitude: 25.18, latitude: 60.1 },
-          ],
-        },
-      },
-    ];
-    screen.recentSessions = [
-      {
-        ...screen.recentSessions[0],
-        savedAt: "unparsed-session-stamp",
-      },
-    ];
-
-    const html = renderHomePage(screen);
-
-    expect(html).toContain("Mossy spruce hollow");
-    expect(html).toContain("North ridge wet-spruce loop");
-    expect(html).toContain("data-map-marker-path");
-    expect(html).toContain('data-map-feature="candidate-trail-north-ridge-wet-spruce-loop"');
-    expect(html).toContain("unparsed-session-stamp");
-    expect(html).toContain("25°E");
-  });
-
-  it("falls back to the empty map state without loading enhancement scripts", () => {
-    const screen = createHomeScreenModel();
-
-    screen.mapView.features = [];
-
-    const html = renderHomePage(screen);
-
-    expect(html).toContain("Run a completed foraging intent to project leads into a geographic preview.");
-    expect(html).not.toContain("data-map-root");
-    expect(html).not.toContain("Focused lead");
-    expect(html).not.toContain("<script>");
-  });
-});
-
-function createHomeScreenModel(): HomeScreenModel {
-  return {
-    kind: "home",
-    eyebrow: "Semantic Foraging",
-    title: "Foraging Workbench",
-    description:
-      "A server-rendered semantic foraging workbench for trying intent classification, clarification, and grounded explanations against the real app bus.",
-    overviewTitle: "What this gives you",
-    overviewBody:
-      "One browser page now exercises the same typed command, query, workflow, and provenance paths that power the JSON endpoints. You can probe the current architecture without dropping to curl or Playwright.",
-    runtimeTitle: "Model runtime",
-    runtimeModeLabel: "No-model mode",
-    runtimeSummary:
-      "No model provider is configured. The foraging workbench still runs through deterministic screen, workflow, and explanation fallbacks so the manual flow stays testable.",
-    runtime: {
-      mode: "no-model",
-      provider: null,
-      available: false,
-      supportsStructuredOutput: false,
-      supportsStreaming: false,
-      maxContextClass: "unknown",
-    },
-    alerts: [
-      {
-        tone: "error",
-        title: "Intent input required",
-        body: "Enter a natural-language foraging request before submitting.",
-      },
-    ],
-    workbenchTitle: "Manual flow rehearsal",
-    workbenchBody:
-      "Use these forms to rehearse bounded foraging tasks: classify whether you want to find observations, create a field note, inspect a patch, explain a suggestion, or resume a saved session, then inspect the cues and clarification gaps the app detected.",
-    intentWorkbench: {
-      title: "Intent rehearsal",
-      description:
-        "Try natural-language requests a forager might make, such as finding chanterelle observations, creating a field note, inspecting a mossy patch, or resuming a previous trail.",
-      actionPath: "/actions/intent",
-      rawInputName: "input",
-      rawInputLabel: "What do you want to do?",
-      rawInputPlaceholder: "Find notes about chanterelles near mossy spruce stands",
-      rawInputValue: "Help",
-      submitLabel: "Classify request",
-      latestSubmission: {
-        input: "Help",
+  it("renders prose mode together with saved artifacts and explanation drafting", () => {
+    const workbench = withExplanationSubmission(
+      withIntentSubmission(createInitialForagingWorkbenchState(), {
+        input: "Explain why this chanterelle trail is worth trying in Helsinki",
         classification: {
-          intent: "clarify",
-          confidence: 0.31,
-          needsClarification: true,
+          intent: "explain-suggestion",
+          confidence: 0.82,
+          needsClarification: false,
           cues: {
-            species: [],
-            habitat: [],
-            region: [],
-            season: [],
+            species: ["chanterelle"],
+            habitat: ["spruce", "wet"],
+            region: ["helsinki"],
+            season: ["autumn"],
           },
-          missing: ["artifact_scope"],
+          missing: [],
         },
-        confidenceBand: "low",
+        confidenceBand: "high",
         provenance: {
           source: "deterministic-fallback",
           provider: null,
@@ -283,35 +167,10 @@ function createHomeScreenModel(): HomeScreenModel {
         },
         workflow: {
           name: "intent-classification",
-          state: "awaiting_clarification",
-          workflowId: "workflow-123",
-          question:
-            'What kind of foraging task does "Help" describe: find observations, create a field note, inspect a patch, explain a suggestion, or resume a session?',
-          options: ["find-observations", "create-field-note", "inspect-patch", "explain-suggestion", "resume-session"],
+          state: "completed",
         },
-      },
-      clarificationActionPath: "/actions/intent/clarify",
-      clarificationWorkflowIdName: "workflowId",
-      clarificationName: "clarification",
-      clarificationLabel: "Clarification",
-      clarificationPlaceholder: "Search for similar observations from last autumn",
-      clarificationValue: "Search for similar observations from last autumn",
-    },
-    explanationWorkbench: {
-      title: "Explanation rehearsal",
-      description:
-        "Send a candidate result title plus grounded facts to inspect the explanation path and provenance reporting used by the foraging UI.",
-      actionPath: "/actions/explanation",
-      titleName: "title",
-      titleLabel: "Decision or result title",
-      titlePlaceholder: "Suggested forage trail selected",
-      titleValue: "Suggested forage trail selected",
-      factsName: "facts",
-      factsLabel: "Grounding facts",
-      factsPlaceholder: "Observation cluster overlaps the current region\nRecent notes mention wet spruce habitat",
-      factsValue: "Observation cluster overlaps the current region\nRecent notes mention wet spruce habitat",
-      submitLabel: "Generate explanation",
-      latestSubmission: {
+      }),
+      {
         title: "Suggested forage trail selected",
         facts: ["Observation cluster overlaps the current region", "Recent notes mention wet spruce habitat"],
         explanation: "This trail was suggested because the available evidence aligns with the current search.",
@@ -321,143 +180,20 @@ function createHomeScreenModel(): HomeScreenModel {
           reason: "no-model-provider",
         },
       },
-    },
-    artifactWorkbench: {
-      saveActionPath: "/actions/artifact/save",
-      useActionPath: "/actions/artifact/use",
-      refineActionPath: "/actions/artifact/refine",
-      restoreActionPath: "/actions/artifact/restore",
-    },
-    mapView: {
-      title: "Foraging map",
-      description:
-        "This map projects current leads into a real geographic frame so the workbench can connect foraging cues with public Finnish map and occurrence data.",
-      emptyState: "Run a completed foraging intent to project leads into a geographic preview.",
-      legendTitle: "Mapped leads",
-      locationControl: {
-        title: "Current location",
-        actionLabel: "Use current location",
-        idleLabel: "Ask the browser for your current location to re-center the map around where you are now.",
-        loadingLabel: "Requesting current location from the browser...",
-        activeLabel: "Using current location to orient the map.",
-        deniedLabel: "Location access was denied, so the map stayed on the current foraging context.",
-        unsupportedLabel: "This browser does not expose geolocation, so the map cannot use your current position.",
-        errorLabel: "The map could not read your current location.",
-        privacyNote: "Location stays in the browser only. The app does not submit or persist live coordinates.",
-      },
-      basemap: {
-        provider: "osm-raster",
-        label: "OpenStreetMap standard tiles",
-        attribution: "© OpenStreetMap contributors",
-        available: true,
-        note: "OpenStreetMap is the default interactive basemap.",
-        tileTemplateUrl: "https://tile.openstreetmap.org/{z}/{x}/{y}.png",
-        minZoom: 0,
-        maxZoom: 19,
-        externalUrl: "https://www.openstreetmap.org",
-      },
-      viewport: {
-        width: 640,
-        height: 360,
-        frameLabel: "Geographic preview of current leads",
-        center: {
-          longitude: 24.96,
-          latitude: 60.18,
-        },
-        bounds: {
-          west: 24.4,
-          south: 59.9,
-          east: 25.4,
-          north: 60.5,
-        },
-        zoom: 10,
-      },
-      features: [
-        {
-          id: "candidate-observation-autumn-chanterelle-cluster",
-          label: "Autumn chanterelle cluster",
-          kind: "observation",
-          summary: "Three nearby observation notes align on damp spruce cover and recent chanterelle sightings.",
-          evidenceSummary: "Ranked for find-observations.",
-          sourceSection: "candidate-leads",
-          coordinateSource: "region-anchor",
-          geometry: {
-            kind: "point",
-            point: {
-              longitude: 24.94,
-              latitude: 60.18,
-            },
-            accuracyMeters: 1500,
-          },
-        },
-      ],
-      overlays: [
-        {
-          id: "finbif-occurrences",
-          label: "FinBIF observations",
-          provider: "finbif",
-          attribution: "Observation data © Finnish Biodiversity Information Facility",
-          status: "ready",
-          note: "Loaded 1 public Cantharellus cibarius occurrence from FinBIF.",
-          points: [
-            {
-              id: "obs-1",
-              label: "Cantharellus cibarius",
-              summary: "Observed 2025-09-01.",
-              recordedAt: "2025-09-01",
-              point: {
-                longitude: 24.93,
-                latitude: 60.2,
-              },
-            },
-          ],
-        },
-      ],
-    },
-    retrievalTitle: "Candidate leads",
-    retrievalBody:
-      "Completed foraging intents now surface deterministic observation, patch, trail, note, and session candidates with explicit evidence instead of leaving retrieval implied.",
-    retrievalEmptyState: "Run a completed intent to surface grounded candidate cards and evidence notes.",
-    candidateCards: [
-      {
-        id: "observation-autumn-chanterelle-cluster",
-        kind: "observation",
-        title: "Autumn chanterelle cluster",
-        summary: "Three nearby observation notes align on damp spruce cover and recent chanterelle sightings.",
-        statusLabel: "Observation cluster",
-        evidence: [
-          {
-            label: "Species overlap",
-            detail: "chanterelle",
-          },
-          {
-            label: "Habitat fit",
-            detail: "spruce, wet",
-          },
-        ],
-        spatialContext: {
-          species: ["chanterelle"],
-          habitat: ["spruce", "wet"],
-          region: ["helsinki"],
-          season: ["autumn"],
-        },
-      },
-    ],
-    savedArtifactsTitle: "Saved artifacts",
-    savedArtifactsBody: "Durable field notes, trails, and patch inspections stay here once saved.",
-    savedArtifactsEmptyState: "Save a field note, trail, or patch inspection to keep it in the workbench.",
-    savedArtifacts: [
+    );
+
+    workbench.savedArtifacts = [
       {
         artifactId: "trail-1",
-        sourceCardId: "trail-north-ridge-wet-spruce-loop",
+        sourceCardId: "trail-card-1",
         kind: "trail",
         title: "Saved chanterelle trail",
-        summary: "A saved trail connecting damp spruce pockets and recent chanterelle signals.",
-        notes: "Start from the wetter moss pocket after rain.",
+        summary: "A saved trail through wet spruce cover near Helsinki.",
+        notes: "Check the east-side moss pocket after rain.",
         sourceIntent: "explain-suggestion",
         cues: {
           species: ["chanterelle"],
-          habitat: ["spruce", "wet"],
+          habitat: ["spruce"],
           region: ["helsinki"],
           season: ["autumn"],
         },
@@ -469,35 +205,30 @@ function createHomeScreenModel(): HomeScreenModel {
         ],
         spatialContext: {
           species: ["chanterelle"],
-          habitat: ["spruce", "wet"],
+          habitat: ["spruce"],
           region: ["helsinki"],
           season: ["autumn"],
         },
-        savedAt: "2026-04-19T12:30:00.000Z",
+        savedAt: "2026-04-19T12:00:00.000Z",
         updatedAt: "2026-04-19T12:45:00.000Z",
         revisions: [
           {
             kind: "saved",
             title: "Saved chanterelle trail",
-            summary: "A saved trail connecting damp spruce pockets and recent chanterelle signals.",
-            notes: "",
-            recordedAt: "2026-04-19T12:30:00.000Z",
+            summary: "A saved trail through wet spruce cover near Helsinki.",
+            recordedAt: "2026-04-19T12:00:00.000Z",
           },
           {
             kind: "refined",
             title: "Saved chanterelle trail",
-            summary: "A saved trail connecting damp spruce pockets and recent chanterelle signals.",
-            notes: "Start from the wetter moss pocket after rain.",
+            summary: "A saved trail through wet spruce cover near Helsinki.",
+            notes: "Check the east-side moss pocket after rain.",
             recordedAt: "2026-04-19T12:45:00.000Z",
           },
         ],
       },
-    ],
-    recentSessionsTitle: "Recent sessions",
-    recentSessionsBody:
-      "Completed intents are now persisted as lightweight recent-session snapshots through the storage boundary so resume flows have real state to target.",
-    recentSessionsEmptyState: "Complete a foraging intent to start building a recent-session trail.",
-    recentSessions: [
+    ];
+    workbench.recentSessions = [
       {
         sessionId: "session-1",
         input: "Find chanterelles",
@@ -512,15 +243,153 @@ function createHomeScreenModel(): HomeScreenModel {
         },
         savedAt: "2026-04-19T12:00:00.000Z",
       },
-    ],
-    routesTitle: "Programmatic routes",
-    nextStepsTitle: "Roadmap focus",
-    nextStepsBody:
-      "The next slices should ingest field notes and observation cards, normalize species, habitat, region, and season cues, retrieve candidate patches and trails with explicit evidence cards, and let a forager save or resume a grounded search session without collapsing the app back into one orchestration loop.",
-    healthPath: "/api/health",
+    ];
+
+    const html = renderHomePage(createScreen(workbench));
+
+    expect(html).toContain('data-presentation-kind="prose"');
+    expect(html).toContain("Prepared explanation");
+    expect(html).toContain("Latest explanation");
+    expect(html).toContain("Saved artifacts");
+    expect(html).toContain("Use in workbench");
+    expect(html).toContain("Update artifact");
+    expect(html).toContain("Restore revision");
+    expect(html).toContain("Use revision in workbench");
+    expect(html).toContain("Recent searches");
+  });
+
+  it("renders map variants for areas, trails, overlays, and recent-session features", () => {
+    const screen = createScreen(
+      withIntentSubmission(createInitialForagingWorkbenchState(), {
+        input: "Nearby berry spots",
+        classification: {
+          intent: "find-observations",
+          confidence: 0.69,
+          needsClarification: false,
+          cues: {
+            species: ["berry"],
+            habitat: [],
+            region: [],
+            season: [],
+          },
+          missing: ["region"],
+        },
+        confidenceBand: "medium",
+        provenance: {
+          source: "deterministic-fallback",
+          provider: null,
+          reason: "no-model-provider",
+        },
+        workflow: {
+          name: "intent-classification",
+          state: "completed",
+        },
+      }),
+    );
+
+    screen.mapView.features = [
+      {
+        id: "candidate-patch-lingonberry-heath-rim",
+        label: "Lingonberry heath rim",
+        kind: "patch",
+        summary: "A pine heath edge with repeated lingonberry signals and shoreline access.",
+        evidenceSummary: "Ranked for find-observations.",
+        sourceSection: "candidate-leads",
+        coordinateSource: "region-anchor",
+        geometry: {
+          kind: "area",
+          center: {
+            longitude: 28.1,
+            latitude: 61.65,
+          },
+          ring: [
+            { longitude: 28.0, latitude: 61.7 },
+            { longitude: 28.2, latitude: 61.7 },
+            { longitude: 28.2, latitude: 61.6 },
+            { longitude: 28.0, latitude: 61.6 },
+            { longitude: 28.0, latitude: 61.7 },
+          ],
+        },
+      },
+      {
+        id: "candidate-trail-blueberry-ridge-loop",
+        label: "Blueberry ridge loop",
+        kind: "trail",
+        summary: "A short ridge loop linking mature spruce cover and productive blueberry ground.",
+        evidenceSummary: "Ranked for find-observations.",
+        sourceSection: "candidate-leads",
+        coordinateSource: "region-anchor",
+        geometry: {
+          kind: "trail",
+          points: [
+            { longitude: 27.9, latitude: 61.72 },
+            { longitude: 28.1, latitude: 61.66 },
+            { longitude: 28.26, latitude: 61.6 },
+          ],
+        },
+      },
+      {
+        id: "session-session-1",
+        label: "Recent berry search",
+        kind: "session",
+        summary: "Intent: find-observations",
+        evidenceSummary: "Saved from find-observations.",
+        sourceSection: "recent-sessions",
+        coordinateSource: "session-anchor",
+        geometry: {
+          kind: "point",
+          point: {
+            longitude: 28.12,
+            latitude: 61.63,
+          },
+          accuracyMeters: 4000,
+        },
+      },
+    ];
+    screen.mapView.overlays = [
+      {
+        id: "finbif-occurrences",
+        label: "FinBIF observations",
+        provider: "finbif",
+        attribution: "Observation data © Finnish Biodiversity Information Facility",
+        status: "ready",
+        note: "Loaded 1 public occurrence.",
+        points: [
+          {
+            id: "obs-1",
+            label: "Vaccinium myrtillus",
+            summary: "Observed 2025-08-10.",
+            recordedAt: "2025-08-10",
+            point: {
+              longitude: 28.14,
+              latitude: 61.67,
+            },
+          },
+        ],
+      },
+    ];
+
+    const html = renderHomePage(screen);
+
+    expect(html).toContain("data-map-marker-path");
+    expect(html).toContain("FinBIF observations / finbif");
+    expect(html).toContain("Recent berry search");
+    expect(html).toContain("61°N");
+  });
+});
+
+function createScreen(workbench = createInitialForagingWorkbenchState()) {
+  return createHomeScreenModel({
     routes: exampleRoutes,
-    meta: {
-      traceId: "trace-home-test",
+    runtime: {
+      mode: "no-model",
+      provider: null,
+      available: false,
+      supportsStructuredOutput: false,
+      supportsStreaming: false,
+      maxContextClass: "unknown",
     },
-  };
+    traceId: "trace-home-test",
+    workbench,
+  });
 }

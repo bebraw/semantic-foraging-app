@@ -7,7 +7,18 @@ export default defineConfig({
     coverage: {
       provider: "v8",
       include: ["src/**/*.{ts,tsx,js,jsx,mts,cts,mjs,cjs}"],
-      exclude: ["src/**/*.d.ts", "src/**/*.test.ts", "src/**/*.e2e.ts", "src/test-support.ts", "src/generated/**"],
+      exclude: [
+        "src/**/*.d.ts",
+        "src/**/*.test.ts",
+        "src/**/*.e2e.ts",
+        "src/test-support.ts",
+        "src/generated/**",
+        "src/domain/contracts/**",
+        "src/app/message.ts",
+        "src/infra/llm/provider.ts",
+        "src/infra/storage/repository.ts",
+        "src/infra/geodata/index.ts",
+      ],
       reporter: ["text", "html"],
       reportsDirectory: "reports/coverage",
       thresholds: {

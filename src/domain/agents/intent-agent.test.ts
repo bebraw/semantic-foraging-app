@@ -179,6 +179,77 @@ describe("classifyIntent", () => {
     });
   });
 
+  it("extracts berry and region cues for explicit table-style search queries", async () => {
+    await expect(
+      classifyIntent(null, "Give me a table of the most prevalent mushrooms in Finland at the lake district in autumn"),
+    ).resolves.toEqual({
+      classification: {
+        intent: "find-observations",
+        confidence: 0.69,
+        needsClarification: false,
+        cues: {
+          species: ["mushroom"],
+          habitat: [],
+          region: ["finland", "lake district"],
+          season: ["autumn"],
+        },
+        missing: [],
+      },
+      confidenceBand: "medium",
+      provenance: {
+        source: "deterministic-fallback",
+        provider: null,
+        reason: "no-model-provider",
+      },
+    });
+  });
+
+  it("classifies short patch requests through the inspect-patch branch", async () => {
+    await expect(classifyIntent(null, "Patch site")).resolves.toEqual({
+      classification: {
+        intent: "inspect-patch",
+        confidence: 0.71,
+        needsClarification: true,
+        cues: {
+          species: [],
+          habitat: [],
+          region: [],
+          season: [],
+        },
+        missing: ["habitat", "region"],
+      },
+      confidenceBand: "medium",
+      provenance: {
+        source: "deterministic-fallback",
+        provider: null,
+        reason: "no-model-provider",
+      },
+    });
+  });
+
+  it("falls back to the generic clarification branch for unmatched longer input", async () => {
+    await expect(classifyIntent(null, "Tell me about forest folklore")).resolves.toEqual({
+      classification: {
+        intent: "clarify",
+        confidence: 0.42,
+        needsClarification: true,
+        cues: {
+          species: [],
+          habitat: [],
+          region: [],
+          season: [],
+        },
+        missing: ["artifact_scope"],
+      },
+      confidenceBand: "low",
+      provenance: {
+        source: "deterministic-fallback",
+        provider: null,
+        reason: "no-model-provider",
+      },
+    });
+  });
+
   it("returns validated model output when inference succeeds", async () => {
     const provider = createProvider({
       completeJson: vi.fn().mockResolvedValue({

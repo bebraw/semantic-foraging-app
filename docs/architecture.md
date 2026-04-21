@@ -19,15 +19,15 @@ The architecture must fit these constraints:
 
 ## Current Status
 
-The repo now has a concrete server-first semantic-foraging workbench rather than only a starter architecture slice.
+The repo now has a concrete server-first semantic-foraging search surface rather than only a starter architecture slice.
 
 What exists today:
 
-- `src/worker.ts` routes both HTML workbench actions and JSON API endpoints through the same app layer.
+- `src/worker.ts` routes both HTML search-surface actions and JSON API endpoints through the same app layer.
 - `src/app/bus.ts` dispatches typed messages for screen rendering, health checks, runtime inspection, intent submission, clarification continuation, and explanation requests.
 - `src/domain/agents/intent-agent.ts` and `src/domain/agents/intent-workflow.ts` handle bounded intent classification plus one explicit clarification workflow.
 - `src/domain/agents/knowledge-agent.ts` surfaces deterministic candidate observations, patches, trails, sessions, field-note scaffolds, and saved-artifact-backed leads with explicit evidence.
-- `src/domain/agents/ui-agent.ts` assembles the typed home/workbench screen model that `src/views/home.ts` renders.
+- `src/domain/agents/ui-agent.ts` and `src/domain/agents/presentation-agent.ts` assemble the typed home screen model, including semantic presentation metadata that `src/views/home.ts` renders.
 - `src/infra/storage/` persists clarification workflow snapshots, lightweight recent sessions, and saved foraging artifacts in process-local memory behind repository interfaces.
 - `src/domain/agents/map-agent.ts`, `src/infra/geodata/`, and the home view provide a provider-backed geographic map with OSM as the default basemap, optional NLS topographic tiles, FinBIF overlays, and a thin Leaflet enhancement layer.
 - `src/infra/llm/` provides deterministic fallback behavior plus an OpenAI-compatible local model path.

@@ -23,6 +23,7 @@ The template needs a verification baseline that stays strict enough for end-to-e
 - Do not collapse fast and browser verification back into one opaque step without a concrete reason.
 - Do not treat colocated tests or test-support files as runtime source code when deciding whether unit coverage is missing.
 - Do not count generated runtime asset modules under `src/generated/` as hand-authored source for coverage thresholds.
+- Do not count type-only contracts, message definitions, or repository/provider interfaces as executable runtime behavior for coverage thresholds.
 - Do not weaken the full gate just to make iteration faster.
 
 ## Contract
@@ -45,6 +46,7 @@ The template needs a verification baseline that stays strict enough for end-to-e
 - The browser CI job must use the pinned Playwright container instead of reinstalling Chromium at runtime.
 - The coverage gate must only require unit tests when runtime `src/` code exists.
 - The coverage gate must exclude generated modules under `src/generated/` from both source detection and coverage threshold accounting.
+- The coverage gate may exclude type-only contracts and interface-only boundary files whose TypeScript output does not contain executable runtime behavior.
 - The coverage gate must work in both the normal workspace and local Agent CI's warmed `node_modules` layout.
 - The repo's local CI scripts should use the repo-pinned `agent-ci` binary directly instead of carrying repo-specific runtime patching.
 - The local verification workflow should document macOS as the supported host baseline instead of implying cross-platform support.

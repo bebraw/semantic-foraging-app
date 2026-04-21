@@ -43,9 +43,12 @@ describe("handleAppQueryRequest", () => {
       type: "RenderHomeScreen",
       screen: expect.objectContaining({
         kind: "home",
-        title: "Foraging Workbench",
-        mapView: expect.objectContaining({
-          title: "Foraging map",
+        title: "Foraging Search",
+        searchPrompt: expect.objectContaining({
+          submitLabel: "Search",
+        }),
+        presentation: expect.objectContaining({
+          primaryKind: "empty",
         }),
         runtime: {
           mode: "no-model",

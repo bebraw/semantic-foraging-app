@@ -14,10 +14,16 @@ describe("createAppBus", () => {
       kind: "screen",
       screen: expect.objectContaining({
         kind: "home",
-        title: "Foraging Workbench",
+        title: "Foraging Search",
         healthPath: "/api/health",
-        workbenchTitle: "Intent workbench",
-        recentSessionsTitle: "Recent sessions",
+        workbenchTitle: "Search surface",
+        recentSessionsTitle: "Recent searches",
+        searchPrompt: expect.objectContaining({
+          submitLabel: "Search",
+        }),
+        presentation: expect.objectContaining({
+          primaryKind: "empty",
+        }),
         routes: exampleRoutes,
         meta: {
           traceId: expect.any(String),

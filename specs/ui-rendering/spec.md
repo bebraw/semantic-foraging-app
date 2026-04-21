@@ -13,6 +13,8 @@ The app represents rendered UI as typed screen models between the app layer and 
   - `type: "RenderHomeScreen"`
   - `screen.kind`
   - `screen.title`
+  - `screen.searchPrompt`
+  - `screen.presentation.primaryKind`
   - `screen.runtime.mode`
   - `screen.runtime.available`
   - `screen.routes`
@@ -31,7 +33,8 @@ The app represents rendered UI as typed screen models between the app layer and 
 - Screen models may expose runtime capability details when that data helps contributors understand the current model tier without inspecting environment variables directly.
 - The server-rendered home page should not foreground developer-facing route catalogs, runtime summaries, or visible trace ids; those details may remain in typed screen data and JSON surfaces without becoming primary UI content.
 - The default home-screen presentation should stay visually restrained: white-canvas surfaces, border-led grouping, restrained accent color, and minimal decorative effects so the UI remains easy to reuse and prune.
-- The home screen model may include typed manual-workbench fragments for semantic foraging flows such as intent rehearsal, clarification, and explanation requests.
+- The home screen model may include typed search-prompt and semantic-presentation fragments so query-shape decisions stay outside the HTML templates.
+- The home screen model may include typed manual-workbench fragments for semantic foraging flows such as clarification, artifact reuse, and explanation drafting even when those fragments are not the primary surface.
 - The home screen model may include typed map fragments when spatial projection helps contributors inspect current retrieval state.
 - Typed map fragments may include provider-backed basemap and overlay configuration, but those details must still flow through the screen model instead of being hidden inside view-only code.
 - View-specific browser enhancement may attach to server-rendered screen fragments, but it must operate only on typed data already present in the rendered screen model.

@@ -16,13 +16,10 @@ describe("worker", () => {
     expect(response.headers.get("content-type")).toContain("text/html");
 
     const body = await response.text();
-    expect(body).toContain("Foraging Workbench");
-    expect(body).toContain("Intent rehearsal");
-    expect(body).toContain("Intent workbench");
-    expect(body).toContain("Foraging map");
-    expect(body).toContain("Candidate leads");
-    expect(body).toContain("Saved artifacts");
-    expect(body).toContain("Recent sessions");
+    expect(body).toContain("Foraging Search");
+    expect(body).toContain("Search-ready surface");
+    expect(body).toContain("Nearby berry spots");
+    expect(body).toContain('data-presentation-kind="empty"');
   });
 
   it("returns a JSON health response", async () => {
@@ -101,7 +98,13 @@ describe("worker", () => {
       type: "RenderHomeScreen",
       screen: expect.objectContaining({
         kind: "home",
-        title: "Foraging Workbench",
+        title: "Foraging Search",
+        searchPrompt: expect.objectContaining({
+          submitLabel: "Search",
+        }),
+        presentation: expect.objectContaining({
+          primaryKind: "empty",
+        }),
         runtime: {
           mode: "no-model",
           provider: null,
@@ -333,7 +336,7 @@ describe("worker", () => {
     expect(response.status).toBe(200);
     expect(response.headers.get("content-type")).toContain("text/html");
     const body = await response.text();
-    expect(body).toContain("Latest intent result");
+    expect(body).toContain('data-presentation-kind="cards"');
     expect(body).toContain("create-field-note");
     expect(body).toContain("Field note scaffold");
   });
@@ -576,6 +579,7 @@ describe("worker", () => {
     const body = await response.text();
     expect(body).toContain("Artifact loaded");
     expect(body).toContain("Loaded Saved chanterelle trail from revision history into the workbench forms.");
+    expect(body).toContain('value="Saved chanterelle trail"');
     expect(body).toContain("Summary: A saved trail connecting damp spruce pockets and recent chanterelle signals.");
   });
 
@@ -603,7 +607,7 @@ describe("worker", () => {
     expect(response.status).toBe(200);
     expect(response.headers.get("content-type")).toContain("text/css");
     expect(response.headers.get("x-trace-id")).toBeTruthy();
-    await expect(response.text()).resolves.toContain("--color-app-canvas:#f5efe6");
+    await expect(response.text()).resolves.toContain("--color-app-canvas:#f7fafe");
   });
 
   it("serves local Leaflet assets", async () => {

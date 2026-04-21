@@ -9,6 +9,7 @@ import type { StoredForagingArtifact } from "../contracts/artifact";
 import { buildMapViewModel } from "./map-agent";
 import { buildForagingCandidateCards } from "./knowledge-agent";
 import { createArtifactIntentSubmission, createArtifactWorkbenchSeed } from "./artifact-agent";
+import { buildSemanticPresentationModel } from "./presentation-agent";
 import type { RuntimeModelCapability } from "../contracts/model-runtime";
 import type { HomeScreenModel } from "../contracts/screen";
 import type { MapBasemapModel, MapOverlayModel } from "../contracts/map";
@@ -137,12 +138,34 @@ export function createHomeScreenModel(input: CreateHomeScreenInput): HomeScreenM
         }
       : undefined,
   );
+  const rawInput = input.workbench.intent.latestSubmission?.input ?? input.workbench.intent.rawInput;
+  const searchPrompt = {
+    actionPath: "/actions/intent",
+    rawInputName: "input",
+    rawInputLabel: "Search the landscape",
+    rawInputPlaceholder: "Type a place, species, or explicit view request",
+    rawInputValue: rawInput,
+    submitLabel: "Search",
+    examples: [
+      "Nearby berry spots",
+      "What kind of berries are available nearby?",
+      "Give me a table of the most prevalent mushrooms in Finland at the lake district.",
+    ],
+  };
+  const presentation = buildSemanticPresentationModel({
+    rawInput,
+    latestSubmission: input.workbench.intent.latestSubmission,
+    candidateCards,
+    savedArtifacts: input.workbench.savedArtifacts,
+    recentSessions: input.workbench.recentSessions,
+    mapView,
+  });
 
   return {
     kind: "home",
     eyebrow: "Semantic Foraging",
-    title: "Foraging Workbench",
-    description: "Server-rendered semantic foraging workbench.",
+    title: "Foraging Search",
+    description: "A minimal semantic-foraging search surface that maps each query to an appropriate result view.",
     overviewTitle: "",
     overviewBody: "",
     runtimeTitle: "Model runtime",
@@ -150,17 +173,19 @@ export function createHomeScreenModel(input: CreateHomeScreenInput): HomeScreenM
     runtimeSummary: describeRuntime(input.runtime),
     runtime: input.runtime,
     alerts: input.workbench.alerts,
-    workbenchTitle: "Intent workbench",
+    searchPrompt,
+    presentation,
+    workbenchTitle: "Search surface",
     workbenchBody: "",
     intentWorkbench: {
-      title: "Intent rehearsal",
+      title: "Semantic search",
       description: "",
       actionPath: "/actions/intent",
       rawInputName: "input",
-      rawInputLabel: "What do you want to do?",
-      rawInputPlaceholder: "Describe the task",
-      rawInputValue: input.workbench.intent.rawInput,
-      submitLabel: "Classify request",
+      rawInputLabel: searchPrompt.rawInputLabel,
+      rawInputPlaceholder: searchPrompt.rawInputPlaceholder,
+      rawInputValue: searchPrompt.rawInputValue,
+      submitLabel: searchPrompt.submitLabel,
       latestSubmission: input.workbench.intent.latestSubmission,
       clarificationActionPath: "/actions/intent/clarify",
       clarificationWorkflowIdName: "workflowId",
@@ -191,15 +216,15 @@ export function createHomeScreenModel(input: CreateHomeScreenInput): HomeScreenM
       restoreActionPath: "/actions/artifact/restore",
     },
     mapView,
-    retrievalTitle: "Candidate leads",
+    retrievalTitle: "Search results",
     retrievalBody: "",
     retrievalEmptyState: "Run a completed intent to surface grounded candidate cards and evidence notes.",
     candidateCards,
-    savedArtifactsTitle: "Saved artifacts",
+    savedArtifactsTitle: "Library",
     savedArtifactsBody: "",
     savedArtifactsEmptyState: "Save a field note, trail, or patch inspection to keep it in the workbench.",
     savedArtifacts: input.workbench.savedArtifacts,
-    recentSessionsTitle: "Recent sessions",
+    recentSessionsTitle: "Recent searches",
     recentSessionsBody: "",
     recentSessionsEmptyState: "Complete a foraging intent to start building a recent-session trail.",
     recentSessions: input.workbench.recentSessions,

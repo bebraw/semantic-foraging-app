@@ -37,6 +37,59 @@ export type IntentClassificationResult = {
   provenance: Provenance;
 };
 
+type KeywordMatcher = {
+  value: string;
+  patterns: string[];
+};
+
+const speciesMatchers: KeywordMatcher[] = [
+  { value: "chanterelle", patterns: ["chanterelle", "chanterelles"] },
+  { value: "morel", patterns: ["morel", "morels"] },
+  { value: "porcini", patterns: ["porcini"] },
+  { value: "boletus", patterns: ["boletus", "boleti"] },
+  { value: "hedgehog", patterns: ["hedgehog"] },
+  { value: "trumpet", patterns: ["trumpet", "trumpets"] },
+  { value: "blueberry", patterns: ["blueberry", "blueberries"] },
+  { value: "bilberry", patterns: ["bilberry", "bilberries"] },
+  { value: "lingonberry", patterns: ["lingonberry", "lingonberries"] },
+  { value: "cloudberry", patterns: ["cloudberry", "cloudberries"] },
+  { value: "cranberry", patterns: ["cranberry", "cranberries"] },
+  { value: "berry", patterns: ["berry", "berries"] },
+  { value: "mushroom", patterns: ["mushroom", "mushrooms"] },
+];
+
+const habitatMatchers: KeywordMatcher[] = [
+  { value: "spruce", patterns: ["spruce"] },
+  { value: "pine", patterns: ["pine"] },
+  { value: "birch", patterns: ["birch"] },
+  { value: "mossy", patterns: ["mossy", "moss"] },
+  { value: "wet", patterns: ["wet", "damp"] },
+  { value: "bog", patterns: ["bog", "marsh"] },
+  { value: "ridge", patterns: ["ridge"] },
+  { value: "old-growth", patterns: ["old-growth", "old growth"] },
+  { value: "clearing", patterns: ["clearing"] },
+  { value: "lakeside", patterns: ["lakeside", "lake shore", "shoreline"] },
+  { value: "heath", patterns: ["heath"] },
+];
+
+const regionMatchers: KeywordMatcher[] = [
+  { value: "finland", patterns: ["finland", "finnish"] },
+  { value: "lake district", patterns: ["lake district", "lakeland"] },
+  { value: "lapland", patterns: ["lapland"] },
+  { value: "uusimaa", patterns: ["uusimaa"] },
+  { value: "helsinki", patterns: ["helsinki"] },
+  { value: "turku", patterns: ["turku"] },
+  { value: "north karelia", patterns: ["north karelia"] },
+  { value: "ostrobothnia", patterns: ["ostrobothnia"] },
+];
+
+const seasonMatchers: KeywordMatcher[] = [
+  { value: "spring", patterns: ["spring"] },
+  { value: "summer", patterns: ["summer", "june", "july", "august"] },
+  { value: "autumn", patterns: ["autumn", "fall", "september", "october"] },
+  { value: "winter", patterns: ["winter"] },
+];
+
 export async function classifyIntent(provider: ModelProvider | null, rawInput: string): Promise<IntentClassificationResult> {
   if (!provider) {
     return finalizeDeterministicIntent(rawInput, "no-model-provider");
@@ -176,11 +229,20 @@ function deterministicIntent(rawInput: string): ClassifiedIntent {
   if (
     text.includes("search") ||
     text.includes("find") ||
+    text.includes("show") ||
+    text.includes("give me") ||
     text.includes("look up") ||
     text.includes("similar") ||
     text.includes("observation") ||
     text.includes("note") ||
-    text.includes("where")
+    text.includes("where") ||
+    text.includes("nearby") ||
+    text.includes("available") ||
+    text.includes("table") ||
+    text.includes("berries") ||
+    text.includes("berry") ||
+    text.includes("mushrooms") ||
+    text.includes("mushroom")
   ) {
     const missing = collectMissingContext("find-observations", cues);
 
@@ -224,15 +286,15 @@ function finalizeDeterministicIntent(rawInput: string, reason: DeterministicProv
 
 function extractForagingCues(text: string): ForagingCues {
   return {
-    species: collectKeywordMatches(text, ["chanterelle", "morel", "porcini", "boletus", "hedgehog", "trumpet"]),
-    habitat: collectKeywordMatches(text, ["spruce", "pine", "birch", "mossy", "wet", "bog", "ridge", "old-growth", "clearing"]),
-    region: collectKeywordMatches(text, ["lapland", "uusimaa", "helsinki", "turku", "north karelia", "ostrobothnia"]),
-    season: collectKeywordMatches(text, ["spring", "summer", "autumn", "fall", "winter", "june", "july", "august", "september", "october"]),
+    species: collectKeywordMatches(text, speciesMatchers),
+    habitat: collectKeywordMatches(text, habitatMatchers),
+    region: collectKeywordMatches(text, regionMatchers),
+    season: collectKeywordMatches(text, seasonMatchers),
   };
 }
 
-function collectKeywordMatches(text: string, keywords: string[]): string[] {
-  return keywords.filter((keyword) => text.includes(keyword));
+function collectKeywordMatches(text: string, matchers: KeywordMatcher[]): string[] {
+  return matchers.filter((matcher) => matcher.patterns.some((pattern) => text.includes(pattern))).map((matcher) => matcher.value);
 }
 
 function collectMissingContext(intent: ForagingIntent, cues: ForagingCues): MissingContext[] {

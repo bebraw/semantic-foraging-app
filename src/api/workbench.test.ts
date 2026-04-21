@@ -32,12 +32,10 @@ describe("workbench actions", () => {
 
     expect(response.status).toBe(200);
     const body = await response.text();
-    expect(body).toContain("Foraging Workbench");
-    expect(body).toContain("Latest intent result");
+    expect(body).toContain("Foraging Search");
+    expect(body).toContain('data-presentation-kind="cards"');
     expect(body).toContain("create-field-note");
-    expect(body).toContain("Detected cues");
     expect(body).toContain("Field note scaffold");
-    expect(body).toContain("Recent sessions");
     expect(body).toContain("Create a new field note");
   });
 
@@ -56,7 +54,7 @@ describe("workbench actions", () => {
     expect(response.status).toBe(200);
     const body = await response.text();
     expect(body).toContain("Clarification needed");
-    expect(body).toContain("Continue workflow");
+    expect(body).toContain("Continue search");
   });
 
   it("continues a clarification workflow through the server-rendered workbench", async () => {
@@ -92,7 +90,7 @@ describe("workbench actions", () => {
 
     expect(response.status).toBe(200);
     const body = await response.text();
-    expect(body).toContain("Latest intent result");
+    expect(body).toContain('data-presentation-kind="cards"');
     expect(body).toContain("find-observations");
     expect(body).not.toContain("Clarification needed");
     expect(body).toContain("Autumn chanterelle cluster");
@@ -294,12 +292,11 @@ describe("workbench actions", () => {
     expect(response.status).toBe(200);
     const body = await response.text();
     expect(body).toContain("Artifact loaded");
-    expect(body).toContain("Latest intent result");
     expect(body).toContain("explain-suggestion");
-    expect(body).toContain("deterministic-fallback / artifact-reuse");
+    expect(body).toContain("Prepared explanation");
     expect(body).toContain('value="Saved chanterelle trail"');
     expect(body).toContain("Summary: A saved trail connecting damp spruce pockets and recent chanterelle signals.");
-    expect(body).toContain("Candidate leads");
+    expect(body).toContain('data-presentation-kind="prose"');
   });
 
   it("loads a saved artifact revision into the workbench without mutating the stored artifact", async () => {

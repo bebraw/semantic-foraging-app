@@ -1,8 +1,8 @@
 @import "tailwindcss";
 
 @theme {
-  --color-app-canvas: #ffffff;
-  --color-app-surface: #ffffff;
+  --color-app-canvas: #f7fafe;
+  --color-app-surface: #edf3fb;
   --color-app-text: #10253f;
   --color-app-text-soft: #61758d;
   --color-app-accent: #005bbb;
@@ -12,7 +12,7 @@
   --color-app-ink: #10253f;
   --color-app-ink-text: #eef5fd;
 
-  --shadow-panel: 0 0 #0000;
+  --shadow-panel: 0 28px 64px -36px rgb(16 37 63 / 0.28);
 }
 
 /*
@@ -162,6 +162,10 @@
   [data-map-browser-frame] [data-map-browser-chrome],
   [data-map-browser-frame] [data-map-zoom-controls] {
     z-index: 900;
+  }
+
+  summary::-webkit-details-marker {
+    display: none;
   }
 
   .leaflet-container {

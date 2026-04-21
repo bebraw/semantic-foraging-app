@@ -3,6 +3,8 @@ import type { GeoBounds, GeoPoint, MapBasemapModel, MapFeature, MapOverlayModel,
 import type { StoredForagingSession } from "../contracts/session";
 
 const regionAnchors: Record<string, GeoPoint> = {
+  finland: { longitude: 25.0, latitude: 61.8 },
+  "lake district": { longitude: 28.1, latitude: 61.65 },
   helsinki: { longitude: 24.9384, latitude: 60.1699 },
   uusimaa: { longitude: 25.0, latitude: 60.4 },
   "north karelia": { longitude: 29.7636, latitude: 62.601 },

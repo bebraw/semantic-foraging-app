@@ -35,6 +35,7 @@ Skip an ADR for small, reversible, or purely tactical choices.
 | [ADR-017](./ADR-017-add-a-workflow-repository-boundary.md)              | Accepted   | Add a workflow repository boundary with an in-memory implementation for stored workflow state.  |
 | [ADR-018](./ADR-018-add-a-local-openai-compatible-model-path.md)        | Accepted   | Add a local OpenAI-compatible provider path for Ollama- or LM Studio-style development flows.   |
 | [ADR-019](./ADR-019-add-a-ui-agent-driven-foraging-workbench.md)        | Accepted   | Add a UI-agent-driven foraging workbench with server-rendered action routes for manual testing. |
+| [ADR-024](./ADR-024-add-semantic-presentation-mapping.md)               | Accepted   | Map search queries to typed result presentations such as map, cards, table, or prose.           |
 
 ## Creating A New ADR
 

@@ -29,7 +29,7 @@ describe("buildForagingCandidateCards", () => {
       },
     });
 
-    expect(cards).toHaveLength(3);
+    expect(cards).toHaveLength(4);
     expect(cards[0]).toEqual(
       expect.objectContaining({
         id: "observation-autumn-chanterelle-cluster",
