@@ -64,7 +64,7 @@ The home page is a server-rendered semantic-foraging search surface that lets co
 
 - The search surface must stay server-rendered by default rather than depending on client-side state management.
 - The initial search submission must render back on `/` so the browser stays on the home route after a query.
-- A successful initial search submission must normalize the submitted query into the browser URL as `GET /?input=...` so reload and share preserve the current search text.
+- A successful initial search submission must normalize the submitted query into the browser URL as `GET /?q=...` so reload and share preserve the current search text.
 - HTML action routes must stay thin adapters over existing typed app messages and results.
 - The home screen model must be assembled by a dedicated UI agent module instead of being hand-built inside the route or view layer.
 - The browser UI should stay search-first and avoid developer-facing route catalogs, runtime diagnostics, roadmap notes, or visible trace identifiers.

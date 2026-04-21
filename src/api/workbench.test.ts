@@ -52,7 +52,7 @@ describe("workbench actions", () => {
     );
 
     expect(response.status).toBe(303);
-    expect(response.headers.get("location")).toBe("/?input=Create+a+new+field+note");
+    expect(response.headers.get("location")).toBe("/?q=Create+a+new+field+note");
   });
 
   it("renders a clarification prompt back into the workbench page", async () => {

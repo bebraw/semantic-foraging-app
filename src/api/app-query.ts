@@ -39,7 +39,7 @@ const AppQuerySchema = z.discriminatedUnion("type", [
 ]);
 
 export async function handleHomePageRequest(request: Request, context: AppContext): Promise<Response> {
-  const rawInput = new URL(request.url).searchParams.get("input")?.trim() ?? "";
+  const rawInput = new URL(request.url).searchParams.get("q")?.trim() ?? "";
 
   if (rawInput.length > 0) {
     let workbench = withIntentInput(createInitialForagingWorkbenchState(), rawInput);

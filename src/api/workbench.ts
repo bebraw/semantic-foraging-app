@@ -396,7 +396,7 @@ export async function renderWorkbenchResponse(
 
 function redirectToSearchQuery(rawInput: string): Response {
   const destination = new URL("http://local/");
-  destination.searchParams.set("input", rawInput);
+  destination.searchParams.set("q", rawInput);
 
   return new Response(null, {
     status: 303,

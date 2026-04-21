@@ -23,7 +23,7 @@ describe("worker", () => {
   });
 
   it("renders an initial query from the browser query parameter", async () => {
-    const response = await handleRequest(new Request("http://example.com/?input=Create+a+new+field+note"));
+    const response = await handleRequest(new Request("http://example.com/?q=Create+a+new+field+note"));
 
     expect(response.status).toBe(200);
     expect(response.headers.get("content-type")).toContain("text/html");
@@ -45,7 +45,7 @@ describe("worker", () => {
     );
 
     expect(response.status).toBe(303);
-    expect(response.headers.get("location")).toBe("/?input=Create+a+new+field+note");
+    expect(response.headers.get("location")).toBe("/?q=Create+a+new+field+note");
   });
 
   it("returns a JSON health response", async () => {
