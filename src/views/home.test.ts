@@ -16,6 +16,8 @@ describe("renderHomePage", () => {
     expect(html).toContain("Nearby berry spots");
     expect(html).toContain('data-presentation-kind="empty"');
     expect(html).not.toContain('aria-label="Semantic result components"');
+    expect(html).not.toContain('id="search-status"');
+    expect(html.match(/<button/g)).toHaveLength(4);
     expect(html).not.toContain("Programmatic routes");
     expect(html).not.toContain("Model runtime");
   });
@@ -183,6 +185,7 @@ describe("renderHomePage", () => {
 
     expect(html).toContain('data-presentation-kind="clarification"');
     expect(html).toContain("What kind of foraging task does &quot;Help&quot; describe?");
+    expect(html).toContain('value="find-observations"');
     expect(html).toContain('action="/actions/intent/clarify"');
     expect(html).toContain("Continue search");
   });
@@ -300,6 +303,8 @@ describe("renderHomePage", () => {
     expect(html).toContain("Restore revision");
     expect(html).toContain("Use revision in workbench");
     expect(html).toContain("Recent searches");
+    expect(html).toContain("Run search");
+    expect(html).toContain('value="Find chanterelles"');
   });
 
   it("renders map variants for areas, trails, overlays, and recent-session features", () => {

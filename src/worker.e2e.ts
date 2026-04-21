@@ -4,7 +4,7 @@ test("renders the search-first home page", async ({ page }) => {
   await page.goto("/");
 
   await expect(page.getByText("Semantic Foraging")).toBeVisible();
-  await expect(page.getByRole("button", { name: "Search" })).toBeVisible();
+  await expect(page.getByRole("button", { name: "Search", exact: true })).toBeVisible();
   await expect(page.getByRole("button", { name: "Nearby berry spots" })).toBeVisible();
   await expect(page.locator("[data-presentation-kind='empty']")).toBeVisible();
 });
@@ -47,7 +47,7 @@ test("supports the semantic search flow for card-oriented results", async ({ pag
   await page.goto("/");
 
   await page.getByLabel("Search the landscape").fill("Create a new field note");
-  await page.getByRole("button", { name: "Search" }).click();
+  await page.getByRole("button", { name: "Search", exact: true }).click();
 
   const resultSection = page.locator("[data-presentation-kind='cards']");
 
@@ -61,11 +61,10 @@ test("supports clarification and continuation through the search surface", async
   await page.goto("/");
 
   await page.getByLabel("Search the landscape").fill("Help");
-  await page.getByRole("button", { name: "Search" }).click();
+  await page.getByRole("button", { name: "Search", exact: true }).click();
 
   await expect(page.getByText("Clarification needed")).toBeVisible();
-  await page.getByLabel("Clarification").fill("Search for similar observations");
-  await page.getByRole("button", { name: "Continue search" }).click();
+  await page.getByRole("button", { name: "find-observations" }).click();
 
   const resultSection = page.locator("[data-presentation-kind='cards']");
 
@@ -84,7 +83,7 @@ test("uses map presentation and browser enhancement for nearby berry spots", asy
   await page.goto("/");
 
   await page.getByLabel("Search the landscape").fill("Nearby berry spots");
-  await page.getByRole("button", { name: "Search" }).click();
+  await page.getByRole("button", { name: "Search", exact: true }).click();
 
   const mapRoot = page.locator("[data-map-root]");
 
@@ -169,6 +168,7 @@ test("supports switching semantic result views from the component controls", asy
   await expect(page).toHaveURL(/\/\?q=Nearby\+berry\+spots&view=cards$/);
   await expect(page.locator("[data-presentation-kind='cards']")).toBeVisible();
   await expect(page.getByRole("heading", { level: 2, name: "Nearby berry spots" })).toBeVisible();
+  await expect(page.getByRole("heading", { level: 2, name: "Nearby berry spots" })).toBeFocused();
   await expect(page.evaluate(() => (window as typeof window & { __viewSwitchMarker?: string }).__viewSwitchMarker)).resolves.toBe(
     "live-document",
   );
@@ -178,7 +178,7 @@ test("saves an artifact and reloads it into the prepared explanation panel", asy
   await page.goto("/");
 
   await page.getByLabel("Search the landscape").fill("Create a new field note");
-  await page.getByRole("button", { name: "Search" }).click();
+  await page.getByRole("button", { name: "Search", exact: true }).click();
   await page.getByRole("button", { name: "Save field note" }).click();
 
   await expect(page.getByRole("heading", { level: 2, name: "Saved artifacts" })).toBeVisible();

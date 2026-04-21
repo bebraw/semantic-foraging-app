@@ -26,6 +26,7 @@ The home page is a server-rendered semantic-foraging search surface that lets co
 - Awaiting-clarification submissions must render:
   - the follow-up question
   - allowed options
+  - direct actions for the allowed options in addition to manual clarification entry
   - the `workflowId` needed to continue the workflow
 - Successful explanation submissions must render:
   - the submitted title
@@ -58,6 +59,7 @@ The home page is a server-rendered semantic-foraging search surface that lets co
 - Saved artifacts may render revision reuse controls so historical artifact states can continue the workbench without first restoring them.
 - Saved artifacts may render deterministic change summaries for revision entries so the current artifact can be compared against historical revisions inline.
 - The search surface must render a recent-sessions section showing persisted recent-session snapshots when available.
+- Persisted recent sessions must expose a direct way to rerun the stored query from the search surface.
 - Invalid form input or typed app errors must render back into the search surface as user-visible alerts instead of raw JSON.
 
 ## Runtime Behavior
@@ -71,6 +73,7 @@ The home page is a server-rendered semantic-foraging search surface that lets co
 - Result headers and supporting copy should stay query-first and avoid explanatory metatext about why a particular result view was selected.
 - The primary search affordance may include example queries when those examples clarify supported semantic result shapes.
 - Clicking an example query must submit the clicked example even when the visible text input still contains a previous search.
+- The empty state should not repeat the example queries as inert content elsewhere on the page.
 - The intent clarification path must reuse the same stored workflow state used by the JSON clarification endpoint.
 - The search surface must make the semantic-foraging intent taxonomy visible through lightweight metadata instead of a fixed diagnostic panel stack.
 - Completed intent submissions must feed the same recent-session view shown on the search surface without requiring client-side state management.

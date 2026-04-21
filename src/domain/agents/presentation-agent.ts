@@ -56,7 +56,7 @@ export function buildSemanticPresentationModel(input: BuildSemanticPresentationI
     return {
       title: "",
       summary: "",
-      emptyState: "Try a query like Nearby berry spots, What kind of berries are available nearby?, or a request for a table.",
+      emptyState: "Use the search box or an example above to start.",
       primaryKind: "empty",
       signals: [
         {

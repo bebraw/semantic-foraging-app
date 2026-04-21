@@ -38,6 +38,7 @@ The app represents rendered UI as typed screen models between the app layer and 
 - The home screen model may include typed map fragments when spatial projection helps contributors inspect current retrieval state.
 - Typed map fragments may include provider-backed basemap and overlay configuration, but those details must still flow through the screen model instead of being hidden inside view-only code.
 - View-specific browser enhancement may attach to server-rendered screen fragments, but it must operate only on typed data already present in the rendered screen model.
+- In-place browser view switches should restore focus to the updated result heading and announce the change through a live region.
 - When provider-backed map tiles are available, the rendered home screen may serialize typed map state into the HTML so lightweight browser code can project overlays on top of the configured basemap.
 - Typed map fragments may include browser-only location-control copy so the rendered UI can ask for geolocation permission without inventing ad hoc text or policy in the script layer.
 - External browser libraries such as Leaflet may render typed map fragments, but they must be fed only by server-owned screen data and locally served pinned assets.

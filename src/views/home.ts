@@ -35,7 +35,6 @@ export function renderHomePage(screen: HomeScreenModel): string {
 }
 
 function renderSearchSurface(screen: HomeScreenModel): string {
-  const statusCopy = screen.presentation.primaryKind === "empty" ? screen.presentation.emptyState : "";
   const exampleFieldName = `${screen.searchPrompt.rawInputName}Example`;
 
   return `<section class="max-w-4xl">
@@ -70,13 +69,6 @@ function renderSearchSurface(screen: HomeScreenModel): string {
             .join("")}
         </div>
       </form>
-      ${
-        statusCopy
-          ? `<div id="search-status" class="mt-2 flex flex-wrap items-center gap-3 text-sm leading-6 text-app-text-soft">
-              <span>${escapeHtml(statusCopy)}</span>
-            </div>`
-          : ""
-      }
     </div>
   </section>`;
 }
@@ -117,13 +109,16 @@ function renderAlerts(alerts: HomeScreenModel["alerts"]): string {
 
 function renderPresentationSection(screen: HomeScreenModel): string {
   const heading = screen.presentation.title
-    ? `<h2 class="text-[clamp(1.45rem,4vw,2.35rem)] leading-[0.98] font-semibold tracking-[-0.04em]">${escapeHtml(screen.presentation.title)}</h2>`
+    ? `<h2 data-result-heading tabindex="-1" class="text-[clamp(1.45rem,4vw,2.35rem)] leading-[0.98] font-semibold tracking-[-0.04em] focus:outline-none">${escapeHtml(
+        screen.presentation.title,
+      )}</h2>`
     : "";
   const summary = screen.presentation.summary
     ? `<p class="mt-2 max-w-2xl text-sm leading-6 text-app-text-soft sm:text-base sm:leading-7">${escapeHtml(screen.presentation.summary)}</p>`
     : "";
 
   return `<section class="grid gap-4" data-presentation-kind="${escapeHtml(screen.presentation.primaryKind)}">
+    <p id="view-switch-status" class="sr-only" aria-live="polite" aria-atomic="true"></p>
     <div class="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
       <div class="max-w-3xl">
         ${heading}
@@ -152,6 +147,7 @@ function renderComponentPaletteItem(screen: HomeScreenModel, component: HomeScre
   const className = `rounded-full border px-3 py-2 text-sm ${component.selected ? "border-app-accent bg-app-accent-ghost text-app-accent-strong" : "border-app-line bg-app-surface text-app-text-soft"}`;
   const sharedAttributes = `data-semantic-component="${escapeHtml(component.kind)}" data-component-selected="${component.selected ? "true" : "false"}" data-component-signals="${escapeHtml(component.signals.join(","))}"`;
   const href = buildPresentationComponentHref(screen, component.kind);
+  const currentAttribute = component.selected ? ` aria-current="page"` : "";
 
   if (!href) {
     return `<span class="${className}" ${sharedAttributes}>
@@ -159,7 +155,7 @@ function renderComponentPaletteItem(screen: HomeScreenModel, component: HomeScre
     </span>`;
   }
 
-  return `<a class="${className}" href="${escapeHtml(href)}" data-component-link="true" ${sharedAttributes}>
+  return `<a class="${className}" href="${escapeHtml(href)}" data-component-link="true"${currentAttribute} ${sharedAttributes}>
     <span class="font-medium">${escapeHtml(component.title)}</span>
   </a>`;
 }
@@ -223,6 +219,24 @@ function renderViewSwitchScript(): string {
     document.title = nextDocument.title;
     document.body.dataset.traceId = nextDocument.body.dataset.traceId ?? "";
     currentMain.replaceWith(nextMain);
+
+    const nextHeading = document.querySelector("[data-result-heading]");
+    const status = document.querySelector("#view-switch-status");
+    const announcement =
+      nextHeading instanceof HTMLElement && nextHeading.textContent
+        ? "Showing " + nextHeading.textContent.trim()
+        : "View updated";
+
+    if (status instanceof HTMLElement) {
+      status.textContent = "";
+      window.requestAnimationFrame(() => {
+        status.textContent = announcement;
+      });
+    }
+
+    if (nextHeading instanceof HTMLElement) {
+      nextHeading.focus();
+    }
 
     window.__semanticForagingInitMap?.();
   };
@@ -341,14 +355,6 @@ function renderPrimaryPresentation(screen: HomeScreenModel): string {
 function renderEmptyState(screen: HomeScreenModel): string {
   return `<div class="grid gap-4 rounded-[1.8rem] border border-app-line bg-app-surface p-6">
     <p class="max-w-2xl text-base leading-7 text-app-text-soft">${escapeHtml(screen.presentation.emptyState)}</p>
-    <ul class="grid gap-3 md:grid-cols-3">
-      ${screen.searchPrompt.examples
-        .map(
-          (example) =>
-            `<li class="rounded-[1.3rem] border border-app-line bg-app-canvas px-4 py-4 text-sm leading-6 text-app-text-soft">${escapeHtml(example)}</li>`,
-        )
-        .join("")}
-    </ul>
   </div>`;
 }
 
@@ -364,9 +370,24 @@ function renderClarificationPanel(screen: HomeScreenModel): string {
       <p class="text-[0.72rem] font-semibold uppercase tracking-[0.3em] text-app-text-soft">Clarification</p>
       <p class="mt-3 max-w-2xl text-lg leading-8 text-app-text">${escapeHtml(workflow.question)}</p>
     </div>
-    <ul class="flex flex-wrap gap-2 text-sm text-app-text-soft">
-      ${workflow.options.map((option) => `<li class="rounded-full border border-app-line bg-app-canvas px-3 py-2">${escapeHtml(option)}</li>`).join("")}
-    </ul>
+    <div class="grid gap-3">
+      <p class="text-sm leading-6 text-app-text-soft">Choose one of the suggested answers or add your own.</p>
+      <ul class="flex flex-wrap gap-2 text-sm text-app-text-soft">
+        ${workflow.options
+          .map(
+            (option) =>
+              `<li>
+                <form method="post" action="${escapeHtml(screen.intentWorkbench.clarificationActionPath)}">
+                  <input type="hidden" name="${escapeHtml(screen.intentWorkbench.clarificationWorkflowIdName)}" value="${escapeHtml(workflow.workflowId)}">
+                  <button class="rounded-full border border-app-line bg-app-canvas px-3 py-2 text-sm text-app-text" type="submit" name="${escapeHtml(
+                    screen.intentWorkbench.clarificationName,
+                  )}" value="${escapeHtml(option)}">${escapeHtml(option)}</button>
+                </form>
+              </li>`,
+          )
+          .join("")}
+      </ul>
+    </div>
     <form class="grid gap-3 max-w-2xl" method="post" action="${escapeHtml(screen.intentWorkbench.clarificationActionPath)}">
       <input type="hidden" name="${escapeHtml(screen.intentWorkbench.clarificationWorkflowIdName)}" value="${escapeHtml(workflow.workflowId)}">
       <label class="grid gap-2">
@@ -656,6 +677,10 @@ function renderSupportRail(screen: HomeScreenModel): string {
                       <p class="text-sm font-medium text-app-text">${escapeHtml(session.title)}</p>
                       <p class="mt-2 text-sm leading-6 text-app-text-soft">${escapeHtml(session.summary)}</p>
                       <p class="mt-3 text-xs uppercase tracking-[0.22em] text-app-text-soft">${escapeHtml(formatSavedAtLabel(session.savedAt))}</p>
+                      <form class="mt-3" method="post" action="${escapeHtml(screen.searchPrompt.actionPath)}">
+                        <input type="hidden" name="${escapeHtml(screen.searchPrompt.rawInputName)}" value="${escapeHtml(session.input)}">
+                        <button class="rounded-full border border-app-line bg-app-surface px-4 py-2 text-sm font-medium text-app-text" type="submit">Run search</button>
+                      </form>
                     </li>`,
                 )
                 .join("")}

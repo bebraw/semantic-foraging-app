@@ -180,6 +180,7 @@ describe("workbench actions", () => {
     const body = await response.text();
     expect(body).toContain("Recent session");
     expect(body).toContain("Find chanterelles near wet spruce in Helsinki");
+    expect(body).toContain("Run search");
   });
 
   it("renders an explanation result back into the workbench page", async () => {
