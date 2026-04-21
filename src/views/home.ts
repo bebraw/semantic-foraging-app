@@ -9,7 +9,7 @@ export function renderHomePage(screen: HomeScreenModel): string {
     ? `<h1 class="mt-2 text-[clamp(1.85rem,5vw,3.1rem)] leading-[0.94] font-semibold tracking-[-0.05em]">${escapeHtml(screen.title)}</h1>`
     : "";
   const body = `<main class="min-h-screen px-5 py-5 sm:px-8 sm:py-6 lg:px-10">
-    <div class="mx-auto flex max-w-6xl flex-col gap-6 sm:gap-8">
+    <div class="mx-auto flex max-w-[108rem] flex-col gap-6 sm:gap-8">
       <header class="flex flex-wrap items-end justify-between gap-3">
         <div>
           <p class="text-[0.68rem] font-semibold uppercase tracking-[0.26em] text-app-accent">${escapeHtml(screen.eyebrow)}</p>
@@ -17,10 +17,19 @@ export function renderHomePage(screen: HomeScreenModel): string {
         </div>
         <p class="max-w-xl text-sm leading-6 text-app-text-soft">${escapeHtml(screen.description)}</p>
       </header>
-      ${renderSearchSurface(screen)}
-      ${renderAlerts(screen.alerts)}
-      ${renderPresentationSection(screen)}
-      ${renderSupportRail(screen)}
+      <div class="grid gap-6 xl:grid-cols-[16rem_minmax(0,1.45fr)_22rem] xl:items-start">
+        <aside data-layout-column="recent" class="order-2 grid gap-4 xl:order-1 xl:sticky xl:top-5">
+          ${renderRecentSessionsColumn(screen)}
+        </aside>
+        <div data-layout-column="results" class="order-1 grid min-w-0 gap-6 xl:order-2">
+          ${renderSearchSurface(screen)}
+          ${renderAlerts(screen.alerts)}
+          ${renderPresentationSection(screen)}
+        </div>
+        <aside data-layout-column="observation" class="order-3 grid gap-4">
+          ${renderObservationColumn(screen)}
+        </aside>
+      </div>
     </div>
   </main>`;
 
@@ -640,54 +649,54 @@ function renderEvidenceList(evidence: HomeScreenModel["candidateCards"][number][
   </dl>`;
 }
 
-function renderSupportRail(screen: HomeScreenModel): string {
-  if (
-    screen.savedArtifacts.length === 0 &&
-    screen.recentSessions.length === 0 &&
-    screen.explanationWorkbench.latestSubmission === undefined &&
-    screen.explanationWorkbench.titleValue.length === 0 &&
-    screen.explanationWorkbench.factsValue.length === 0
-  ) {
-    return "";
-  }
-
-  return `<section class="grid gap-5 lg:grid-cols-[minmax(0,1.15fr)_22rem]">
-    <div class="grid gap-4">
-      <div class="flex items-center justify-between gap-3">
-        <div>
-          <p class="text-[0.72rem] font-semibold uppercase tracking-[0.3em] text-app-text-soft">${escapeHtml(screen.savedArtifactsTitle)}</p>
-          <h2 class="mt-2 text-2xl font-semibold tracking-[-0.04em] text-app-text">Saved artifacts</h2>
-        </div>
-      </div>
-      ${screen.savedArtifacts.length > 0 ? renderSavedArtifacts(screen) : `<p class="text-sm text-app-text-soft">${escapeHtml(screen.savedArtifactsEmptyState)}</p>`}
-      ${renderExplanationWorkbench(screen)}
+function renderRecentSessionsColumn(screen: HomeScreenModel): string {
+  return `<section class="grid gap-4 rounded-[1.8rem] border border-app-line bg-app-surface p-5">
+    <div>
+      <p class="text-[0.72rem] font-semibold uppercase tracking-[0.3em] text-app-text-soft">${escapeHtml(screen.recentSessionsTitle)}</p>
+      <h2 class="mt-2 text-2xl font-semibold tracking-[-0.04em] text-app-text">Recent searches</h2>
     </div>
-    <aside class="grid gap-4 rounded-[1.8rem] border border-app-line bg-app-surface p-5">
+    ${
+      screen.recentSessions.length > 0
+        ? `<ul class="grid gap-3">
+            ${screen.recentSessions
+              .map(
+                (session) =>
+                  `<li class="rounded-[1.3rem] border border-app-line bg-app-canvas px-4 py-4">
+                    <p class="text-sm font-medium text-app-text">${escapeHtml(session.title)}</p>
+                    <p class="mt-2 text-sm leading-6 text-app-text-soft">${escapeHtml(session.summary)}</p>
+                    <p class="mt-3 text-xs uppercase tracking-[0.22em] text-app-text-soft">${escapeHtml(formatSavedAtLabel(session.savedAt))}</p>
+                    <form class="mt-3" method="post" action="${escapeHtml(screen.searchPrompt.actionPath)}">
+                      <input type="hidden" name="${escapeHtml(screen.searchPrompt.rawInputName)}" value="${escapeHtml(session.input)}">
+                      <button class="rounded-full border border-app-line bg-app-surface px-4 py-2 text-sm font-medium text-app-text" type="submit">Run search</button>
+                    </form>
+                  </li>`,
+              )
+              .join("")}
+          </ul>`
+        : `<p class="text-sm text-app-text-soft">${escapeHtml(screen.recentSessionsEmptyState)}</p>`
+    }
+  </section>`;
+}
+
+function renderObservationColumn(screen: HomeScreenModel): string {
+  return `${renderSavedArtifactsSection(screen)}${renderExplanationWorkbench(screen)}`;
+}
+
+function renderSavedArtifactsSection(screen: HomeScreenModel): string {
+  return `<section class="grid gap-4">
+    <div class="flex items-center justify-between gap-3">
       <div>
-        <p class="text-[0.72rem] font-semibold uppercase tracking-[0.3em] text-app-text-soft">${escapeHtml(screen.recentSessionsTitle)}</p>
-        <h2 class="mt-2 text-2xl font-semibold tracking-[-0.04em] text-app-text">Recent searches</h2>
+        <p class="text-[0.72rem] font-semibold uppercase tracking-[0.3em] text-app-text-soft">${escapeHtml(screen.savedArtifactsTitle)}</p>
+        <h2 class="mt-2 text-2xl font-semibold tracking-[-0.04em] text-app-text">Saved artifacts</h2>
       </div>
-      ${
-        screen.recentSessions.length > 0
-          ? `<ul class="grid gap-3">
-              ${screen.recentSessions
-                .map(
-                  (session) =>
-                    `<li class="rounded-[1.3rem] border border-app-line bg-app-canvas px-4 py-4">
-                      <p class="text-sm font-medium text-app-text">${escapeHtml(session.title)}</p>
-                      <p class="mt-2 text-sm leading-6 text-app-text-soft">${escapeHtml(session.summary)}</p>
-                      <p class="mt-3 text-xs uppercase tracking-[0.22em] text-app-text-soft">${escapeHtml(formatSavedAtLabel(session.savedAt))}</p>
-                      <form class="mt-3" method="post" action="${escapeHtml(screen.searchPrompt.actionPath)}">
-                        <input type="hidden" name="${escapeHtml(screen.searchPrompt.rawInputName)}" value="${escapeHtml(session.input)}">
-                        <button class="rounded-full border border-app-line bg-app-surface px-4 py-2 text-sm font-medium text-app-text" type="submit">Run search</button>
-                      </form>
-                    </li>`,
-                )
-                .join("")}
-            </ul>`
-          : `<p class="text-sm text-app-text-soft">${escapeHtml(screen.recentSessionsEmptyState)}</p>`
-      }
-    </aside>
+    </div>
+    ${
+      screen.savedArtifacts.length > 0
+        ? renderSavedArtifacts(screen)
+        : `<p class="rounded-[1.8rem] border border-app-line bg-app-surface p-5 text-sm text-app-text-soft">${escapeHtml(
+            screen.savedArtifactsEmptyState,
+          )}</p>`
+    }
   </section>`;
 }
 

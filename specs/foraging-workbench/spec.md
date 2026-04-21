@@ -60,6 +60,7 @@ The home page is a server-rendered semantic-foraging search surface that lets co
 - Saved artifacts may render deterministic change summaries for revision entries so the current artifact can be compared against historical revisions inline.
 - The search surface must render a recent-sessions section showing persisted recent-session snapshots when available.
 - Persisted recent sessions must expose a direct way to rerun the stored query from the search surface.
+- Wide layouts may place recent searches in a left rail and saved artifacts or explanation workbench content in a right rail so the search form and active results stay centered.
 - Invalid form input or typed app errors must render back into the search surface as user-visible alerts instead of raw JSON.
 
 ## Runtime Behavior

@@ -13,7 +13,12 @@ describe("renderHomePage", () => {
     const html = renderHomePage(createScreen());
 
     expect(html).toContain("Semantic Foraging");
+    expect(html).toContain('data-layout-column="recent"');
+    expect(html).toContain('data-layout-column="results"');
+    expect(html).toContain('data-layout-column="observation"');
     expect(html).toContain("Nearby berry spots");
+    expect(html).toContain("Recent searches");
+    expect(html).toContain("Saved artifacts");
     expect(html).toContain('data-presentation-kind="empty"');
     expect(html).not.toContain('aria-label="Semantic result components"');
     expect(html).not.toContain('id="search-status"');
