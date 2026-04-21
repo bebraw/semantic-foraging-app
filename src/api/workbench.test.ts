@@ -77,6 +77,26 @@ describe("workbench actions", () => {
     expect(body).not.toContain("Intent input required");
   });
 
+  it("prefers the clicked premade search query over a stale text input value", async () => {
+    const formData = new FormData();
+    formData.set("input", "Nearby berry spots");
+    formData.set("inputExample", "What kind of berries are available nearby?");
+
+    const response = await handleIntentActionRequest(
+      new Request("http://example.com/actions/intent", {
+        method: "POST",
+        body: formData,
+      }),
+      createAppContext(exampleRoutes),
+    );
+
+    expect(response.status).toBe(200);
+    const body = await response.text();
+    expect(body).toContain("What kind of berries are available nearby?");
+    expect(body).toContain("Mapped results for &quot;What kind of berries are available nearby?&quot;");
+    expect(body).not.toContain("Mapped results for &quot;Nearby berry spots&quot;");
+  });
+
   it("continues a clarification workflow through the server-rendered workbench", async () => {
     const context = createAppContext(exampleRoutes);
     const initialFormData = new FormData();

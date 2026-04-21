@@ -108,6 +108,24 @@ test("supports clicking a premade query button from the empty search state", asy
   await expect(page.getByLabel("Search the landscape")).toHaveValue("Nearby berry spots");
 });
 
+test("supports clicking a second premade query button after an initial search", async ({ page, context }) => {
+  await context.grantPermissions(["geolocation"]);
+  await context.setGeolocation({
+    latitude: 61.65,
+    longitude: 28.1,
+  });
+
+  await page.goto("/");
+  await page.getByRole("button", { name: "Nearby berry spots" }).click();
+  await expect(page.locator("[data-presentation-kind='map']")).toBeVisible();
+
+  await page.getByRole("button", { name: "What kind of berries are available nearby?" }).click();
+
+  await expect(page.locator("[data-presentation-kind='map']")).toBeVisible();
+  await expect(page.getByLabel("Search the landscape")).toHaveValue("What kind of berries are available nearby?");
+  await expect(page.getByRole("heading", { level: 2, name: 'Mapped results for "What kind of berries are available nearby?"' })).toBeVisible();
+});
+
 test("saves an artifact and reloads it into the prepared explanation panel", async ({ page }) => {
   await page.goto("/");
 
