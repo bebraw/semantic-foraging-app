@@ -373,7 +373,7 @@ function renderPrimaryPresentation(screen: HomeScreenModel): string {
 }
 
 function renderEmptyState(screen: HomeScreenModel): string {
-  return `<div class="grid gap-4 rounded-[1.8rem] border border-app-line bg-app-surface p-6">
+  return `<div class="grid gap-4 border-t border-app-line/80 pt-5">
     <p class="max-w-2xl text-base leading-7 text-app-text-soft">${escapeHtml(screen.presentation.emptyState)}</p>
   </div>`;
 }
@@ -385,7 +385,7 @@ function renderClarificationPanel(screen: HomeScreenModel): string {
     return renderEmptyState(screen);
   }
 
-  return `<div class="grid gap-5 rounded-[1.8rem] border border-app-line bg-app-surface p-6">
+  return `<div class="grid gap-5 border-t border-app-line/80 pt-5">
     <div>
       <p class="text-[0.72rem] font-semibold uppercase tracking-[0.3em] text-app-text-soft">Clarification</p>
       <p class="mt-3 max-w-2xl text-lg leading-8 text-app-text">${escapeHtml(workflow.question)}</p>
@@ -483,8 +483,8 @@ function renderMapPresentation(screen: HomeScreenModel): string {
         </div>
       </div>
     </div>
-    <aside class="grid gap-4 rounded-[1.8rem] border border-app-line bg-app-surface p-5">
-      <div class="grid gap-2 rounded-[1.3rem] border border-app-line bg-app-canvas px-4 py-4">
+    <aside class="grid gap-5 self-start">
+      <div class="grid gap-2 border-t border-app-line/80 pt-4">
         <p class="text-[0.72rem] font-semibold uppercase tracking-[0.3em] text-app-text-soft" data-map-detail-meta>${escapeHtml(
           formatMapDetailMeta(initialFeature),
         )}</p>
@@ -494,13 +494,13 @@ function renderMapPresentation(screen: HomeScreenModel): string {
       </div>
       <div>
         <p class="text-[0.72rem] font-semibold uppercase tracking-[0.3em] text-app-text-soft">${escapeHtml(screen.mapView.legendTitle)}</p>
-        <ul class="mt-3 grid gap-3">
+        <ul class="mt-3 grid gap-3 border-t border-app-line/80 pt-4">
           ${screen.mapView.features
             .map(
               (feature) =>
                 `<li>
                   <button
-                    class="w-full rounded-[1.3rem] border border-app-line bg-app-canvas px-4 py-4 text-left"
+                    class="w-full border-b border-app-line/70 px-0 py-3 text-left last:border-b-0"
                     type="button"
                     data-map-item="${escapeHtml(feature.id)}"
                     data-map-label="${escapeHtml(feature.label)}"
@@ -522,7 +522,7 @@ function renderMapPresentation(screen: HomeScreenModel): string {
             .join("")}
         </ul>
       </div>
-      <div class="rounded-[1.3rem] border border-app-line bg-app-canvas px-4 py-4">
+      <div class="border-t border-app-line/80 pt-4">
         <p class="text-[0.72rem] font-semibold uppercase tracking-[0.3em] text-app-text-soft">${escapeHtml(screen.mapView.basemap.label)}</p>
         <p class="mt-2 text-sm leading-6 text-app-text-soft">${escapeHtml(formatBoundsLabel(screen.mapView.viewport.bounds))}</p>
         ${
@@ -600,7 +600,7 @@ function renderTableValueCell(column: SemanticTableColumn, value: string): strin
 
 function renderProsePresentation(screen: HomeScreenModel): string {
   return `<div class="grid gap-5 lg:grid-cols-[minmax(0,1.15fr)_22rem]">
-    <div class="grid gap-4 rounded-[1.8rem] border border-app-line bg-app-surface p-6">
+    <div class="grid gap-4 border-t border-app-line/80 pt-5">
       ${screen.presentation.prose
         .map((paragraph) => `<p class="max-w-3xl text-base leading-8 text-app-text-soft">${escapeHtml(paragraph)}</p>`)
         .join("")}
@@ -661,18 +661,18 @@ function renderEvidenceList(evidence: HomeScreenModel["candidateCards"][number][
 }
 
 function renderRecentSessionsColumn(screen: HomeScreenModel): string {
-  return `<section class="grid gap-4 rounded-[1.8rem] border border-app-line bg-app-surface p-5">
+  return `<section class="grid gap-4">
     <div>
       <p class="text-[0.72rem] font-semibold uppercase tracking-[0.3em] text-app-text-soft">${escapeHtml(screen.recentSessionsTitle)}</p>
       <h2 class="mt-2 text-2xl font-semibold tracking-[-0.04em] text-app-text">Recent searches</h2>
     </div>
     ${
       screen.recentSessions.length > 0
-        ? `<ul class="grid gap-3">
+        ? `<ul class="grid gap-0 border-t border-app-line/80">
             ${screen.recentSessions
               .map(
                 (session) =>
-                  `<li class="rounded-[1.3rem] border border-app-line bg-app-canvas px-4 py-4">
+                  `<li class="border-b border-app-line/70 py-4 last:border-b-0">
                     <p class="text-sm font-medium text-app-text">${escapeHtml(session.title)}</p>
                     <p class="mt-2 text-sm leading-6 text-app-text-soft">${escapeHtml(session.summary)}</p>
                     <p class="mt-3 text-xs uppercase tracking-[0.22em] text-app-text-soft">${escapeHtml(formatSavedAtLabel(session.savedAt))}</p>
@@ -723,7 +723,7 @@ function renderSavedArtifacts(screen: HomeScreenModel): string {
     ${screen.savedArtifacts
       .map(
         (artifact) =>
-          `<details class="rounded-[1.5rem] border border-app-line bg-app-surface p-5" ${artifact === screen.savedArtifacts[0] ? "open" : ""}>
+          `<details class="border-t border-app-line/80 py-5 first:border-t-0 first:pt-0" ${artifact === screen.savedArtifacts[0] ? "open" : ""}>
             <summary class="cursor-pointer list-none">
               <div class="flex flex-wrap items-center gap-2 text-sm">
                 <span class="rounded-full bg-app-accent-ghost px-3 py-1 font-medium text-app-accent-strong">${escapeHtml(artifact.kind)}</span>
@@ -743,7 +743,7 @@ function renderSavedArtifacts(screen: HomeScreenModel): string {
                   <button class="rounded-full border border-app-line bg-app-canvas px-4 py-2 text-sm font-medium text-app-text" type="submit">Use in workbench</button>
                 </form>
               </div>
-              <form class="grid gap-3 rounded-[1.3rem] border border-app-line bg-app-canvas px-4 py-4" method="post" action="${escapeHtml(
+              <form class="grid gap-3 border-t border-app-line/70 pt-4" method="post" action="${escapeHtml(
                 screen.artifactWorkbench.refineActionPath,
               )}">
                 <input type="hidden" name="artifactId" value="${escapeHtml(artifact.artifactId)}">
@@ -773,13 +773,13 @@ function renderSavedArtifacts(screen: HomeScreenModel): string {
                 artifact.revisions.length > 1
                   ? `<div class="grid gap-3">
                       <p class="text-[0.72rem] font-semibold uppercase tracking-[0.3em] text-app-text-soft">Revision history</p>
-                      <ul class="grid gap-3">
+                      <ul class="grid gap-3 border-t border-app-line/70 pt-4">
                         ${artifact.revisions
                           .slice(-3)
                           .reverse()
                           .map(
                             (revision) =>
-                              `<li class="rounded-[1.2rem] border border-app-line bg-app-canvas px-4 py-4">
+                              `<li class="border-b border-app-line/70 pb-4 last:border-b-0">
                                 <p class="text-[0.72rem] font-semibold uppercase tracking-[0.24em] text-app-text-soft">${escapeHtml(
                                   `${revision.kind} / ${formatRecordedAtLabel(revision.recordedAt)}`,
                                 )}</p>
@@ -831,7 +831,7 @@ function renderExplanationWorkbench(screen: HomeScreenModel): string {
 
   const latest = screen.explanationWorkbench.latestSubmission;
 
-  return `<div class="grid gap-4 rounded-[1.5rem] border border-app-line bg-app-surface p-5">
+  return `<div class="grid gap-4 border-t border-app-line/80 pt-5">
     <div>
       <p class="text-[0.72rem] font-semibold uppercase tracking-[0.3em] text-app-text-soft">Prepared explanation</p>
       <h3 class="mt-2 text-xl font-semibold tracking-[-0.03em] text-app-text">Explanation draft</h3>
@@ -867,7 +867,7 @@ function renderExplanationWorkbench(screen: HomeScreenModel): string {
     </form>
     ${
       latest
-        ? `<div class="rounded-[1.2rem] border border-app-line bg-app-canvas px-4 py-4">
+        ? `<div class="border-t border-app-line/70 pt-4">
             <p class="text-[0.72rem] font-semibold uppercase tracking-[0.24em] text-app-text-soft">Latest explanation</p>
             <p class="mt-2 font-medium text-app-text">${escapeHtml(latest.title)}</p>
             <p class="mt-2 text-sm leading-7 text-app-text-soft">${escapeHtml(latest.explanation)}</p>
