@@ -32,7 +32,7 @@ describe("workbench actions", () => {
 
     expect(response.status).toBe(200);
     const body = await response.text();
-    expect(body).toContain("Foraging Search");
+    expect(body).toContain("Semantic Foraging");
     expect(body).toContain('data-presentation-kind="cards"');
     expect(body).toContain("create-field-note");
     expect(body).toContain("Field note scaffold");

@@ -13,7 +13,7 @@ describe("renderScreen", () => {
       kind: "screen",
       screen: expect.objectContaining({
         kind: "home",
-        title: "Foraging Search",
+        title: "",
         presentation: expect.objectContaining({
           primaryKind: "empty",
         }),

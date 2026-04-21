@@ -12,7 +12,7 @@ describe("renderHomePage", () => {
   it("renders the minimal search surface before a query is submitted", () => {
     const html = renderHomePage(createScreen());
 
-    expect(html).toContain("Foraging Search");
+    expect(html).toContain("Semantic Foraging");
     expect(html).toContain("Search-ready surface");
     expect(html).toContain("Nearby berry spots");
     expect(html).toContain('data-presentation-kind="empty"');

@@ -5,12 +5,15 @@ import { renderPage } from "./render-page";
 
 export function renderHomePage(screen: HomeScreenModel): string {
   const supportsMapEnhancement = screen.mapView.features.length > 0;
+  const heading = screen.title
+    ? `<h1 class="mt-2 text-[clamp(1.85rem,5vw,3.1rem)] leading-[0.94] font-semibold tracking-[-0.05em]">${escapeHtml(screen.title)}</h1>`
+    : "";
   const body = `<main class="min-h-screen px-5 py-5 sm:px-8 sm:py-6 lg:px-10">
     <div class="mx-auto flex max-w-6xl flex-col gap-6 sm:gap-8">
       <header class="flex flex-wrap items-end justify-between gap-3">
         <div>
           <p class="text-[0.68rem] font-semibold uppercase tracking-[0.26em] text-app-accent">${escapeHtml(screen.eyebrow)}</p>
-          <h1 class="mt-2 text-[clamp(1.85rem,5vw,3.1rem)] leading-[0.94] font-semibold tracking-[-0.05em]">${escapeHtml(screen.title)}</h1>
+          ${heading}
         </div>
         <p class="max-w-xl text-sm leading-6 text-app-text-soft">${escapeHtml(screen.description)}</p>
       </header>
@@ -22,7 +25,7 @@ export function renderHomePage(screen: HomeScreenModel): string {
   </main>`;
 
   return renderPage({
-    title: screen.title,
+    title: screen.title || screen.eyebrow,
     body,
     traceId: screen.meta.traceId,
     stylesheets: supportsMapEnhancement ? ["/vendor/leaflet.css"] : [],

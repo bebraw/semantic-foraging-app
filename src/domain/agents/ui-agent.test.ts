@@ -43,7 +43,7 @@ describe("ui-agent", () => {
     expect(screen).toEqual(
       expect.objectContaining({
         kind: "home",
-        title: "Foraging Search",
+        title: "",
         searchPrompt: expect.objectContaining({
           actionPath: "/",
           submitLabel: "Search",

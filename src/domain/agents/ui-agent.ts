@@ -166,7 +166,7 @@ export function createHomeScreenModel(input: CreateHomeScreenInput): HomeScreenM
   return {
     kind: "home",
     eyebrow: "Semantic Foraging",
-    title: "Foraging Search",
+    title: "",
     description: "",
     overviewTitle: "",
     overviewBody: "",

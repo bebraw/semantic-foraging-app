@@ -43,7 +43,7 @@ describe("handleAppQueryRequest", () => {
       type: "RenderHomeScreen",
       screen: expect.objectContaining({
         kind: "home",
-        title: "Foraging Search",
+        title: "",
         searchPrompt: expect.objectContaining({
           submitLabel: "Search",
         }),

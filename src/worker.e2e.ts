@@ -3,7 +3,7 @@ import { expect, test } from "@playwright/test";
 test("renders the search-first home page", async ({ page }) => {
   await page.goto("/");
 
-  await expect(page.getByRole("heading", { level: 1, name: "Foraging Search" })).toBeVisible();
+  await expect(page.getByText("Semantic Foraging")).toBeVisible();
   await expect(page.getByRole("button", { name: "Search" })).toBeVisible();
   await expect(page.getByRole("button", { name: "Nearby berry spots" })).toBeVisible();
   await expect(page.locator("[data-presentation-kind='empty']")).toBeVisible();
@@ -32,10 +32,10 @@ test("returns the typed home screen through the app query endpoint", async ({ re
   expect(response.ok()).toBe(true);
   await expect(response.json()).resolves.toEqual({
     ok: true,
-    type: "RenderHomeScreen",
+      type: "RenderHomeScreen",
     screen: expect.objectContaining({
       kind: "home",
-      title: "Foraging Search",
+      title: "",
       presentation: expect.objectContaining({
         primaryKind: "empty",
       }),

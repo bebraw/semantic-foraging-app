@@ -14,7 +14,7 @@ describe("createAppBus", () => {
       kind: "screen",
       screen: expect.objectContaining({
         kind: "home",
-        title: "Foraging Search",
+        title: "",
         healthPath: "/api/health",
         workbenchTitle: "Search surface",
         recentSessionsTitle: "Recent searches",

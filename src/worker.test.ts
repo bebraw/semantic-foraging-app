@@ -16,7 +16,7 @@ describe("worker", () => {
     expect(response.headers.get("content-type")).toContain("text/html");
 
     const body = await response.text();
-    expect(body).toContain("Foraging Search");
+    expect(body).toContain("Semantic Foraging");
     expect(body).toContain("Search-ready surface");
     expect(body).toContain("Nearby berry spots");
     expect(body).toContain('data-presentation-kind="empty"');
@@ -133,7 +133,7 @@ describe("worker", () => {
       type: "RenderHomeScreen",
       screen: expect.objectContaining({
         kind: "home",
-        title: "Foraging Search",
+        title: "",
         searchPrompt: expect.objectContaining({
           submitLabel: "Search",
         }),
