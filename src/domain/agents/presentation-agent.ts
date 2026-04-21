@@ -416,7 +416,7 @@ function collectContentIds(
 function buildPresentationTitle(primaryKind: SemanticComponentKind, input: string): string {
   switch (primaryKind) {
     case "map":
-      return `Mapped results for "${input}"`;
+      return input;
     case "cards":
       return `Result cards for "${input}"`;
     case "table":
@@ -438,7 +438,7 @@ function buildPresentationSummary(
 ): string {
   switch (selection.primaryKind) {
     case "map":
-      return `${candidateCards.length} grounded lead${candidateCards.length === 1 ? "" : "s"} were mapped because the query leans on location or nearby spots.`;
+      return `${candidateCards.length} mapped lead${candidateCards.length === 1 ? "" : "s"}.`;
     case "cards":
       return `${candidateCards.length} grounded lead${candidateCards.length === 1 ? "" : "s"} were surfaced as cards because the query asks what is available.`;
     case "table":

@@ -53,7 +53,7 @@ describe("renderHomePage", () => {
     );
 
     expect(html).toContain('data-presentation-kind="map"');
-    expect(html).toContain("Mapped results for");
+    expect(html).toContain(">Nearby berry spots<");
     expect(html).toContain("Bilberry lakeshore pocket");
     expect(html).toContain("data-map-root");
     expect(html).toContain('data-map-item="candidate-observation-bilberry-lakeshore-pocket"');

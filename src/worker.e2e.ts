@@ -147,7 +147,7 @@ test("supports clicking a second premade query button after an initial search", 
 
   await expect(page.locator("[data-presentation-kind='map']")).toBeVisible();
   await expect(page.getByLabel("Search the landscape")).toHaveValue("What kind of berries are available nearby?");
-  await expect(page.getByRole("heading", { level: 2, name: 'Mapped results for "What kind of berries are available nearby?"' })).toBeVisible();
+  await expect(page.getByRole("heading", { level: 2, name: "What kind of berries are available nearby?" })).toBeVisible();
 });
 
 test("supports switching semantic result views from the component controls", async ({ page, context }) => {
