@@ -109,8 +109,8 @@ describe("workbench actions", () => {
     expect(response.status).toBe(200);
     const body = await response.text();
     expect(body).toContain("What kind of berries are available nearby?");
-    expect(body).toContain("Mapped results for &quot;What kind of berries are available nearby?&quot;");
-    expect(body).not.toContain("Mapped results for &quot;Nearby berry spots&quot;");
+    expect(body).toContain('data-presentation-kind="map"');
+    expect(body).not.toContain("A narrative summary was selected");
   });
 
   it("continues a clarification workflow through the server-rendered workbench", async () => {

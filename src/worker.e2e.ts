@@ -32,7 +32,7 @@ test("returns the typed home screen through the app query endpoint", async ({ re
   expect(response.ok()).toBe(true);
   await expect(response.json()).resolves.toEqual({
     ok: true,
-      type: "RenderHomeScreen",
+    type: "RenderHomeScreen",
     screen: expect.objectContaining({
       kind: "home",
       title: "",
@@ -168,7 +168,7 @@ test("supports switching semantic result views from the component controls", asy
 
   await expect(page).toHaveURL(/\/\?q=Nearby\+berry\+spots&view=cards$/);
   await expect(page.locator("[data-presentation-kind='cards']")).toBeVisible();
-  await expect(page.getByRole("heading", { level: 2, name: 'Result cards for "Nearby berry spots"' })).toBeVisible();
+  await expect(page.getByRole("heading", { level: 2, name: "Nearby berry spots" })).toBeVisible();
   await expect(page.evaluate(() => (window as typeof window & { __viewSwitchMarker?: string }).__viewSwitchMarker)).resolves.toBe(
     "live-document",
   );

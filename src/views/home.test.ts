@@ -13,10 +13,9 @@ describe("renderHomePage", () => {
     const html = renderHomePage(createScreen());
 
     expect(html).toContain("Semantic Foraging");
-    expect(html).toContain("Search-ready surface");
     expect(html).toContain("Nearby berry spots");
     expect(html).toContain('data-presentation-kind="empty"');
-    expect(html).toContain('data-component-selected="true"');
+    expect(html).not.toContain('aria-label="Semantic result components"');
     expect(html).not.toContain("Programmatic routes");
     expect(html).not.toContain("Model runtime");
   });
@@ -96,7 +95,7 @@ describe("renderHomePage", () => {
     );
 
     expect(html).toContain('data-presentation-kind="table"');
-    expect(html).toContain("Derived prevalence table");
+    expect(html).toContain(">Give me a table of the most prevalent mushrooms in Finland at the lake district.<");
     expect(html).toContain('<th class="px-5 py-4 font-semibold">Species</th>');
     expect(html).toContain('data-table-row="row-chanterelle"');
     expect(html).toContain('data-semantic-component="table"');

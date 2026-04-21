@@ -77,7 +77,9 @@ export async function handleHomePageRequest(request: Request, context: AppContex
   return htmlResponse(renderHomePage(result.screen));
 }
 
-function readPreferredComponent(url: URL): Extract<HomeScreenModel["presentation"]["primaryKind"], "map" | "cards" | "table" | "prose"> | undefined {
+function readPreferredComponent(
+  url: URL,
+): Extract<HomeScreenModel["presentation"]["primaryKind"], "map" | "cards" | "table" | "prose"> | undefined {
   const view = url.searchParams.get("view");
 
   if (view === "map" || view === "cards" || view === "table" || view === "prose") {

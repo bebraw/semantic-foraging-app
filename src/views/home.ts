@@ -116,11 +116,18 @@ function renderAlerts(alerts: HomeScreenModel["alerts"]): string {
 }
 
 function renderPresentationSection(screen: HomeScreenModel): string {
+  const heading = screen.presentation.title
+    ? `<h2 class="text-[clamp(1.45rem,4vw,2.35rem)] leading-[0.98] font-semibold tracking-[-0.04em]">${escapeHtml(screen.presentation.title)}</h2>`
+    : "";
+  const summary = screen.presentation.summary
+    ? `<p class="mt-2 max-w-2xl text-sm leading-6 text-app-text-soft sm:text-base sm:leading-7">${escapeHtml(screen.presentation.summary)}</p>`
+    : "";
+
   return `<section class="grid gap-4" data-presentation-kind="${escapeHtml(screen.presentation.primaryKind)}">
     <div class="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
       <div class="max-w-3xl">
-        <h2 class="text-[clamp(1.45rem,4vw,2.35rem)] leading-[0.98] font-semibold tracking-[-0.04em]">${escapeHtml(screen.presentation.title)}</h2>
-        <p class="mt-2 max-w-2xl text-sm leading-6 text-app-text-soft sm:text-base sm:leading-7">${escapeHtml(screen.presentation.summary)}</p>
+        ${heading}
+        ${summary}
       </div>
       ${renderComponentPalette(screen)}
     </div>
@@ -130,21 +137,20 @@ function renderPresentationSection(screen: HomeScreenModel): string {
 }
 
 function renderComponentPalette(screen: HomeScreenModel): string {
+  if (screen.presentation.primaryKind === "empty" || screen.presentation.primaryKind === "clarification") {
+    return "";
+  }
+
   const orderedComponents = [...screen.presentation.components].sort(compareComponentPaletteOrder);
 
   return `<ul class="flex flex-wrap gap-2" aria-label="Semantic result components">
-    ${orderedComponents
-      .map(
-        (component) =>
-          `<li>${renderComponentPaletteItem(screen, component)}</li>`,
-      )
-      .join("")}
+    ${orderedComponents.map((component) => `<li>${renderComponentPaletteItem(screen, component)}</li>`).join("")}
   </ul>`;
 }
 
 function renderComponentPaletteItem(screen: HomeScreenModel, component: HomeScreenModel["presentation"]["components"][number]): string {
   const className = `rounded-full border px-3 py-2 text-sm ${component.selected ? "border-app-accent bg-app-accent-ghost text-app-accent-strong" : "border-app-line bg-app-surface text-app-text-soft"}`;
-  const sharedAttributes = `title="${escapeHtml(component.reason)}" data-semantic-component="${escapeHtml(component.kind)}" data-component-selected="${component.selected ? "true" : "false"}" data-component-signals="${escapeHtml(component.signals.join(","))}"`;
+  const sharedAttributes = `data-semantic-component="${escapeHtml(component.kind)}" data-component-selected="${component.selected ? "true" : "false"}" data-component-signals="${escapeHtml(component.signals.join(","))}"`;
   const href = buildPresentationComponentHref(screen, component.kind);
 
   if (!href) {
@@ -294,7 +300,6 @@ function renderDebugPanel(screen: HomeScreenModel): string {
     <summary class="mt-5 rounded-l-[1rem] border border-app-line border-r-0 bg-app-surface/96 px-2 py-3 text-[0.7rem] font-semibold uppercase tracking-[0.2em] text-app-text shadow-[var(--shadow-panel)] backdrop-blur-xl [writing-mode:vertical-rl]" data-debug-toggle>Debug</summary>
     <div class="w-[min(20rem,calc(100vw-3rem))] rounded-l-[1.3rem] border border-app-line bg-app-surface/96 px-4 py-4 text-sm text-app-text-soft shadow-[var(--shadow-panel)] backdrop-blur-xl">
       <p class="text-[0.68rem] font-semibold uppercase tracking-[0.22em] text-app-text">Debug details</p>
-      <p class="mt-2 text-xs leading-5 text-app-text-soft">Intent, confidence, and semantic mapping signals.</p>
       <div class="mt-3 grid gap-3">
       <div class="flex flex-wrap gap-2" data-debug-search-meta>
         ${renderSearchMeta(screen)}
@@ -310,9 +315,7 @@ function renderSignalList(signals: HomeScreenModel["presentation"]["signals"]): 
     ${signals
       .map(
         (signal) =>
-          `<li class="rounded-full border border-app-line bg-app-surface px-3 py-2" title="${escapeHtml(signal.reason)}">${escapeHtml(
-            `${signal.kind}: ${signal.value}`,
-          )}</li>`,
+          `<li class="rounded-full border border-app-line bg-app-surface px-3 py-2">${escapeHtml(`${signal.kind}: ${signal.value}`)}</li>`,
       )
       .join("")}
   </ul>`;
@@ -507,12 +510,17 @@ function renderTablePresentation(screen: HomeScreenModel): string {
     return renderCardsPresentation(screen);
   }
 
+  const header =
+    screen.presentation.table.title || screen.presentation.table.description
+      ? `<div class="border-b border-app-line px-5 py-4">
+          ${screen.presentation.table.title ? `<p class="text-[0.72rem] font-semibold uppercase tracking-[0.3em] text-app-text-soft">${escapeHtml(screen.presentation.table.title)}</p>` : ""}
+          ${screen.presentation.table.description ? `<p class="mt-2 max-w-3xl text-sm leading-6 text-app-text-soft">${escapeHtml(screen.presentation.table.description)}</p>` : ""}
+        </div>`
+      : "";
+
   return `<div class="grid gap-5">
     <div class="overflow-hidden rounded-[1.8rem] border border-app-line bg-app-surface">
-      <div class="border-b border-app-line px-5 py-4">
-        <p class="text-[0.72rem] font-semibold uppercase tracking-[0.3em] text-app-text-soft">${escapeHtml(screen.presentation.table.title)}</p>
-        <p class="mt-2 max-w-3xl text-sm leading-6 text-app-text-soft">${escapeHtml(screen.presentation.table.description)}</p>
-      </div>
+      ${header}
       <div class="overflow-x-auto">
         <table class="min-w-full text-left">
           <thead>

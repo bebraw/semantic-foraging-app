@@ -17,7 +17,6 @@ describe("worker", () => {
 
     const body = await response.text();
     expect(body).toContain("Semantic Foraging");
-    expect(body).toContain("Search-ready surface");
     expect(body).toContain("Nearby berry spots");
     expect(body).toContain('data-presentation-kind="empty"');
   });
@@ -39,7 +38,7 @@ describe("worker", () => {
     expect(response.status).toBe(200);
     const body = await response.text();
     expect(body).toContain('data-presentation-kind="cards"');
-    expect(body).toContain("Result cards for &quot;Nearby berry spots&quot;");
+    expect(body).toContain("Nearby berry spots");
   });
 
   it("redirects the initial home-route search to the persisted query URL", async () => {

@@ -54,15 +54,15 @@ export function buildSemanticPresentationModel(input: BuildSemanticPresentationI
 
   if (!latestSubmission) {
     return {
-      title: "Search-ready surface",
-      summary: "The page stays minimal until a query provides enough meaning to pick a result view.",
-      emptyState: "Try a natural-language query such as nearby berry spots, available berries nearby, or a request for a table.",
+      title: "",
+      summary: "",
+      emptyState: "Try a query like Nearby berry spots, What kind of berries are available nearby?, or a request for a table.",
       primaryKind: "empty",
       signals: [
         {
           kind: "data",
           value: "no-query",
-          reason: "No query has been submitted yet, so the UI stays on the neutral search state.",
+          reason: "",
         },
       ],
       components: [
@@ -71,7 +71,7 @@ export function buildSemanticPresentationModel(input: BuildSemanticPresentationI
           title: componentTitles.empty,
           priority: 1,
           selected: true,
-          reason: "The semantic mapper is waiting for an input query.",
+          reason: "",
           signals: ["no-query"],
           contentIds: [],
         },
@@ -90,7 +90,7 @@ export function buildSemanticPresentationModel(input: BuildSemanticPresentationI
         {
           kind: "intent",
           value: latestSubmission.classification.intent,
-          reason: "Intent classification could not complete without one more piece of context.",
+          reason: "",
         },
       ],
       components: [
@@ -99,7 +99,7 @@ export function buildSemanticPresentationModel(input: BuildSemanticPresentationI
           title: componentTitles.clarification,
           priority: 1,
           selected: true,
-          reason: "Clarification takes precedence over result rendering.",
+          reason: "",
           signals: [latestSubmission.classification.intent],
           contentIds: latestSubmission.workflow.options,
         },
@@ -145,20 +145,17 @@ function choosePrimaryComponent(
     {
       kind: "intent",
       value: latestSubmission.classification.intent,
-      reason: `The query classified as ${latestSubmission.classification.intent}.`,
+      reason: "",
     },
     {
       kind: "semantic-focus",
       value: focus,
-      reason: describeFocusReason(focus),
+      reason: "",
     },
     {
       kind: "data",
       value: candidateCards.length > 0 ? "candidate-results-ready" : "no-candidate-results",
-      reason:
-        candidateCards.length > 0
-          ? `${candidateCards.length} candidate result${candidateCards.length === 1 ? "" : "s"} are available for rendering.`
-          : "No candidate results were available, so only prose fallback can be shown.",
+      reason: "",
     },
   ];
 
@@ -166,7 +163,7 @@ function choosePrimaryComponent(
     signals.push({
       kind: "data",
       value: "map-ready",
-      reason: `${mapView.features.length} mappable feature${mapView.features.length === 1 ? "" : "s"} are available.`,
+      reason: "",
     });
   }
 
@@ -174,10 +171,7 @@ function choosePrimaryComponent(
     signals.unshift({
       kind: "explicit-component",
       value: explicitKind,
-      reason:
-        preferredComponent === explicitKind
-          ? `The view selector explicitly requested a ${explicitKind} view.`
-          : `The query explicitly asked for a ${explicitKind} view.`,
+      reason: "",
     });
   }
 
@@ -299,21 +293,6 @@ function detectSemanticFocus(text: string, intent: ForagingIntentSubmissionState
   return "general";
 }
 
-function describeFocusReason(focus: SemanticFocus): string {
-  switch (focus) {
-    case "comparison":
-      return "The query asks for comparison or ranking, which maps naturally to a table.";
-    case "inventory":
-      return "The query asks what is available, which maps naturally to cards or prose.";
-    case "location":
-      return "The query emphasizes place or proximity, which maps naturally to a map.";
-    case "explanation":
-      return "The query asks for explanation, so prose is a natural fit.";
-    case "general":
-      return "The query did not force a single view, so the mapper can pick the most useful default.";
-  }
-}
-
 function buildSemanticComponents(
   selection: SemanticSelection,
   candidateCards: ForagingCandidateCard[],
@@ -334,7 +313,7 @@ function buildSemanticComponents(
         title: componentTitles[kind],
         priority: kind === selection.primaryKind ? 1 : computeFallbackPriority(kind, selection.primaryKind),
         selected: kind === selection.primaryKind,
-        reason: describeComponentReason(kind, selection, candidateCards, mapView, table),
+        reason: describeComponentReason(),
         signals: selection.signals.map((signal) => signal.value),
         contentIds: collectContentIds(kind, candidateCards, mapView, table),
       }),
@@ -348,48 +327,8 @@ function computeFallbackPriority(kind: SemanticComponentKind, primaryKind: Seman
   return index === -1 ? 99 : index + 1;
 }
 
-function describeComponentReason(
-  kind: SemanticComponentKind,
-  selection: SemanticSelection,
-  candidateCards: ForagingCandidateCard[],
-  mapView: MapViewModel,
-  table?: SemanticTableModel,
-): string {
-  if (kind === selection.primaryKind) {
-    if (selection.explicitKind === kind) {
-      return `Selected because the query explicitly requested ${kind}.`;
-    }
-
-    switch (kind) {
-      case "map":
-        return "Selected because the query emphasizes location and mappable leads are available.";
-      case "cards":
-        return "Selected because the query asks what is available and distinct grounded leads are available.";
-      case "table":
-        return "Selected because the query asks for comparison or prevalence.";
-      case "prose":
-        return "Selected because explanation is more important than spatial or tabular structure for this query.";
-      case "empty":
-        return "Selected because no query has been submitted yet.";
-      case "clarification":
-        return "Selected because clarification must complete before results can be rendered.";
-    }
-  }
-
-  switch (kind) {
-    case "map":
-      return `${mapView.features.length} mappable lead${mapView.features.length === 1 ? "" : "s"} remain available as a fallback view.`;
-    case "cards":
-      return `${candidateCards.length} candidate card${candidateCards.length === 1 ? "" : "s"} remain available as a fallback view.`;
-    case "table":
-      return `${table?.rows.length ?? 0} tabular row${table?.rows.length === 1 ? "" : "s"} can be derived from the surfaced leads.`;
-    case "prose":
-      return "A prose summary can always explain why the current results were surfaced.";
-    case "empty":
-      return "No content is available yet.";
-    case "clarification":
-      return "Clarification is only relevant when the workflow is blocked.";
-  }
+function describeComponentReason(): string {
+  return "";
 }
 
 function collectContentIds(
@@ -416,17 +355,14 @@ function collectContentIds(
 function buildPresentationTitle(primaryKind: SemanticComponentKind, input: string): string {
   switch (primaryKind) {
     case "map":
-      return input;
     case "cards":
-      return `Result cards for "${input}"`;
     case "table":
-      return `Table view for "${input}"`;
     case "prose":
-      return `Summary for "${input}"`;
+      return input;
     case "clarification":
       return "Clarification needed";
     case "empty":
-      return "Search-ready surface";
+      return "";
   }
 }
 
@@ -438,19 +374,19 @@ function buildPresentationSummary(
 ): string {
   switch (selection.primaryKind) {
     case "map":
-      return `${candidateCards.length} mapped lead${candidateCards.length === 1 ? "" : "s"}.`;
+      return `${candidateCards.length} lead${candidateCards.length === 1 ? "" : "s"}.`;
     case "cards":
-      return `${candidateCards.length} grounded lead${candidateCards.length === 1 ? "" : "s"} were surfaced as cards because the query asks what is available.`;
+      return `${candidateCards.length} lead${candidateCards.length === 1 ? "" : "s"}.`;
     case "table":
-      return `${table?.rows.length ?? 0} ranked row${table?.rows.length === 1 ? "" : "s"} were assembled from the surfaced leads for comparison.`;
+      return `${table?.rows.length ?? 0} row${table?.rows.length === 1 ? "" : "s"}.`;
     case "prose":
-      return `A narrative summary was selected for ${latestSubmission.classification.intent} because the query reads more like explanation than exploration.`;
+      return "";
     case "clarification":
       return latestSubmission.workflow.state === "awaiting_clarification"
         ? latestSubmission.workflow.question
         : "Clarification is required.";
     case "empty":
-      return "The semantic mapper will select a result view after the first query.";
+      return "";
   }
 }
 
@@ -470,11 +406,8 @@ function buildSemanticTable(
   }
 
   return {
-    title: "Derived prevalence table",
-    description:
-      latestSubmission.input.trim().length > 0
-        ? "The table ranks species from the currently surfaced leads, not from a nationwide live statistics feed."
-        : "The table ranks species from the currently surfaced leads.",
+    title: "",
+    description: "",
     columns: [
       { key: "signal", label: "Signal", align: "end" },
       { key: "habitats", label: "Habitats" },
@@ -550,9 +483,7 @@ function buildSemanticProse(
   primaryKind: SemanticComponentKind,
 ): string[] {
   if (candidateCards.length === 0) {
-    return [
-      "No grounded candidate leads were available yet, so the search surface can only report the current classification and any missing context.",
-    ];
+    return ["No grounded leads yet."];
   }
 
   const leadNames = candidateCards
@@ -567,19 +498,14 @@ function buildSemanticProse(
     .filter(Boolean)
     .join(" and ");
 
-  const paragraphs = [
-    `${candidateCards.length} lead${candidateCards.length === 1 ? "" : "s"} were surfaced for ${latestSubmission.classification.intent}. The strongest current signals are ${leadNames}.`,
-    cueSummary.length > 0
-      ? `The active query emphasizes ${cueSummary}.`
-      : "The active query does not yet expose strong explicit species, habitat, region, or season cues.",
-  ];
+  const paragraphs = [`Current leads include ${leadNames}.`];
 
-  if (primaryKind !== "prose") {
-    paragraphs.push(`Prose remains available as a fallback even though ${primaryKind} was selected as the primary result view.`);
+  if (cueSummary.length > 0) {
+    paragraphs.push(`Relevant cues: ${cueSummary}.`);
   }
 
   if (memorySummary.length > 0) {
-    paragraphs.push(`The search surface also has ${memorySummary} available as lightweight continuation context.`);
+    paragraphs.push(`Also available: ${memorySummary}.`);
   }
 
   return paragraphs;
