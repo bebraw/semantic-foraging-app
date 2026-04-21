@@ -140,7 +140,7 @@ export function createHomeScreenModel(input: CreateHomeScreenInput): HomeScreenM
   );
   const rawInput = input.workbench.intent.latestSubmission?.input ?? input.workbench.intent.rawInput;
   const searchPrompt = {
-    actionPath: "/actions/intent",
+    actionPath: "/",
     rawInputName: "input",
     rawInputLabel: "Search the landscape",
     rawInputPlaceholder: "Type a place, species, or explicit view request",
@@ -180,7 +180,7 @@ export function createHomeScreenModel(input: CreateHomeScreenInput): HomeScreenM
     intentWorkbench: {
       title: "Semantic search",
       description: "",
-      actionPath: "/actions/intent",
+      actionPath: "/",
       rawInputName: "input",
       rawInputLabel: searchPrompt.rawInputLabel,
       rawInputPlaceholder: searchPrompt.rawInputPlaceholder,

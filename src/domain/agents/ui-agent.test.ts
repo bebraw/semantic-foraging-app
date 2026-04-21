@@ -45,7 +45,7 @@ describe("ui-agent", () => {
         kind: "home",
         title: "Foraging Search",
         searchPrompt: expect.objectContaining({
-          actionPath: "/actions/intent",
+          actionPath: "/",
           submitLabel: "Search",
         }),
         presentation: expect.objectContaining({

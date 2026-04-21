@@ -22,6 +22,25 @@ describe("worker", () => {
     expect(body).toContain('data-presentation-kind="empty"');
   });
 
+  it("handles the initial search on the home route without leaving the page", async () => {
+    const formData = new FormData();
+    formData.set("input", "Create a new field note");
+
+    const response = await handleRequest(
+      new Request("http://example.com/", {
+        method: "POST",
+        body: formData,
+      }),
+    );
+
+    expect(response.status).toBe(200);
+    expect(response.headers.get("content-type")).toContain("text/html");
+
+    const body = await response.text();
+    expect(body).toContain("Field note scaffold");
+    expect(body).toContain("Create a new field note");
+  });
+
   it("returns a JSON health response", async () => {
     const response = await handleRequest(new Request("http://example.com/api/health"));
 

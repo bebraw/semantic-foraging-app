@@ -58,6 +58,11 @@ export async function handleRequest(request: Request, env: Env = {}): Promise<Re
     return finalizeResponse(response, trace);
   }
 
+  if (url.pathname === "/" && request.method === "POST") {
+    response = await handleIntentActionRequest(request, context);
+    return finalizeResponse(response, trace);
+  }
+
   if (url.pathname === "/") {
     response = await handleHomePageRequest(context);
     return finalizeResponse(response, trace);

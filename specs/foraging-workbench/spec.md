@@ -8,7 +8,7 @@ The home page is a server-rendered semantic-foraging search surface that lets co
 
 - `GET /` renders a typed `HomeScreenModel` for the semantic-foraging search surface.
 - The search surface must expose:
-  - a primary search form that posts to `POST /actions/intent`
+  - a primary search form that posts to `POST /`
   - a clarification form that posts to `POST /actions/intent/clarify` when the workflow is awaiting clarification
   - a secondary explanation-drafting form that posts to `POST /actions/explanation` when explanation state is present
   - save-artifact forms for supported candidate cards that post to `POST /actions/artifact/save`
@@ -63,6 +63,7 @@ The home page is a server-rendered semantic-foraging search surface that lets co
 ## Runtime Behavior
 
 - The search surface must stay server-rendered by default rather than depending on client-side state management.
+- The initial search submission must render back on `/` so the browser stays on the home route after a query.
 - HTML action routes must stay thin adapters over existing typed app messages and results.
 - The home screen model must be assembled by a dedicated UI agent module instead of being hand-built inside the route or view layer.
 - The browser UI should stay search-first and avoid developer-facing route catalogs, runtime diagnostics, roadmap notes, or visible trace identifiers.
