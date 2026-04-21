@@ -19,6 +19,7 @@ export type CreateHomeScreenInput = {
   runtime: RuntimeModelCapability;
   traceId: string;
   workbench: ForagingWorkbenchState;
+  preferredComponent?: Extract<HomeScreenModel["presentation"]["primaryKind"], "map" | "cards" | "table" | "prose">;
   basemap?: MapBasemapModel;
   overlay?: MapOverlayModel;
 };
@@ -158,6 +159,7 @@ export function createHomeScreenModel(input: CreateHomeScreenInput): HomeScreenM
     candidateCards,
     savedArtifacts: input.workbench.savedArtifacts,
     recentSessions: input.workbench.recentSessions,
+    preferredComponent: input.preferredComponent,
     mapView,
   });
 

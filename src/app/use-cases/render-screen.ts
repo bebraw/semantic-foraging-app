@@ -82,6 +82,7 @@ export async function renderScreen(context: AppContext, message: RenderHomeScree
           runtime,
           traceId: context.trace.id,
           workbench,
+          preferredComponent: message.preferredComponent,
           basemap,
           overlay,
         }),

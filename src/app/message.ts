@@ -1,3 +1,4 @@
+import type { SemanticComponentKind } from "../domain/contracts/screen";
 import type { ForagingCandidateCard } from "../domain/contracts/foraging-knowledge";
 import type { ForagingIntent } from "../domain/agents/intent-agent";
 import type { ForagingWorkbenchState } from "../domain/contracts/app-state";
@@ -5,6 +6,7 @@ import type { ForagingWorkbenchState } from "../domain/contracts/app-state";
 export type RenderHomeScreenMessage = {
   type: "RenderHomeScreen";
   workbench?: ForagingWorkbenchState;
+  preferredComponent?: Extract<SemanticComponentKind, "map" | "cards" | "table" | "prose">;
 };
 
 export type RunHealthCheckMessage = {

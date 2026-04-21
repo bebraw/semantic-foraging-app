@@ -127,6 +127,30 @@ test("supports clicking a second premade query button after an initial search", 
   await expect(page.getByRole("heading", { level: 2, name: 'Mapped results for "What kind of berries are available nearby?"' })).toBeVisible();
 });
 
+test("supports switching semantic result views from the component controls", async ({ page, context }) => {
+  await context.grantPermissions(["geolocation"]);
+  await context.setGeolocation({
+    latitude: 61.65,
+    longitude: 28.1,
+  });
+
+  await page.goto("/");
+  await page.getByRole("button", { name: "Nearby berry spots" }).click();
+  await expect(page.locator("[data-presentation-kind='map']")).toBeVisible();
+  await page.evaluate(() => {
+    (window as typeof window & { __viewSwitchMarker?: string }).__viewSwitchMarker = "live-document";
+  });
+
+  await page.getByRole("link", { name: "Cards" }).click();
+
+  await expect(page).toHaveURL(/\/\?q=Nearby\+berry\+spots&view=cards$/);
+  await expect(page.locator("[data-presentation-kind='cards']")).toBeVisible();
+  await expect(page.getByRole("heading", { level: 2, name: 'Result cards for "Nearby berry spots"' })).toBeVisible();
+  await expect(page.evaluate(() => (window as typeof window & { __viewSwitchMarker?: string }).__viewSwitchMarker)).resolves.toBe(
+    "live-document",
+  );
+});
+
 test("saves an artifact and reloads it into the prepared explanation panel", async ({ page }) => {
   await page.goto("/");
 

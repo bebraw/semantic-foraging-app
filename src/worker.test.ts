@@ -33,6 +33,15 @@ describe("worker", () => {
     expect(body).toContain("Field note scaffold");
   });
 
+  it("respects the requested semantic view from the browser query parameter", async () => {
+    const response = await handleRequest(new Request("http://example.com/?q=Nearby+berry+spots&view=cards"));
+
+    expect(response.status).toBe(200);
+    const body = await response.text();
+    expect(body).toContain('data-presentation-kind="cards"');
+    expect(body).toContain("Result cards for &quot;Nearby berry spots&quot;");
+  });
+
   it("redirects the initial home-route search to the persisted query URL", async () => {
     const formData = new FormData();
     formData.set("input", "Create a new field note");

@@ -4,7 +4,7 @@ import { escapeHtml } from "./shared";
 import { renderPage } from "./render-page";
 
 export function renderHomePage(screen: HomeScreenModel): string {
-  const needsMapEnhancement = screen.presentation.primaryKind === "map" && screen.mapView.features.length > 0;
+  const supportsMapEnhancement = screen.mapView.features.length > 0;
   const body = `<main class="min-h-screen px-6 py-8 sm:px-10 sm:py-12 lg:px-14">
     <div class="mx-auto flex max-w-6xl flex-col gap-8 sm:gap-10">
       <header class="max-w-3xl pb-2 sm:pb-4">
@@ -23,9 +23,9 @@ export function renderHomePage(screen: HomeScreenModel): string {
     title: screen.title,
     body,
     traceId: screen.meta.traceId,
-    stylesheets: needsMapEnhancement ? ["/vendor/leaflet.css"] : [],
-    scriptUrls: needsMapEnhancement ? ["/vendor/leaflet.js"] : [],
-    scripts: needsMapEnhancement ? [renderMapEnhancementScript()] : [],
+    stylesheets: supportsMapEnhancement ? ["/vendor/leaflet.css"] : [],
+    scriptUrls: supportsMapEnhancement ? ["/vendor/leaflet.js"] : [],
+    scripts: [renderViewSwitchScript(), ...(supportsMapEnhancement ? [renderMapEnhancementScript()] : [])],
   });
 }
 
@@ -121,22 +121,159 @@ function renderPresentationSection(screen: HomeScreenModel): string {
 }
 
 function renderComponentPalette(screen: HomeScreenModel): string {
+  const orderedComponents = [...screen.presentation.components].sort(compareComponentPaletteOrder);
+
   return `<ul class="flex flex-wrap gap-2" aria-label="Semantic result components">
-    ${screen.presentation.components
+    ${orderedComponents
       .map(
         (component) =>
-          `<li
-            class="rounded-full border px-3 py-2 text-sm ${component.selected ? "border-app-accent bg-app-accent-ghost text-app-accent-strong" : "border-app-line bg-app-surface text-app-text-soft"}"
-            title="${escapeHtml(component.reason)}"
-            data-semantic-component="${escapeHtml(component.kind)}"
-            data-component-selected="${component.selected ? "true" : "false"}"
-            data-component-signals="${escapeHtml(component.signals.join(","))}"
-          >
-            <span class="font-medium">${escapeHtml(component.title)}</span>
-          </li>`,
+          `<li>${renderComponentPaletteItem(screen, component)}</li>`,
       )
       .join("")}
   </ul>`;
+}
+
+function renderComponentPaletteItem(screen: HomeScreenModel, component: HomeScreenModel["presentation"]["components"][number]): string {
+  const className = `rounded-full border px-3 py-2 text-sm ${component.selected ? "border-app-accent bg-app-accent-ghost text-app-accent-strong" : "border-app-line bg-app-surface text-app-text-soft"}`;
+  const sharedAttributes = `title="${escapeHtml(component.reason)}" data-semantic-component="${escapeHtml(component.kind)}" data-component-selected="${component.selected ? "true" : "false"}" data-component-signals="${escapeHtml(component.signals.join(","))}"`;
+  const href = buildPresentationComponentHref(screen, component.kind);
+
+  if (!href) {
+    return `<span class="${className}" ${sharedAttributes}>
+      <span class="font-medium">${escapeHtml(component.title)}</span>
+    </span>`;
+  }
+
+  return `<a class="${className}" href="${escapeHtml(href)}" data-component-link="true" ${sharedAttributes}>
+    <span class="font-medium">${escapeHtml(component.title)}</span>
+  </a>`;
+}
+
+function buildPresentationComponentHref(
+  screen: HomeScreenModel,
+  kind: HomeScreenModel["presentation"]["components"][number]["kind"],
+): string | null {
+  const query = screen.searchPrompt.rawInputValue.trim();
+
+  if (!query || kind === "empty" || kind === "clarification") {
+    return null;
+  }
+
+  const url = new URL("http://local/");
+  url.searchParams.set("q", query);
+  url.searchParams.set("view", kind);
+
+  return `${url.pathname}${url.search}`;
+}
+
+function compareComponentPaletteOrder(
+  left: HomeScreenModel["presentation"]["components"][number],
+  right: HomeScreenModel["presentation"]["components"][number],
+): number {
+  const rank = (kind: HomeScreenModel["presentation"]["components"][number]["kind"]) => {
+    switch (kind) {
+      case "map":
+        return 1;
+      case "cards":
+        return 2;
+      case "table":
+        return 3;
+      case "prose":
+        return 4;
+      case "empty":
+        return 5;
+      case "clarification":
+        return 6;
+    }
+  };
+
+  return rank(left.kind) - rank(right.kind);
+}
+
+function renderViewSwitchScript(): string {
+  return `
+(() => {
+  const currentOrigin = window.location.origin;
+
+  const swapMain = (documentText) => {
+    const parser = new DOMParser();
+    const nextDocument = parser.parseFromString(documentText, "text/html");
+    const nextMain = nextDocument.querySelector("main");
+    const currentMain = document.querySelector("main");
+
+    if (!nextMain || !currentMain) {
+      throw new Error("Expected a main element in the fetched document.");
+    }
+
+    document.title = nextDocument.title;
+    document.body.dataset.traceId = nextDocument.body.dataset.traceId ?? "";
+    currentMain.replaceWith(nextMain);
+
+    window.__semanticForagingInitMap?.();
+  };
+
+  const navigate = async (href, pushHistory) => {
+    const url = new URL(href, window.location.href);
+
+    if (url.origin !== currentOrigin || url.pathname !== "/") {
+      window.location.assign(url.href);
+      return;
+    }
+
+    const response = await fetch(url.href, {
+      headers: {
+        accept: "text/html",
+        "x-semantic-foraging-nav": "view-switch",
+      },
+    });
+
+    if (!response.ok) {
+      window.location.assign(url.href);
+      return;
+    }
+
+    swapMain(await response.text());
+
+    if (pushHistory) {
+      window.history.pushState({ href: url.href }, "", url.href);
+    }
+  };
+
+  if (!window.__semanticForagingViewSwitchBound) {
+    window.__semanticForagingViewSwitchBound = true;
+
+    document.addEventListener("click", (event) => {
+      const target = event.target instanceof Element ? event.target.closest("a[data-component-link='true']") : null;
+
+      if (!target) {
+        return;
+      }
+
+      if (
+        event.defaultPrevented ||
+        event.button !== 0 ||
+        event.metaKey ||
+        event.ctrlKey ||
+        event.shiftKey ||
+        event.altKey
+      ) {
+        return;
+      }
+
+      event.preventDefault();
+      navigate(target.href, true).catch(() => {
+        window.location.assign(target.href);
+      });
+    });
+
+    window.addEventListener("popstate", () => {
+      navigate(window.location.href, false).catch(() => {
+        window.location.reload();
+      });
+    });
+  }
+})();
+`.trim();
 }
 
 function renderSignalList(signals: HomeScreenModel["presentation"]["signals"]): string {
@@ -850,6 +987,7 @@ function serializeMapClientState(mapView: HomeScreenModel["mapView"]): string {
 function renderMapEnhancementScript(): string {
   return `
 (() => {
+  window.__semanticForagingInitMap = () => {
   const clamp = (value, min, max) => Math.max(min, Math.min(max, value));
   const leaflet = window.L;
   const collectOverlayPoints = (overlays) => overlays.flatMap((overlay) => (overlay.status === "ready" ? overlay.points : []));
@@ -917,6 +1055,11 @@ function renderMapEnhancementScript(): string {
   };
 
   for (const root of document.querySelectorAll("[data-map-root]")) {
+    if (root.getAttribute("data-map-interactive") === "true") {
+      continue;
+    }
+
+    root.setAttribute("data-map-interactive", "true");
     const featureNodes = Array.from(root.querySelectorAll("[data-map-feature]"));
     const itemNodes = Array.from(root.querySelectorAll("[data-map-item]"));
     const detailMeta = root.querySelector("[data-map-detail-meta]");
@@ -1227,6 +1370,9 @@ function renderMapEnhancementScript(): string {
     activate(initialId);
     requestCurrentLocation();
   }
+  };
+
+  window.__semanticForagingInitMap();
 })();
 `.trim();
 }

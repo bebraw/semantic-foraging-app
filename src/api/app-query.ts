@@ -1,6 +1,7 @@
 import { createAppBus } from "../app/bus";
 import type { AppContext } from "../app/context";
 import { createAppErrorResult } from "../domain/contracts/result";
+import type { HomeScreenModel } from "../domain/contracts/screen";
 import { renderHomePage } from "../views/home";
 import { htmlResponse } from "../views/shared";
 import {
@@ -39,7 +40,9 @@ const AppQuerySchema = z.discriminatedUnion("type", [
 ]);
 
 export async function handleHomePageRequest(request: Request, context: AppContext): Promise<Response> {
-  const rawInput = new URL(request.url).searchParams.get("q")?.trim() ?? "";
+  const url = new URL(request.url);
+  const rawInput = url.searchParams.get("q")?.trim() ?? "";
+  const preferredComponent = readPreferredComponent(url);
 
   if (rawInput.length > 0) {
     let workbench = withIntentInput(createInitialForagingWorkbenchState(), rawInput);
@@ -62,16 +65,26 @@ export async function handleHomePageRequest(request: Request, context: AppContex
     }
 
     workbench = withIntentSubmission(workbench, result.payload);
-    return await renderWorkbenchResponse(context, workbench);
+    return await renderWorkbenchResponse(context, workbench, 200, preferredComponent);
   }
 
-  const result = await createAppBus(context).dispatch({ type: "RenderHomeScreen" });
+  const result = await createAppBus(context).dispatch({ type: "RenderHomeScreen", preferredComponent });
 
   if (result.kind !== "screen" || result.screen.kind !== "home") {
     throw new Error("Expected a home screen result");
   }
 
   return htmlResponse(renderHomePage(result.screen));
+}
+
+function readPreferredComponent(url: URL): Extract<HomeScreenModel["presentation"]["primaryKind"], "map" | "cards" | "table" | "prose"> | undefined {
+  const view = url.searchParams.get("view");
+
+  if (view === "map" || view === "cards" || view === "table" || view === "prose") {
+    return view;
+  }
+
+  return undefined;
 }
 
 export async function handleAppQueryRequest(request: Request, context: AppContext): Promise<Response> {

@@ -20,6 +20,7 @@ The home page is a search-first semantic-foraging surface that maps each query t
   - `table`
   - `prose`
 - Explicit view requests in the query such as `table`, `map`, `cards`, or `prose` must bias the primary presentation toward that component when relevant data exists.
+- The component controls rendered with the available presentation options must navigate to the same search using a browser `view` query parameter and apply that explicit presentation override when relevant data exists.
 - When the query emphasizes proximity or spots and mappable results exist, the primary presentation should prefer `map`.
 - When the query asks what is available or what kinds exist, the primary presentation should prefer `cards`.
 - When the query asks for comparison, prevalence, or ranking, the primary presentation should prefer `table`.

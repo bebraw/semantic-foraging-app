@@ -99,6 +99,48 @@ describe("renderHomePage", () => {
     expect(html).toContain('data-semantic-component="table"');
   });
 
+  it("keeps the semantic component controls in a stable canonical order", () => {
+    const html = renderHomePage(
+      createScreen(
+        withIntentSubmission(createInitialForagingWorkbenchState(), {
+          input: "Nearby berry spots",
+          classification: {
+            intent: "find-observations",
+            confidence: 0.69,
+            needsClarification: false,
+            cues: {
+              species: ["berry"],
+              habitat: [],
+              region: [],
+              season: [],
+            },
+            missing: ["region"],
+          },
+          confidenceBand: "medium",
+          provenance: {
+            source: "deterministic-fallback",
+            provider: null,
+            reason: "no-model-provider",
+          },
+          workflow: {
+            name: "intent-classification",
+            state: "completed",
+          },
+        }),
+      ),
+    );
+
+    const mapIndex = html.indexOf('data-semantic-component="map"');
+    const cardsIndex = html.indexOf('data-semantic-component="cards"');
+    const tableIndex = html.indexOf('data-semantic-component="table"');
+    const proseIndex = html.indexOf('data-semantic-component="prose"');
+
+    expect(mapIndex).toBeGreaterThan(-1);
+    expect(cardsIndex).toBeGreaterThan(mapIndex);
+    expect(tableIndex).toBeGreaterThan(cardsIndex);
+    expect(proseIndex).toBeGreaterThan(tableIndex);
+  });
+
   it("renders clarification in the result area when the workflow is awaiting input", () => {
     const html = renderHomePage(
       createScreen(

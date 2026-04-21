@@ -12,6 +12,7 @@ import {
   withSavedArtifactSeed,
   withWorkbenchAlert,
 } from "../domain/agents/ui-agent";
+import type { SemanticComponentKind } from "../domain/contracts/screen";
 import { renderHomePage } from "../views/home";
 import { htmlResponse } from "../views/shared";
 
@@ -381,10 +382,12 @@ export async function renderWorkbenchResponse(
   context: AppContext,
   workbench: ReturnType<typeof createInitialForagingWorkbenchState>,
   status = 200,
+  preferredComponent?: Extract<SemanticComponentKind, "map" | "cards" | "table" | "prose">,
 ) {
   const result = await createAppBus(context).dispatch({
     type: "RenderHomeScreen",
     workbench,
+    preferredComponent,
   });
 
   if (result.kind !== "screen" || result.screen.kind !== "home") {

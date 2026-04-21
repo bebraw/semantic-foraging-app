@@ -18,6 +18,7 @@ type BuildSemanticPresentationInput = {
   candidateCards: ForagingCandidateCard[];
   savedArtifacts: StoredForagingArtifact[];
   recentSessions: StoredForagingSession[];
+  preferredComponent?: ExplicitComponentKind;
   mapView: MapViewModel;
 };
 
@@ -107,7 +108,7 @@ export function buildSemanticPresentationModel(input: BuildSemanticPresentationI
     };
   }
 
-  const selection = choosePrimaryComponent(query, latestSubmission, input.candidateCards, input.mapView);
+  const selection = choosePrimaryComponent(query, latestSubmission, input.candidateCards, input.mapView, input.preferredComponent);
   const table = buildSemanticTable(latestSubmission, input.candidateCards, selection.primaryKind);
   const prose = buildSemanticProse(
     latestSubmission,
@@ -135,9 +136,10 @@ function choosePrimaryComponent(
   latestSubmission: ForagingIntentSubmissionState,
   candidateCards: ForagingCandidateCard[],
   mapView: MapViewModel,
+  preferredComponent?: ExplicitComponentKind,
 ): SemanticSelection {
   const text = rawInput.toLowerCase();
-  const explicitKind = detectExplicitComponent(text);
+  const explicitKind = preferredComponent ?? detectExplicitComponent(text);
   const focus = detectSemanticFocus(text, latestSubmission.classification.intent);
   const signals: SemanticPresentationSignal[] = [
     {
@@ -172,7 +174,10 @@ function choosePrimaryComponent(
     signals.unshift({
       kind: "explicit-component",
       value: explicitKind,
-      reason: `The query explicitly asked for a ${explicitKind} view.`,
+      reason:
+        preferredComponent === explicitKind
+          ? `The view selector explicitly requested a ${explicitKind} view.`
+          : `The query explicitly asked for a ${explicitKind} view.`,
     });
   }
 

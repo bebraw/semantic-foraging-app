@@ -73,6 +73,29 @@ describe("buildSemanticPresentationModel", () => {
     expect(presentation.prose[0]).toContain("lead");
   });
 
+  it("respects an explicit preferred component override from the UI controls", () => {
+    const candidateCards = createCandidateCards();
+
+    const presentation = buildSemanticPresentationModel({
+      rawInput: "Nearby berry spots",
+      latestSubmission: createSubmission("Nearby berry spots", "find-observations", {
+        species: ["berry"],
+        habitat: [],
+        region: [],
+        season: [],
+      }),
+      candidateCards,
+      savedArtifacts: [],
+      recentSessions: [],
+      preferredComponent: "cards",
+      mapView: buildMapViewModel(candidateCards, []),
+    });
+
+    expect(presentation.primaryKind).toBe("cards");
+    expect(presentation.signals).toEqual(expect.arrayContaining([expect.objectContaining({ kind: "explicit-component", value: "cards" })]));
+    expect(presentation.components[0]).toEqual(expect.objectContaining({ kind: "cards", selected: true }));
+  });
+
   it("surfaces clarification before any presentation choice", () => {
     const presentation = buildSemanticPresentationModel({
       rawInput: "Help",
