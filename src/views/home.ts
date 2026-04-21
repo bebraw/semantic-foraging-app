@@ -5,12 +5,14 @@ import { renderPage } from "./render-page";
 
 export function renderHomePage(screen: HomeScreenModel): string {
   const supportsMapEnhancement = screen.mapView.features.length > 0;
-  const body = `<main class="min-h-screen px-6 py-8 sm:px-10 sm:py-12 lg:px-14">
-    <div class="mx-auto flex max-w-6xl flex-col gap-8 sm:gap-10">
-      <header class="max-w-3xl pb-2 sm:pb-4">
-        <p class="text-[0.72rem] font-semibold uppercase tracking-[0.3em] text-app-accent">${escapeHtml(screen.eyebrow)}</p>
-        <h1 class="mt-3 max-w-4xl text-[clamp(2.9rem,8vw,5.8rem)] leading-[0.92] font-semibold tracking-[-0.07em]">${escapeHtml(screen.title)}</h1>
-        <p class="mt-4 max-w-2xl text-base leading-7 text-app-text-soft sm:text-lg">${escapeHtml(screen.description)}</p>
+  const body = `<main class="min-h-screen px-5 py-5 sm:px-8 sm:py-6 lg:px-10">
+    <div class="mx-auto flex max-w-6xl flex-col gap-6 sm:gap-8">
+      <header class="flex flex-wrap items-end justify-between gap-3">
+        <div>
+          <p class="text-[0.68rem] font-semibold uppercase tracking-[0.26em] text-app-accent">${escapeHtml(screen.eyebrow)}</p>
+          <h1 class="mt-2 text-[clamp(1.85rem,5vw,3.1rem)] leading-[0.94] font-semibold tracking-[-0.05em]">${escapeHtml(screen.title)}</h1>
+        </div>
+        <p class="max-w-xl text-sm leading-6 text-app-text-soft">${escapeHtml(screen.description)}</p>
       </header>
       ${renderSearchSurface(screen)}
       ${renderAlerts(screen.alerts)}
@@ -30,12 +32,12 @@ export function renderHomePage(screen: HomeScreenModel): string {
 }
 
 function renderSearchSurface(screen: HomeScreenModel): string {
-  const statusCopy = screen.presentation.primaryKind === "empty" ? screen.presentation.emptyState : screen.presentation.summary;
+  const statusCopy = screen.presentation.primaryKind === "empty" ? screen.presentation.emptyState : "";
   const exampleFieldName = `${screen.searchPrompt.rawInputName}Example`;
 
   return `<section class="max-w-4xl">
-    <div class="sticky top-0 z-10 -mx-3 rounded-[1.9rem] border border-app-line bg-app-canvas/92 px-3 py-3 shadow-[var(--shadow-panel)] supports-[backdrop-filter]:bg-app-canvas/72 backdrop-blur-xl">
-      <form method="post" action="${escapeHtml(screen.searchPrompt.actionPath)}" class="grid gap-3">
+    <div class="sticky top-0 z-10 rounded-[1.5rem] border border-app-line bg-app-canvas/92 px-3 py-3 shadow-[var(--shadow-panel)] supports-[backdrop-filter]:bg-app-canvas/72 backdrop-blur-xl">
+      <form method="post" action="${escapeHtml(screen.searchPrompt.actionPath)}" class="grid gap-2.5">
         <label class="block" for="semantic-query">
           <span class="sr-only">${escapeHtml(screen.searchPrompt.rawInputLabel)}</span>
           <input
@@ -46,7 +48,7 @@ function renderSearchSurface(screen: HomeScreenModel): string {
             spellcheck="false"
             placeholder="${escapeHtml(screen.searchPrompt.rawInputPlaceholder)}"
             value="${escapeHtml(screen.searchPrompt.rawInputValue)}"
-            class="w-full rounded-[1.55rem] bg-app-surface px-5 py-4 text-xl text-app-text outline-none ring-1 ring-app-line transition placeholder:text-app-text-soft/72 focus:bg-app-canvas focus:ring-2 focus:ring-app-accent/35"
+            class="w-full rounded-[1.25rem] bg-app-surface px-4 py-3 text-lg text-app-text outline-none ring-1 ring-app-line transition placeholder:text-app-text-soft/72 focus:bg-app-canvas focus:ring-2 focus:ring-app-accent/35"
           >
         </label>
         <div class="flex flex-wrap items-center gap-2">
@@ -63,9 +65,13 @@ function renderSearchSurface(screen: HomeScreenModel): string {
             .join("")}
         </div>
       </form>
-      <div id="search-status" class="mt-3 flex flex-wrap items-center gap-3 text-sm leading-6 text-app-text-soft">
-        <span>${escapeHtml(statusCopy)}</span>
-      </div>
+      ${
+        statusCopy
+          ? `<div id="search-status" class="mt-2 flex flex-wrap items-center gap-3 text-sm leading-6 text-app-text-soft">
+              <span>${escapeHtml(statusCopy)}</span>
+            </div>`
+          : ""
+      }
     </div>
   </section>`;
 }
@@ -105,12 +111,11 @@ function renderAlerts(alerts: HomeScreenModel["alerts"]): string {
 }
 
 function renderPresentationSection(screen: HomeScreenModel): string {
-  return `<section class="grid gap-5" data-presentation-kind="${escapeHtml(screen.presentation.primaryKind)}">
-    <div class="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+  return `<section class="grid gap-4" data-presentation-kind="${escapeHtml(screen.presentation.primaryKind)}">
+    <div class="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
       <div class="max-w-3xl">
-        <p class="text-[0.72rem] font-semibold uppercase tracking-[0.3em] text-app-text-soft">Result mapping</p>
-        <h2 class="mt-2 text-[clamp(1.8rem,5vw,3rem)] leading-[0.96] font-semibold tracking-[-0.05em]">${escapeHtml(screen.presentation.title)}</h2>
-        <p class="mt-3 max-w-2xl text-base leading-7 text-app-text-soft">${escapeHtml(screen.presentation.summary)}</p>
+        <h2 class="text-[clamp(1.45rem,4vw,2.35rem)] leading-[0.98] font-semibold tracking-[-0.04em]">${escapeHtml(screen.presentation.title)}</h2>
+        <p class="mt-2 max-w-2xl text-sm leading-6 text-app-text-soft sm:text-base sm:leading-7">${escapeHtml(screen.presentation.summary)}</p>
       </div>
       ${renderComponentPalette(screen)}
     </div>
